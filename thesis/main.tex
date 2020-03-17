@@ -1,0 +1,334 @@
+\documentclass[11pt,a4paper,twoside,draft]{memoir}
+\usepackage[final,protrusion,babel]{microtype}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[english]{babel}
+\usepackage[style=english]{csquotes}
+\usepackage{xspace}
+\usepackage[final]{graphicx}
+\usepackage[textsize=tiny]{todonotes}
+\usepackage[final,hyperfootnotes=false]{hyperref}
+
+% \usepackage{placeins}           % \FloatBarrier
+%\usepackage{float}             % H float placement
+\usepackage[originalcommands]{ragged2e} % improved ragged paragraphs in abstract
+\usepackage{eso-pic}
+
+\usepackage{amsmath}
+\usepackage{amssymb}
+%\usepackage{pifont}
+\usepackage{fourier-orns}
+
+\usepackage{typographic_setup}
+\usepackage[final]{mylistings}
+\usepackage{jlcode}
+
+%-------------------------------------------------------------------------------
+% TITLING
+%
+% \newcommand{\upinitial}[2]{{\textup{#1}\kern#2}}
+
+% \title{Graph Tracking in Dynamic Probabilistic Programs via Source Transformations.} 
+% \subtitle{\upinitial{A}{0pt} \upinitial{C}{-0.8pt}ase %
+%   \upinitial{S}{-0.8pt}tudy with \upinitial{A}{-0.7pt}ction \upinitial{S}{-1.4pt}ystems}
+
+% \author{Philipp Gabler}
+
+% \date{}
+
+\hypersetup{
+  pdfinfo={
+    Author={Philipp Gabler},
+    Title={Graph Tracking in Dynamic Probabilistic Programs via Source Transformations.}
+  },
+  % colorlinks=false
+}
+
+%-------------------------------------------------------------------------------
+% BIBLATEX
+%
+
+\usepackage[%
+  backend=biber,
+  citestyle=alphabetic,
+  style=alphabetic,
+  sortcites=true,
+  sorting=nyt,
+  %natbib=true,
+  firstinits=true,
+  %url=false,
+  isbn=false,
+  date=iso8601,
+  urldate=iso8601
+]{biblatex}
+\DeclareNameAlias{default}{last-first}
+
+% only capitalize real titles
+% http://tex.stackexchange.com/a/22981/46356
+\DeclareFieldFormat{sentencecase}{\MakeSentenceCase{#1}}
+\renewbibmacro*{title}{%
+  \ifthenelse{\iffieldundef{title}\AND\iffieldundef{subtitle}}
+    {}
+    {\printtext[title]{%
+        \printfield[sentencecase]{title}%
+        \setunit{\subtitlepunct}%
+        \printfield[sentencecase]{subtitle}}
+      \newunit}%
+  \printfield{titleaddon}}
+
+\defbibheading{memoir}[\bibname]{\chapter*{#1}}
+\setcounter{biburllcpenalty}{7000}
+\setcounter{biburlucpenalty}{8000}
+
+\AtEveryBibitem{\clearlist{language}} % clears language
+\renewcommand*\bibnamedash{\rule[0.48ex]{3em}{0.14ex}\space}
+\renewcommand*{\multinamedelim}{;\space}
+\renewcommand*{\finalnamedelim}{;\space}
+
+\addbibresource{document.bib}
+
+\usepackage{breakurl}
+%\hypersetup{breaklinks=false}
+
+%-------------------------------------------------------------------------------
+% OTHER SETTINGS
+%
+
+% listings
+% \lstset{
+%   gobble=1,
+%   language=Julia,
+%   style=blackwhite
+% }
+
+\AtBeginDocument{%
+  \lstMakeShortInline[style={inline}]|
+}
+
+% toc
+\setlength{\cftbeforechapterskip}{1ex} % decrease space between sections
+
+% floats and epigraphs
+\newlength{\capwidth}
+\addtolength{\capwidth}{\textwidth}
+\addtolength{\capwidth}{-4ex}
+\captionwidth{\capwidth}
+\captionstyle[\raggedright]{}
+
+\setlength{\epigraphwidth}{\textwidth}
+\setlength{\epigraphrule}{0pt}
+
+\renewcommand{\textfloatsep}{\baselineskip}
+
+\setcounter{topnumber}{1}       % allow only one float per page
+
+% no need for colors here...
+% \colorlet{textred}{darkgray!80}
+% \colorlet{textblue}{darkgray!80}
+
+\newcommand{\lstlistingautorefname}{Listing}
+
+% csquotes
+% redefine spacing above/below; hacking original latex definition from 
+% http://mirrors.ctan.org/macros/latex/base/classes.dtx
+\makeatletter
+\newenvironment{myblockquote}
+               {\vspace{-1em}\list{}{\listparindent 1.5em%
+                        \itemindent    \listparindent
+                        \rightmargin   \leftmargin
+                        \parsep        \z@ \@plus\p@}%
+                \item\relax}
+               {\endlist\vspace{-0.5\baselineskip}}
+\makeatother
+\SetBlockEnvironment{myblockquote}
+
+
+% TIKZ SETUP
+\usepackage{tikz}
+% \usepackage{rotating}
+
+%-------------------------------------------------------------------------------
+% DOCUMENT MACROS
+%
+\newcommand{\ie}{i.e.\xspace}
+\newcommand{\eg}{e.g.\xspace}
+\newcommand{\cf}{cf.\xspace}
+\newcommand{\margintodo}[1]{\todo[noline, size=\tiny]{#1}}
+\newcommand{\CC}{{C\nolinebreak[4]\hspace{-.05em}\raisebox{.22ex}{\small\textbf{++}}}}
+%\newcommand{\autosubref}[1]{{\hyperref[#1]{Subsection~\ref*{#1}~--~\nameref*{#1}}}}
+\newcommand{\autosubref}[1]{\autoref{#1}}
+\newcommand{\aref}[1]{\hyperref[#1]{Appendix~\ref{#1}}}
+\newcommand{\mathlst}[1]{\text{\lstinline|1|}}
+
+
+%-------------------------------------------------------------------------------
+% DOCUMENT
+%-------------------------------------------------------------------------------
+
+\begin{document}
+\pagestyle{simple}
+\chapterstyle{hangnum}
+\frontmatter
+
+\input{title}
+\movetooddpage
+
+\input{declaration}
+\movetooddpage
+
+
+\begin{adjustwidth}{\absleftindent}{\absrightindent}
+  \phantomsection
+  % \addcontentsline{toc}{chapter}{Licenses}
+  \label{license}
+  \currentpdfbookmark{License}{license}
+
+  \abstracttextfont
+  \vspace*{\stretch{1}}
+  \begin{center}
+    This work is licensed under a \\ \href{http://creativecommons.org/licenses/by-sa/4.0/}{Creative
+      Commons Attribution-ShareAlike 4.0 International License}.
+  \end{center}
+  \begin{center}
+    \includegraphics[scale=1]{figures/by-sa}
+  \end{center}
+  \vspace{\stretch{2}}
+  \begin{center}
+    All code samples, unless otherwise noted or cited from other sources, \\ are also available under an
+    \href{http://opensource.org/licenses/MIT}{\abbrev{MIT} license}:
+  \end{center}
+  \vspace*{-1ex}
+  \begin{ttfamily}
+    \setlength{\parskip}{12pt}
+    \setlength{\parindent}{0pt}
+    The MIT License (MIT)
+
+    Copyright (c) 2020 Philipp Gabler
+
+    Permission is hereby granted, free of charge, to any person obtaining a copy of this software
+    and associated documentation files (the "Software"), to deal in the Software without
+    restriction, including without limitation the rights to use, copy, modify, merge, publish,
+    distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the
+    Software is furnished to do so, subject to the following conditions:
+
+    The above copyright notice and this permission notice shall be included in all copies or
+    substantial portions of the Software.
+
+    THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING
+    BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+    NON\-IN\-FRINGE\-MENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+    CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+    FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+  \end{ttfamily}
+  
+  \vspace{2ex}
+  
+  \begin{adjustwidth}{0.5\absleftindent}{0.5\absrightindent}
+    \begin{Center}
+      % A full |sbt| project containing many of the code samples can be found at
+      % \url{https://github.com/phipsgabler/dsl-examples}. 
+
+      The \LaTeX{} source of this document is available at\\
+      \url{https://github.com/phipsgabler/master-thesis} \\
+      or upon request from the author.\footnote{\texttt{pgabler@student.tugraz.at}}
+    \end{Center}
+  \end{adjustwidth}
+  
+  \vspace{\stretch{1}}
+
+\end{adjustwidth}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% ABSTRACT
+\movetooddpage
+\phantomsection
+% \addcontentsline{toc}{chapter}{Abstract}
+\label{abstract}
+\currentpdfbookmark{Abstract}{abstract}
+\begin{abstract}
+
+\noindent
+Alles sehr abstract hier.
+
+\end{abstract}
+
+\begingroup
+\cleartorecto
+\hypersetup{linkcolor=black, hyperindex=true}
+\label{toc}
+\currentpdfbookmark{Contents}{toc}
+\tableofcontents*
+\endgroup
+
+\cleartorecto
+\mainmatter
+
+
+\chapter{Test}
+Hello, there!
+
+% \input{1-introduction.tex}
+
+% \input{2-concepts.tex}
+
+% \input{3-syntax.tex}
+
+% \input{4-patterns.tex}
+
+% \input{5-action_systems.tex}
+
+% \input{6-actium.tex}
+
+% \input{7-resumee.tex}
+
+
+%-------------------------------------------------------------------------------
+\clearpage
+\vspace{2em}
+\appendix
+
+
+\begingroup
+
+\microtypesetup{protrusion=false, expansion=false}
+%\raggedright
+\phantomsection
+\addcontentsline{toc}{chapter}{Bibliography}
+\printbibliography[heading=memoir]
+
+\endgroup
+
+%-------------------------------------------------------------------------------
+\appendix
+
+% \chapter{Example Programs}
+% \label{sec:appendix}
+
+% \section{SimpleRocket in Original Syntax}
+% \label{sec:simplerocket_original}
+% \lstinputlisting[style=fullpage,language={}]{code/SimpleRocket.acsys}
+
+
+%-------------------------------------------------------------------------------
+\cleartoverso
+\thispagestyle{empty}
+\renewcommand{\abstractname}{Colophon}
+\begin{abstract}
+  \noindent
+  This document was typeset using the pdf\LaTeX{} typesetting system, with the memoir document
+  class. The body text is set in 11\,pt Linux Libertine, enhanced by the microtype package. Other
+  fonts include Biolinum and Inconsolata.
+  % The drawings are typeset using
+  % TikZ/PGF, and source code examples are formatted by the listings package.
+
+  The document source has been written in Emacs with AUC\TeX{} mode, using TeXworks as \abbrev{PDF}
+  viewer.
+\end{abstract}
+
+\end{document}
+
+%%% Local Variables: 
+%%% TeX-master: "main"
+%%% mode: latex
+%%% TeX-command-extra-options: "-shell-escape"
+%%% End:
