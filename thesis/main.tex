@@ -17,29 +17,16 @@
 \usepackage{amsmath}
 \usepackage{amssymb}
 %\usepackage{pifont}
-\usepackage{fourier-orns}
+% \usepackage{fourier-orns}
 
 \usepackage{typographic_setup}
 \usepackage[final]{mylistings}
 \usepackage{jlcode}
 
-%-------------------------------------------------------------------------------
-% TITLING
-%
-% \newcommand{\upinitial}[2]{{\textup{#1}\kern#2}}
-
-% \title{Graph Tracking in Dynamic Probabilistic Programs via Source Transformations.} 
-% \subtitle{\upinitial{A}{0pt} \upinitial{C}{-0.8pt}ase %
-%   \upinitial{S}{-0.8pt}tudy with \upinitial{A}{-0.7pt}ction \upinitial{S}{-1.4pt}ystems}
-
-% \author{Philipp Gabler}
-
-% \date{}
-
 \hypersetup{
   pdfinfo={
     Author={Philipp Gabler},
-    Title={Graph Tracking in Dynamic Probabilistic Programs via Source Transformations.}
+    Title={Automatic Graph Tracking in Probabilistic Models via Source Transformations}
   },
   % colorlinks=false
 }
@@ -85,7 +72,7 @@
 \renewcommand*{\multinamedelim}{;\space}
 \renewcommand*{\finalnamedelim}{;\space}
 
-\addbibresource{document.bib}
+\addbibresource{refs.bib}
 
 \usepackage{breakurl}
 %\hypersetup{breaklinks=false}
@@ -94,19 +81,12 @@
 % OTHER SETTINGS
 %
 
-% listings
-% \lstset{
-%   gobble=1,
-%   language=Julia,
-%   style=blackwhite
-% }
-
 \AtBeginDocument{%
   \lstMakeShortInline[style={inline}]|
 }
 
 % toc
-\setlength{\cftbeforechapterskip}{1ex} % decrease space between sections
+% \setlength{\cftbeforechapterskip}{1ex} % decrease space between sections
 
 % floats and epigraphs
 \newlength{\capwidth}
@@ -144,7 +124,7 @@
 
 
 % TIKZ SETUP
-\usepackage{tikz}
+% \usepackage{tikz}
 % \usepackage{rotating}
 
 %-------------------------------------------------------------------------------
@@ -154,176 +134,85 @@
 \newcommand{\eg}{e.g.\xspace}
 \newcommand{\cf}{cf.\xspace}
 \newcommand{\margintodo}[1]{\todo[noline, size=\tiny]{#1}}
-\newcommand{\CC}{{C\nolinebreak[4]\hspace{-.05em}\raisebox{.22ex}{\small\textbf{++}}}}
-%\newcommand{\autosubref}[1]{{\hyperref[#1]{Subsection~\ref*{#1}~--~\nameref*{#1}}}}
-\newcommand{\autosubref}[1]{\autoref{#1}}
-\newcommand{\aref}[1]{\hyperref[#1]{Appendix~\ref{#1}}}
+% \newcommand{\CC}{{C\nolinebreak[4]\hspace{-.05em}\raisebox{.22ex}{\small\textbf{++}}}}
+% \newcommand{\autosubref}[1]{{\hyperref[#1]{Subsection~\ref*{#1}~--~\nameref*{#1}}}}
+% \newcommand{\autosubref}[1]{\autoref{#1}}
+% \newcommand{\aref}[1]{\hyperref[#1]{Appendix~\ref{#1}}}
 \newcommand{\mathlst}[1]{\text{\lstinline|1|}}
 
 
 %-------------------------------------------------------------------------------
 % DOCUMENT
 %-------------------------------------------------------------------------------
-
 \begin{document}
-\pagestyle{simple}
 \chapterstyle{hangnum}
 \frontmatter
 
+\setcounter{page}{1} % titlingpage resets to 1 afterwards
 \input{title}
-\movetooddpage
+\setcounter{page}{3}
 
-\input{declaration}
-\movetooddpage
-
-
-\begin{adjustwidth}{\absleftindent}{\absrightindent}
-  \phantomsection
-  % \addcontentsline{toc}{chapter}{Licenses}
-  \label{license}
-  \currentpdfbookmark{License}{license}
-
-  \abstracttextfont
-  \vspace*{\stretch{1}}
-  \begin{center}
-    This work is licensed under a \\ \href{http://creativecommons.org/licenses/by-sa/4.0/}{Creative
-      Commons Attribution-ShareAlike 4.0 International License}.
-  \end{center}
-  \begin{center}
-    \includegraphics[scale=1]{figures/by-sa}
-  \end{center}
-  \vspace{\stretch{2}}
-  \begin{center}
-    All code samples, unless otherwise noted or cited from other sources, \\ are also available under an
-    \href{http://opensource.org/licenses/MIT}{\abbrev{MIT} license}:
-  \end{center}
-  \vspace*{-1ex}
-  \begin{ttfamily}
-    \setlength{\parskip}{12pt}
-    \setlength{\parindent}{0pt}
-    The MIT License (MIT)
-
-    Copyright (c) 2020 Philipp Gabler
-
-    Permission is hereby granted, free of charge, to any person obtaining a copy of this software
-    and associated documentation files (the "Software"), to deal in the Software without
-    restriction, including without limitation the rights to use, copy, modify, merge, publish,
-    distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the
-    Software is furnished to do so, subject to the following conditions:
-
-    The above copyright notice and this permission notice shall be included in all copies or
-    substantial portions of the Software.
-
-    THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING
-    BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
-    NON\-IN\-FRINGE\-MENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
-    CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
-    FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-  \end{ttfamily}
-  
-  \vspace{2ex}
-  
-  \begin{adjustwidth}{0.5\absleftindent}{0.5\absrightindent}
-    \begin{Center}
-      % A full |sbt| project containing many of the code samples can be found at
-      % \url{https://github.com/phipsgabler/dsl-examples}. 
-
-      The \LaTeX{} source of this document is available at\\
-      \url{https://github.com/phipsgabler/master-thesis} \\
-      or upon request from the author.\footnote{\texttt{pgabler@student.tugraz.at}}
-    \end{Center}
-  \end{adjustwidth}
-  
-  \vspace{\stretch{1}}
-
-\end{adjustwidth}
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% ABSTRACT
-\movetooddpage
-\phantomsection
-% \addcontentsline{toc}{chapter}{Abstract}
-\label{abstract}
-\currentpdfbookmark{Abstract}{abstract}
-\begin{abstract}
-
-\noindent
-Alles sehr abstract hier.
-
-\end{abstract}
-
-\begingroup
 \cleartorecto
+\input{declaration}
+
+\cleartorecto
+\input{license}
+
+
+%-------------------------------------------------------------------------------
+% ABSTRACT
+\cleartorecto
+\input{abstract}
+
+
+%-------------------------------------------------------------------------------
+% TOC
+\cleartorecto
+\begingroup
 \hypersetup{linkcolor=black, hyperindex=true}
 \label{toc}
 \currentpdfbookmark{Contents}{toc}
 \tableofcontents*
 \endgroup
 
-\cleartorecto
+
+% -------------------------------------------------------------------------------
+% CHAPTERS
 \mainmatter
 
-
-\chapter{Test}
-Hello, there!
-
-% \input{1-introduction.tex}
-
-% \input{2-concepts.tex}
-
-% \input{3-syntax.tex}
-
-% \input{4-patterns.tex}
-
-% \input{5-action_systems.tex}
-
-% \input{6-actium.tex}
-
-% \input{7-resumee.tex}
+\include{introduction}
+\include{background}
+\include{automatic_graph_tracking}
+\include{discussion}
 
 
-%-------------------------------------------------------------------------------
-\clearpage
-\vspace{2em}
-\appendix
-
-
+% -------------------------------------------------------------------------------
+% BIBLIOGRAPHY
+\cleartorecto
 \begingroup
-
 \microtypesetup{protrusion=false, expansion=false}
 %\raggedright
 \phantomsection
 \addcontentsline{toc}{chapter}{Bibliography}
 \printbibliography[heading=memoir]
-
 \endgroup
 
-%-------------------------------------------------------------------------------
-\appendix
+
+% -------------------------------------------------------------------------------
+% APPENDIX
+% \cleartorecto
+% \backmatter
+% \appendix
+% \appendixpage*
 
 % \chapter{Example Programs}
 % \label{sec:appendix}
 
-% \section{SimpleRocket in Original Syntax}
-% \label{sec:simplerocket_original}
-% \lstinputlisting[style=fullpage,language={}]{code/SimpleRocket.acsys}
 
-
-%-------------------------------------------------------------------------------
+% -------------------------------------------------------------------------------
+% COLOPHON
 \cleartoverso
-\thispagestyle{empty}
-\renewcommand{\abstractname}{Colophon}
-\begin{abstract}
-  \noindent
-  This document was typeset using the pdf\LaTeX{} typesetting system, with the memoir document
-  class. The body text is set in 11\,pt Linux Libertine, enhanced by the microtype package. Other
-  fonts include Biolinum and Inconsolata.
-  % The drawings are typeset using
-  % TikZ/PGF, and source code examples are formatted by the listings package.
-
-  The document source has been written in Emacs with AUC\TeX{} mode, using TeXworks as \abbrev{PDF}
-  viewer.
-\end{abstract}
+\input{colophon}
 
 \end{document}
 
