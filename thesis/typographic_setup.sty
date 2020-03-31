@@ -22,8 +22,8 @@
 %
 
 % OPTIONAL TITLE SETTINGS
-\providecommand{\subtitle}[1]{\def\@subtitle{#1}}
-\providecommand{\@subtitle}{}
+% \providecommand{\subtitle}[1]{\def\@subtitle{#1}}
+% \providecommand{\@subtitle}{}
 
 \renewcommand{\maketitlehookb}{{\@bspresubtitle \@subtitle \@bspostsubtitle}}%
 \providecommand{\presubtitle}[1]{\def\@bspresubtitle{#1}}
@@ -87,18 +87,18 @@
 % visible in toc and bookmarks.
 \setsecnumdepth{subsection}
 \setcounter{tocdepth}{2}
-\newcounter{subseclabel}
-\setcounter{subseclabel}{0}
-\let\oldsubsection\subsection
-\AtBeginDocument{%
-  \renewcommand{\subsection}[1]{%
-    %\pdfbookmark[2]{#1}{subsec:\the\value{subseclabel}}
-    \addtocounter{subseclabel}{1}
-    \phantomsection
-    \addcontentsline{toc}{subsection}{#1}
-    \oldsubsection*{#1}
-  }
-}
+% \newcounter{subseclabel}
+% \setcounter{subseclabel}{0}
+% \let\oldsubsection\subsection
+% \AtBeginDocument{%
+%   \renewcommand{\subsection}[1]{%
+%     %\pdfbookmark[2]{#1}{subsec:\the\value{subseclabel}}
+%     \addtocounter{subseclabel}{1}
+%     \phantomsection
+%     \addcontentsline{toc}{subsection}{#1}
+%     \oldsubsection*{#1}
+%   }
+% }
 % \AtBeginDocument{%
 %   \renewcommand{\subsection}[1]{%
 %     \phantomsection
