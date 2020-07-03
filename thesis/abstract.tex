@@ -4,28 +4,23 @@
   \label{abstract}
   \currentpdfbookmark{Abstract}{abstract}
   
-  \noindent Probabilistic programming is a means of describing stochastic models through the syntax
-  of a programming language.  These models describe probability distributions as stochastic
-  function.  Probabilistic programms distinguish themselves from normal programs by the possibility
-  of being sampled from conditionally, with some of the internally variables fixed to observed
-  values.  While probabilistic programming systems are often implemented as separate,
-  domain-specific languages, they can also be embedded into \enquote{host} programming languages
-  with sufficient syntactic flexibility.  The latter is advantageous if one wants to use regular
-  general-purpose programming constructs or interact with other functionalities of the host
-  language.
+  \noindent This thesis proposes a novel approach for the implementation of a tracking system to
+  facilitate program analysis, based on program transformations. The system is then applied to a
+  specific problem in the field of probabilistic programming.
 
-  This thesis first presents a general system for extracting rich computation graphs in the Julia
-  programming language.  These graphs contain the whole recursive structure of a program in terms of
-  executed instructions of the intermediate representation used by the compiler.  The system is
-  flexible enough to be used for multiple purposes that require dynamic program analysis or abstract
-  interpretation, such as automatic differentiation or dependency analysis.
+  The main contribution is a general system for the extraction of rich computation graphs in the
+  Julia programming language, based on a transformation of the intermediate representation (IR) used
+  by the compiler.  These graphs contain the whole recursive structure of any Julia program in terms
+  of executed IR instructions.  The system is flexible enough to be used for multiple purposes that
+  require dynamic program analysis or abstract interpretation, such as automatic differentiation or
+  dependency analysis.
 
-  The second contribution is the application of the described graph tracking system to programs
-  written for Turing, a probabilistic programming system implemented as an embedded language within
-  Julia.  The functions describing a Turing model can be analyzed, and from them the dependency
-  structure of involved random variables be extracted.  Given this structure, analytical Gibbs
-  conditionals can be calculated and passed to Turing's inference mechanism, where they are used in
-  Markov-Chain Monte Carlo samplers approximating the modelled distribution.
+  The second part of the thesis describes the application of this graph tracking system to
+  probabilistic programs written for Turing, a probabilistic programming system implemented as an
+  embedded language within Julia.  Through this, an executed Turing model can be analyzed, and the
+  dependency structure of involved random variables be extracted from it.  Given this structure,
+  analytical Gibbs conditionals can be calculated and passed to Turing's inference mechanism, where
+  they are used in Markov-Chain Monte Carlo samplers approximating the modelled distribution.
 \end{abstract}
 
 %%% Local Variables:
