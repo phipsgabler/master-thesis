@@ -1,18 +1,43 @@
 \chapter{Background}
 \label{cha:background}
 
-Some introduction here. sdf sd sld fslkdjf sldkj
+This section provides the background for the concepts used later in
+chapters~\ref{cha:impl-dynam-graph} and \ref{cha:graph-track-prob}.  On the one hand, it gives a
+quick overview of Baysian inference and probabilistic programming in general, necessary to
+understand the requirements and usual approaches of probabilitic programming systems.
 
-sldk sldkfs dfslkd flsdkjf lskdfj
+On the other hand, the machinery and language used to develop the graph tracking system forming the
+main part of the work are described.  This consists firstly of a short introduction to graph
+tracking and source-to-source automatic differentiation, which contain many ideas and terminology
+that will be used later, and often provided inspiration.  Second, the basic notions and techniques
+of the Julia compilation process, as well as the language's metaprogramming capabilities are
+described, which form the basis of the implementation.
 
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Bayesian Inference and Probabilistic Programming}
 \label{sec:bayes-infer-prob}
 
+Probabilistic programming is a means of describing stochastic models through the syntax of a
+programming language.  These models describe probability distributions as stochastic functions.
+Probabilistic programms distinguish themselves from normal programs by the possibility of being
+sampled from conditionally, with some of the internal variables fixed to observed values.  While
+probabilistic programming systems are often implemented as separate, domain-specific languages, they
+can also be embedded into \enquote{host} programming languages with sufficient syntactic
+flexibility.  The latter is advantageous if one wants to use regular general-purpose programming
+constructs or interact with other functionalities of the host language.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Computation Graphs and Automatic Differentiation}
 \label{sec:graph-track-autom}
 
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Metaprogramming and Compilation in Julia}
 \label{sec:metapr-comp-julia}
+
+
 
 
 %%% Local Variables: 
