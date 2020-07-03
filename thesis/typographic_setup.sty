@@ -5,15 +5,19 @@
 % PACKAGES
 %
 
-\RequirePackage[osf]{libertine} % libertine with biolinum
+\RequirePackage{libertine} % libertine with biolinum
 \RequirePackage[scaled=0.95,varqu]{inconsolata} % monospace font
 
 \RequirePackage[libertine,varg]{newtxmath} % matching math fonts
 \def\libertine@figurestyle{OsF} % restore old style figures
+\renewcommand*{\rmdefault}{LinuxLibertineT-OsF}
 
+% better superscripts
+\RequirePackage[supstfm=libertinesups, supscaled=1.2, raised=-.13em]{superiors}
 
 \RequirePackage{xcolor}
 \RequirePackage{enumitem}
+\RequirePackage{booktabs}
 \RequirePackage[normalem]{ulem}
 \RequirePackage{hyperref}
 

@@ -1,0 +1,27 @@
+\chapter*{Notation}
+\label{cha:notation}
+\addcontentsline{toc}{chapter}{Notation}
+% \currentpdfbookmark{Notation}{notation}
+
+\begin{center}
+  \renewcommand{\arraystretch}{1.5}
+  \begin{tabular}{lp{0.6\textwidth}}
+    \(\Prob{\Theta \in A \given X = x}\) & Random variables and their realizations will usually be
+                                           denoted with upper and  lower case letters, respectively;
+                                           sets with uppercase letters.\\
+    \(\Exp{X}\), \(\Var[X]{Y}\) & Expectation and variance; if necessary, the variable with respect
+                                  to which the moment is taken is indicated. \\
+    \(f(x)\), \(\phi_Z(x)\) & Density function are named using letters commonly used for functions,
+                              with an optional subscript indicating the random variable they belong
+                              to. \\
+    \(\prob{x, y \given z}\) & The usual abuse of notation with the letter \enquote{p} standing for
+                               any density indicated by the names of the variables given to it is
+                               used as well (in this case, \(f_{X,Y|Z}\) is implied). \\
+    \(\int \prob{x} \dif x = 1\) & Integrals over the whole domain of a density are written as
+                                   indefinite integrals, where the usage is clear.
+  \end{tabular}
+\end{center}
+
+%%% Local Variables: 
+%%% TeX-master: "main"
+%%% End:

@@ -33,6 +33,9 @@
   % colorlinks=false
 }
 
+\usepackage{commath}
+\usepackage{mathtools}
+
 %-------------------------------------------------------------------------------
 % BIBLATEX
 %
@@ -83,9 +86,9 @@
 % OTHER SETTINGS
 %
 
-\AtBeginDocument{%
-  \lstMakeShortInline[style={inline}]|
-}
+% \AtBeginDocument{%
+%   \lstMakeShortInline[style={inline}]|
+% }
 
 % toc
 % \setlength{\cftbeforechapterskip}{1ex} % decrease space between sections
@@ -143,11 +146,68 @@
 \newcommand{\mathlst}[1]{\text{\lstinline|1|}}
 
 
+% MATH STUFF
+\newcommand{\prob}[2][\empty]{{p}_{#1}(#2)}
+\newcommand{\Prob}[1]{\mathbb{P}[#1]}
+\newcommand{\Exp}[2][\empty]{\mathbb{E}_{\! #1}[#2]}
+\newcommand{\Var}[2][\empty]{\mathbb{V}_{\! #1}[#2]}
+\newcommand{\Expd}[2][\empty]{\mathbb{E}_{\! #1}\!\left[#2\right]}
+\newcommand{\Vard}[2][\empty]{\mathbb{V}_{\! #1}\left[#2\right]}
+\newcommand{\entropy}[1]{\mathrm{H}(#1)}
+\newcommand\given[1][]{\:#1\vert\:}
+\newcommand{\kldiv}[2]{\mathrm{D}_{\text{KL}}(#1 \parallel #2)}
+% \newcommand{\transp}[1]{#1^{\mathrm{T}}}
+\newcommand{\inverse}[1]{#1^{-1}}
+\newcommand{\RR}{\mathbb{R}}
+\newcommand{\NN}{\mathbb{N}}
+\newcommand{\ZZ}{\mathbb{Z}}
+\newcommand{\Sqrt}[1]{#1^{\frac{1}{2}}}
+\newcommand{\kth}[2][k]{#2^{(#1)}}
+\newcommand{\Normal}[1]{\mathcal{N}(#1)}
+\newcommand{\MVNormal}[1]{\mathcal{N}_{\text{MV}}(#1)}
+\newcommand{\vect}[1]{\boldsymbol{#1}}
+\newcommand{\Likelihood}[1]{\mathcal{L}(#1)}
+\newcommand{\Loglikelihood}[1]{\ell(#1)}
+\DeclareMathOperator{\diag}{diag}
+\DeclareMathOperator*{\argmin}{arg min}
+\DeclareMathOperator{\Span}{span}
+\DeclareMathOperator{\proj}{proj}
+\DeclareMathOperator{\card}{card}
+\DeclareMathOperator{\tr}{tr}
+\DeclareMathOperator{\rank}{rank}
+\DeclareMathOperator{\sgn}{sgn}
+
+% Broadcast syntax for math mode, from https://tex.stackexchange.com/a/490779/46356
+\makeatletter
+\DeclareRobustCommand{\broadcast}[1]{%
+  \begingroup
+  \binrel@{#1}%
+  \ifx\binrel@@\mathbin \mathbin{.{#1}}\else
+  \ifx\binrel@@\mathrel \mathrel{.}#1\else
+  \phg@ordop{#1}\fi\fi
+  \endgroup
+}
+\def\phg@ordop#1{%
+  \sbox\z@{\thinmuskip=0mu$#1a$}%
+  \sbox\tw@{\thinmuskip=1000mu$#1a$}%
+  \ifdim\wd\tw@>\wd\z@
+    % operator
+    \mathop{{#1}.}%
+  \else
+    #1.
+  \fi
+}
+\makeatother
+
+\newcommand{\iid}{i.i.d.}
+
+
 %-------------------------------------------------------------------------------
 % DOCUMENT
 %-------------------------------------------------------------------------------
 \begin{document}
 \chapterstyle{hangnum}
+\pagestyle{plain}
 \frontmatter
 
 \setcounter{page}{1} % titlingpage resets to 1 afterwards
@@ -177,6 +237,9 @@
 \tableofcontents*
 \endgroup
 
+% \input{acknowledgemnt.text}
+
+\input{notation}
 
 % -------------------------------------------------------------------------------
 % CHAPTERS

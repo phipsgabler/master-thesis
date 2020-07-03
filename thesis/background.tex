@@ -18,14 +18,41 @@ described, which form the basis of the implementation.
 \section{Bayesian Inference and Probabilistic Programming}
 \label{sec:bayes-infer-prob}
 
-Probabilistic programming is a means of describing stochastic models through the syntax of a
-programming language.  These models describe probability distributions as stochastic functions.
-Probabilistic programms distinguish themselves from normal programs by the possibility of being
-sampled from conditionally, with some of the internal variables fixed to observed values.  While
-probabilistic programming systems are often implemented as separate, domain-specific languages, they
-can also be embedded into \enquote{host} programming languages with sufficient syntactic
-flexibility.  The latter is advantageous if one wants to use regular general-purpose programming
-constructs or interact with other functionalities of the host language.
+Probabilistic modelling is a technique for modelling phenomena based on the assumption that
+observables can be fully described through some stochastic process.  When we assume this process to
+belong to a certain family of processes, the estimation of the \enquote{best} process is a form of
+learning: if we have a good description of how obserations are generated, we can make summary
+statements about the whole population (descriptive statistics) or make predictions about new
+observations.  When observations come in pairs
+
+Within a Baysian statistical framework, we assume that the family of processes that is used
+
+
+bla\footnote{Note the abuse of notation with \(\prob{}\) and the integral; see~\ref{cha:notation}.}
+\begin{equation}
+  \prob{\theta \given x} = \frac{\prob{x \given \theta}\; \prob{\Theta}}{\int \prob{x \given
+    t} \dif t}
+\end{equation}
+
+This kind of learning is called Bayesian inference.
+
+When the distributions involved form a sufficiently \enquote{nice} combination, e.g., when they form
+a conjugate pair, the posterior distribution can be calculated analytically.  In general, however,
+this
+
+
+\subsection{Probabilistic Programming}
+\label{sec:prob-prog}
+
+Probabilistic programming is a means of describing probabilistic models through the syntax of a
+programming language. Probabilistic programms distinguish themselves from normal programs by the
+possibility of being sampled from conditionally, with some of the internal variables fixed to
+observed values.  While probabilistic programming systems are often implemented as separate,
+domain-specific languages, they can also be embedded into \enquote{host} programming languages with
+sufficient syntactic flexibility.  The latter is advantageous if one wants to use regular
+general-purpose programming constructs or interact with other functionalities of the host language.
+
+
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
