@@ -47,11 +47,11 @@
   sortcites=true,
   sorting=nyt,
   %natbib=true,
-  firstinits=true,
+  giveninits=true,
   %url=false,
   isbn=false,
-  date=iso8601,
-  urldate=iso8601
+  date=ymd,
+  urldate=ymd
 ]{biblatex}
 \DeclareNameAlias{default}{last-first}
 
@@ -79,7 +79,7 @@
 
 \addbibresource{refs.bib}
 
-\usepackage{breakurl}
+% \usepackage{breakurl}
 %\hypersetup{breaklinks=false}
 
 %-------------------------------------------------------------------------------
@@ -149,10 +149,10 @@
 % MATH STUFF
 \newcommand{\prob}[2][\empty]{{p}_{#1}(#2)}
 \newcommand{\Prob}[1]{\mathbb{P}[#1]}
-\newcommand{\Exp}[2][\empty]{\mathbb{E}_{\! #1}[#2]}
-\newcommand{\Var}[2][\empty]{\mathbb{V}_{\! #1}[#2]}
-\newcommand{\Expd}[2][\empty]{\mathbb{E}_{\! #1}\!\left[#2\right]}
-\newcommand{\Vard}[2][\empty]{\mathbb{V}_{\! #1}\left[#2\right]}
+\newcommand{\Exp}[2][\empty]{\mathbb{E}_{\ifx#1\empty\empty\else{\! #1}\fi}[#2]}
+\newcommand{\Var}[2][\empty]{\mathbb{V}_{\ifx#1\empty\empty\else{\! #1}\fi}[#2]}
+\newcommand{\Expd}[2][\empty]{\mathbb{E}_{\ifx#1\empty\empty\else{\! #1}\fi}\!\left[#2\right]}
+\newcommand{\Vard}[2][\empty]{\mathbb{V}_{\ifx#1\empty\empty\else{\! #1}\fi}\left[#2\right]}
 \newcommand{\entropy}[1]{\mathrm{H}(#1)}
 \newcommand\given[1][]{\:#1\vert\:}
 \newcommand{\kldiv}[2]{\mathrm{D}_{\text{KL}}(#1 \parallel #2)}

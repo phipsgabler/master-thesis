@@ -2,16 +2,16 @@
 \label{cha:background}
 
 This section provides the background for the concepts used later in
-chapters~\ref{cha:impl-dynam-graph} and \ref{cha:graph-track-prob}.  On the one hand, it gives a
-quick overview of Baysian inference and probabilistic programming in general, necessary to
-understand the requirements and usual approaches of probabilitic programming systems.
+chapters~\ref{cha:impl-dynam-graph} and \ref{cha:graph-track-prob}.  Initially, it gives a quick
+overview of Baysian inference and probabilistic programming in general, necessary to understand the
+requirements and usual approaches of probabilitic programming systems.
 
-On the other hand, the machinery and language used to develop the graph tracking system forming the
-main part of the work are described.  This consists firstly of a short introduction to graph
-tracking and source-to-source automatic differentiation, which contain many ideas and terminology
-that will be used later, and often provided inspiration.  Second, the basic notions and techniques
-of the Julia compilation process, as well as the language's metaprogramming capabilities are
-described, which form the basis of the implementation.
+Consequently, the machinery and language used to develop the graph tracking system forming the main
+part of the work are described.  This consists firstly of a short introduction to graph tracking and
+source-to-source automatic differentiation, which contain many ideas and terminology that will be
+used later, and often provided inspiration.  Secondly, the basic notions and techniques of the Julia
+compilation process as well as the language's metaprogramming capabilities are described, which form
+the basis of the implementation.
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -20,25 +20,86 @@ described, which form the basis of the implementation.
 
 Probabilistic modelling is a technique for modelling phenomena based on the assumption that
 observables can be fully described through some stochastic process.  When we assume this process to
-belong to a certain family of processes, the estimation of the \enquote{best} process is a form of
+belong to a specified family of processes, the estimation of the \enquote{best} process is a form of
 learning: if we have a good description of how obserations are generated, we can make summary
-statements about the whole population (descriptive statistics) or make predictions about new
-observations.  When observations come in pairs
+statements about the whole population (descriptive statistics) or predictions about new
+observations.  When observations come in pairs of independent and dependent variables, learning the
+conditional model of one given the other solves a regression or classification problem.
 
-Within a Baysian statistical framework, we assume that the family of processes that is used
+Within a Baysian statistical framework, we assume that the family of processes used is specified by
+a joint distribution of random variables related through conditional distributions with densities,
+which describe how the observables would be generated: some \emph{latent variables} are generated
+from \emph{prior distributions}, and the observed \emph{data} are generated conditionally on the
+latent variables.  The goal is to learn the \emph{posterior distribution} of the parameters given
+the observations, which is the inverse of how the problem is specified.
 
+As an example, consider image classification: if we assume that certain percentages of an image data
+set picture cats and dogs, recpectively, the distribution of these labels forms the prior.  Given
+the information which animal is depicted on it, an image can then be generated as a matrix of pixels
+based on a distribution of images conditioned on labels.  The posterior distribution is then the
+``inverse'' distribution of the label given an image.  When we have this information, we can, for
+example, build a Baysian classifier, by returning for a newly observed image that label which has
+the higher probability under the posterior.
 
-bla\footnote{Note the abuse of notation with \(\prob{}\) and the integral; see~\ref{cha:notation}.}
+This kind of learning is called Bayesian inference since, in the form of densities, the form of the
+model can be expressed using Bayes' theorem:
 \begin{equation}
-  \prob{\theta \given x} = \frac{\prob{x \given \theta}\; \prob{\Theta}}{\int \prob{x \given
-    t} \dif t}
+  \label{eq:bayes}
+  \prob{\theta \given x} = \frac{\prob{x \given \theta}\; \prob{\theta}}{\prob{x}},
 \end{equation}
+where \(x\) is the vector of observed data, and \(\theta\) are the parameters.\footnote{Note the
+  abuse of notation with \(\prob{}\) and the integral; see page~\pageref{cha:notation} on notation.}
+(In practice, not all of the latent variables have to parameters we are actually interested in;
+these can be integrated out).
 
-This kind of learning is called Bayesian inference.
+Going beyond simple applications like the classifier mentioned above, using the posterior gets
+difficult, though.  Simply evaluating the posterior density
+\(\theta \mapsto \prob{\theta \given x}\) at single points is not enough for usages such as
+parameter estimation with continuous parameters, or even simple probability evaluation; and even for
+discrete variables, combinatorial explosion limits the usability of the simple summation approach to
+calculate probabilities.  The reason is that almost all of the relevant quantities depend on some
+sort of expectation over the posterior density, which is an integral:
+\begin{equation}
+  \label{eq:posterior-expectation}
+  \Exp{f(\Theta) \given X = x} = \int f(\theta) \prob{\theta \given x} \dif \theta,
+\end{equation}
+with the base measure depending on the type of \(\Theta\).  When the distributions involved form a
+sufficiently \enquote{nice} combination, e.g., when they form a conjugate pair \todo{ref}, the
+integrals can be calculated analytically since the posterior density has a closed form for a certain
+known distribution, or at least is a known integral.  In general, however, this is not possible, and
+approximation have to be made, for which different approaches are available: for example,
+expectation maximization for models with latent variables\todo{ref} or message passing and
+variational methods for general graphical models\todo{ref}.
 
-When the distributions involved form a sufficiently \enquote{nice} combination, e.g., when they form
-a conjugate pair, the posterior distribution can be calculated analytically.  In general, however,
-this
+The applications described in this thesis fall into another framework for approximating posterior
+information: Monte Carlo methods, which derive from a specified density a procedure that provides a
+sample of random variables for which a law of large numbers (LLN) holds:
+\begin{equation}
+  \label{eq:lln}
+  \frac{1}{n} \sum_{i=1}^{n} f(\Theta_{i}) \to \Exp{f(\Theta) \given X = x}, \quad \text{as} \quad n
+  \to \infty
+\end{equation}
+in some appropriate stochastic convergence (usually convergence in probability is enough).  When
+\(\Theta_{i} \sim \prob{\cdot \given x}\) can be sampled exactly, and the \(\Theta_{i}\) are thus
+\iid, the LLN holds trivially; such samplers exist, but might also be difficult to derive or not
+possess good enough convergence properties.  Another large class of samplers is formed by
+\emph{Markov Chain Monte Carlo} (MCMC) methods, which, instead of sampling exactly from the density,
+provide a Markov chain whose stationary distribution is the target density.  The advantage of MCMC
+methods is that they mostly treat the density as a black box, without requiring any more formal
+manipulations on it.
+
+The general scheme of MCMC methods consists of the definition of a transition kernel by means of two
+helper fuctions: a proposal distribution with density \(q\), and an acceptance rate \(\alpha\), both
+depending on the old value in the chain:
+\begin{enumerate}
+\item Start from an arbitrary \(\Theta_{1} = \theta_{1}\).
+\item For each \(i \ge 1\):
+  \begin{enumerate}
+  \item Propose \(\hat{\Theta}_{i} \sim q(\cdot \given \Theta_{i-1})\).
+  \item With probability \(\alpha(\hat{\Theta}_{i}, \Theta_{i-1})\), set \(\Theta_{i} =
+    \hat{\Theta}_{i}\); else, keep \(\Theta_{i} = \Theta_{i-1}\).
+  \end{enumerate}
+\end{enumerate}
 
 
 \subsection{Probabilistic Programming}
