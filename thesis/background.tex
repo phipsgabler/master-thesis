@@ -79,7 +79,7 @@ closed form for a certain known distribution, or at least is a known integral.  
 this is not intractable, not even numerically, and approximations have to be made.  Even for
 discrete variables, combinatorial explosion limits the applicability of simple summation.
 
-\newthought{Different techniques} for posterior approximation are available: among them are
+\newthought{Different techni{q}ues} for posterior approximation are available: among them are
 distribution-based methods like message passing and variational inference for general graphical
 models\todo{ref}.  The methods described in this thesis, however, apply Monte Carlo methods, a
 sampling-based approach. Their basic idea is to derive, from a specified density, a sampling
@@ -109,7 +109,7 @@ any more formal manipulations on its structure.\todo{overthink advantages}
 Frequently, MCMC methods use variations of the Metropolis-Hastings algorithm (MH), which requires the
 definition of a Markov transition kernel by means of two helper fuctions: a proposal distribution
 with density \(q\), and an acceptance rate \(\alpha\), both depending on the old value in the
-chain:\todo{make an algorithm}
+chain:\todo{format as algorithm}
 \begin{enumerate}
 \item Start from an arbitrary \(\kth[1]{\Theta}\).
 \item For each \(k \ge 1\):
@@ -136,7 +136,7 @@ others fixed:
   \end{aligned}
 \end{equation}
 Components can be scalars or multivariate blocks, and the kernel may itself be any valid transition
-kernel.  This allows to freely mix different MCMC methods.
+kernel.  This allows one to freely mix different MCMC methods.
 
 This \enquote{within-Gibbs} sampler bears its name because it is a generalization of the classical
 Gibbs sampling algorithm: the conditional densities
