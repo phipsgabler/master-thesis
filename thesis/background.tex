@@ -4,7 +4,7 @@
 This section provides the background for the concepts used later in
 chapters~\ref{cha:impl-dynam-graph} and \ref{cha:graph-track-prob}.  Initially, it gives a quick
 overview of Baysian inference and probabilistic programming in general, necessary to understand the
-requirements and usual approaches of probabilitic programming systems.
+requirements and usual approaches of probabilistic programming systems.
 
 Consequently, the machinery and language used to develop the graph tracking system forming the main
 part of the work are described.  This consists firstly of a short introduction to graph tracking and
@@ -15,10 +15,10 @@ the basis of the implementation.
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\section{Bayesian Inference and Probabilistic Programming}
-\label{sec:bayes-infer-prob}
+\section{Bayesian Inference and MCMC methods}
+\label{sec:bayes-infer}
 
-Probabilistic modelling is a technique for modelling phenomena based on the assumption that
+Generative modelling is a technique for modelling phenomena based on the assumption that
 observables can be fully described through some stochastic process.  When we assume this process to
 belong to a specified family of processes, the estimation of the \enquote{best} process is a form of
 learning: if we have a good description of how obserations are generated, we can make summary
@@ -28,106 +28,126 @@ conditional model of one given the other solves a regression or classification p
 
 Within a Baysian statistical framework, we assume that the family of processes used is specified by
 random variables related through conditional distributions with densities, which describe how the
-observables would be generated: some \emph{latent variables} are generated from \emph{prior
-  distributions}, and the observed \emph{data} are generated conditionally on the latent variables.
-The goal is to learn the \emph{posterior distribution} of the parameters given the observations,
-which is the inverse of how the problem is specified.
+observables would be generated: some \emph{unobserved variables} are generated from \emph{prior
+  distributions}, and the \emph{observed data} are generated conditionally on the unobserved
+variables.  The goal is to learn the \emph{posterior distribution} of the parameters given the
+observations, which is a sort of \enquote{inverse} of how the problem is specified.
 
 As an example, consider image classification: if we assume that certain percentages of an image data
 set picture cats and dogs, respectively, the distribution of these labels forms the prior.  Given
 the information which kind of animal is depicted on it, an image can then be generated as a matrix
 of pixels based on a distribution of images conditioned on labels.  The posterior distribution is
-then the ``inverse'' distribution of the label given an image.  When we have this information, we
+then conditional distribution of the label given an image.  When we have this information, we
 can, for example, build a Baysian classifier, by returning for a newly observed image that label
 which has the higher probability under the posterior.
 
 This kind of learning is called Bayesian inference since, in the form of densities, the form of the
-model can be expressed using Bayes' theorem:
+model can be expressed using Bayes' theorem as the conditional distribution\footnote{Note the abuse
+  of notation regarding \(\prob{\cdot}\); see page~\pageref{cha:notation} on notation.}
 \begin{equation}
   \label{eq:bayes}
-  \prob{\theta \given x} = \frac{\prob{x \given \theta}\; \prob{\theta}}{\prob{x}},
+  \overbrace{\prob{\theta \given x}}^{\text{posterior}} =
+  \frac{\overbrace{\prob{x \given \theta}}^{\text{likelihood}}\;
+    \overbrace{\prob{\theta}}^{\text{prior}}}{\prob{x}},
 \end{equation}
-where \(x\) are the observed data, and \(\theta\) are the parameters.\footnote{Note the abuse of
-  notation regarding the name of \(\prob{\cdot}\); see page~\pageref{cha:notation} on notation.}  (In
-practice, not all of the latent variables have to parameters we are actually interested in; these
-can be integrated out).
+where \(x\) are the observed data, and \(\theta\) are the unobserved parameters. The posterior
+represents the distribution of the unobserved variables as a combination of the prior belief updated
+by what has been observed~\cite{congdon2006bayesian}.  (In practice, not all of the unobserved
+variables have to be model parameters we are actually interested in; these can be integrated out).
 
 Going beyond simple applications like the classifier mentioned above, handling the posterior gets
 difficult, though.  Simply evaluating the posterior density
 \(\theta \mapsto \prob{\theta \given x}\) at single points is not enough for usages such as
-parameter estimation with continuous parameters, or even simple probability evaluation; and even for
-discrete variables, combinatorial explosion limits the usability of the simple summation approach to
-calculate probabilities.  The reason is that almost all of the relevant quantities depend on some
-sort of expectation over the posterior density, which is an integral:
+prediction, parameter estimation, or evaluation of probabilities of continuous variables.  The
+problem is that almost all of the relevant quantities depend on some sort of expectation over the
+posterior density, an integral of the form
 \begin{equation}
   \label{eq:posterior-expectation}
-  \Exp{f(\Theta) \given X = x} = \int f(\theta) \prob{\theta \given x} \dif \theta,
+  \Exp{f(\Theta) \given X = x} = \int f(\theta) \prob{\theta \given x} \dif \mu(\theta),
 \end{equation}
-with the base measure depending on the type of \(\Theta\), or equivalently the fact that it is hard
-to find the normalizing marginal
+(with the base measure \(\mu\) depending on the type of \(\Theta\)). This in turn involves
+calculating the normalizing marginal
 \begin{equation}
   \label{eq:normalizing}
-  \prob{x} = \int \prob{x, \tilde{\theta}} \dif \tilde{\theta}.
+  \prob{x} = \int \prob{x, \tilde{\theta}} \dif \mu(\tilde{\theta}).
 \end{equation}
-When the distributions involved form a sufficiently \enquote{nice} combination, e.g., a conjugate
-pair \todo{ref}, the integrals can be calculated analytically since the posterior density has a
-closed form for a certain known distribution, or at least is a known integral.  In general, however,
-this is not possible, and approximations have to be made, for which different approaches are
-available: for example, expectation maximization for models with latent variables\todo{ref} or
-message passing and variational methods for general graphical models\todo{ref}.
+in equation~\ref{eq:bayes} (also called the \enquote{evidence}).
 
-The applications described in this thesis fall into another framework for approximating posterior
-information: Monte Carlo methods, which derive from a specified density a consistent estimator for
-the expected value:
+When the distributions involved form a sufficiently \enquote{nice} combination, e.g., a conjugate
+pair \todo{ref}, the integration can be performed analytically, since the posterior density has a
+closed form for a certain known distribution, or at least is a known integral.  In general, however,
+this is not intractable, not even numerically, and approximations have to be made.  Even for
+discrete variables, combinatorial explosion limits the applicability of simple summation.
+
+\newthought{Different techniques} for posterior approximation are available: among them are
+distribution-based methods like message passing and variational inference for general graphical
+models\todo{ref}.  The methods described in this thesis, however, apply Monte Carlo methods, a
+sampling-based approach. Their basic idea is to derive, from a specified density, a sampling
+procedure with a consistent estimator for expectations:
 \begin{equation}
   \label{eq:mc-methods}
-  \kth[n]{I}(f) \to \Exp{f(\Theta) \given X = x}, \quad \text{as} \quad n
+  \kth{I}(f) \to \Exp{f(\Theta) \given X = x}, \quad \text{as} \quad k
   \to \infty
 \end{equation}
-in some appropriate stochastic convergence (usually convergence in probability is enough).  Most of
-these methods are defined in a form that samples individual random variables, for which a law of
-large numbers (LLN) holds:
+in some appropriate stochastic convergence (usually convergence in probability is enough)
+\cite{vihola2020lectures}.  Most of these methods are defined in a form that samples a sequence of
+individual random variables \(\kth{\Theta}\), called a \emph{chain}, for which a law of large
+numbers (LLN) holds:
 \begin{equation}
   \label{eq:mc-lln}
-  \kth[n]{I}(f) = \frac{1}{n} \sum_{i=1}^{n} f(\kth[i]{\Theta}) \to \Exp{f(\Theta) \given X = x}
+  \kth{I}(f) = \frac{1}{n} \sum_{i=1}^{n} f(\kth{\Theta}) \to \Exp{f(\Theta) \given X = x}
 \end{equation}
-When we can sample \(\Theta_{i} \sim \prob{\cdot \given x}\) exactly, the \(\Theta_{i}\) are \iid{}
-and the LLN holds trivially; such samplers exist, but might also be difficult to derive or not
-possess good enough convergence properties.  Another large class of samplers is formed by
-\emph{Markov Chain Monte Carlo} (MCMC) methods, which, instead of sampling exactly from the density,
-define \(\kth[i]{\Theta}\) via a Markov chain whose stationary distribution is the target density.
-By choosing the transition the right way, the resolving Markov chain is ergodic with the target
-density as the unique stationary distribution (this is the inverse to the problem of finding a
-stationary distribution).  The advantage of MCMC methods is that they mostly treat the density as a
-black box, without requiring any more formal manipulations on its structure.
+When we can sample \(\kth{\Theta} \sim \prob{\cdot \given x}\) exactly, they are \iid{} and the
+LLN holds trivially; such samplers exist, but might also be difficult to derive or not possess good
+enough convergence properties.  Another large class of samplers is formed by \emph{Markov Chain
+  Monte Carlo} (MCMC) methods, which, instead of sampling exactly from the density, define
+\(\kth{\Theta}\) via a Markov chain: by choosing the transition the right way, the resolving
+Markov chain is ergodic with the target density as the unique stationary distribution.  The
+advantage of MCMC methods is that they mostly treat the density as a black box, without requiring
+any more formal manipulations on its structure.\todo{overthink advantages}
 
-A frequent scheme for MCMC methods is the Metropolis-Hastings algorithm, consisting of the
-definition of a transition kernel by means of two helper fuctions: a proposal distribution with
-density \(q\), and an acceptance rate \(\alpha\), both depending on the old value in the
+Frequently, MCMC methods use variations of the Metropolis-Hastings algorithm (MH), which requires the
+definition of a Markov transition kernel by means of two helper fuctions: a proposal distribution
+with density \(q\), and an acceptance rate \(\alpha\), both depending on the old value in the
 chain:\todo{make an algorithm}
 \begin{enumerate}
 \item Start from an arbitrary \(\kth[1]{\Theta}\).
-\item For each \(i \ge 1\):
+\item For each \(k \ge 1\):
   \begin{enumerate}
-  \item Propose \(\kth[i]{\hat{\Theta}} \sim q(\cdot \given \kth[i-1]{\Theta})\).
-  \item With probability \(\alpha(\kth[i]{\hat{\Theta}}, \kth[i-1]{\Theta})\), set
-    \(\kth[i]{\Theta} = \kth[i]{\hat{\Theta}}\); else, keep \(\kth[i]{\Theta} = \kth[i-1]{\Theta}\).
+  \item Propose \(\kth[k]{\hat{\Theta}} \sim q(\kth[k-1]{\Theta}, \cdot)\).
+  \item With probability \(\alpha(\kth[k]{\hat{\Theta}}, \kth[k-1]{\Theta})\), set
+    \(\kth[k]{\Theta} = \kth[k]{\hat{\Theta}}\); else, keep \(\kth[k]{\Theta} = \kth[k-1]{\Theta}\).
   \end{enumerate}
 \end{enumerate}
 
-There exist many such schemes with different properties and requirements: the classical Metropolis
-algorithm with Gaussian proposals; Reversible Jump MCMC; gradient-informed methods like Metropolis
-Adjusted Langevin or Hamiltonian Monte Carlo (HMC); and Gibbs sampling.
+There exist many MH-based schemes with different properties and requirements: the classical
+random-walk Metropolis algorithm with Gaussian proposals, Reversible Jump MCMC, or gradient-informed
+methods like Metropolis Adjusted Langevin and Hamiltonian Monte Carlo (HMC).\todo{cite all that}
 
-% when we assume that \(\Theta = [\Theta_1, \ldots, \Theta_N]\),
+When we have a multi-component structure \(\Theta = [\Theta_1, \ldots, \Theta_N]\), a full
+transition kernel can be hard to find, and we can instead use a family of componentwise updates,
+given by conditional kernels \(q_{i}\) operating on only one component of \(\Theta\), with the
+others fixed:
+\begin{equation}
+  \label{eq:conditional-kernels}
+  \begin{aligned}
+    \kth[k]{\hat{\Theta}}_{-i} &= \kth[k-1]{\Theta}_{-i} \\
+    \kth[k]{\hat{\Theta}}_{i} &\sim q_{i}(\kth[k-1]{\Theta}_{i}, \cdot \given \kth[k-1]{\Theta}_{-i})
+  \end{aligned}
+\end{equation}
+Components can be scalars or multivariate blocks, and the kernel may itself be any valid transition
+kernel.  This allows to freely mix different MCMC methods.
 
-The within-Gibbs sampler is a generalization of the classical Gibbs sampling algorithm: the
-conditional densities \(\theta_{i} \mapsto p(\theta_{i} \given \theta_{-i}, x)\) can directly be
-used as proposals for a within-Gibbs sampler, leading to an acceptance probability of
+This \enquote{within-Gibbs} sampler bears its name because it is a generalization of the classical
+Gibbs sampling algorithm: the conditional densities
+\(\Theta_{i} \mapsto p(\Theta_{i} \given \Theta_{-i}, x)\) can directly be used as component
+proposals for a within-Gibbs sampler, leading to a cancelling acceptance rate of
 \(\alpha \equiv 1\).  This sampler has the advantage that it is in many cases rather easy to derive,
-even manually, from a given model specification.
+even manually, from a given factorization of the joint density.
 
-\subsection{Probabilistic Programming}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Probabilistic Programming}
 \label{sec:prob-prog}
 
 Probabilistic programming is a means of describing probabilistic models through the syntax of a
