@@ -1,14 +1,57 @@
 \chapter{Introduction}
 \label{cha:introduction}
 
-The idea of this work has already been described in \cite{gabler2019graph}.
+Many methods in the field of machine learning work on computation graphs of programs that represent
+mathematical expressions.  One example are forms automatic differentiation (AD), which derive an
+\enquote{adjoint} expression from a expression that usually represents a loss function, to calculate
+its gradient.  Another one are message passing algorithms, which use the graph as the basic data
+structure for the operation they perform: passing values between nodes, representing random
+variables that depend on each other (in fact, message passing generalizes various other methods,
+including AD).  But also in more or less unrelated fields, such as program analysis or program
+transformation (cf. Numba\todo{reference}), the same requirements might occur as through the need to
+derive abstract graphs of program flow from a given program.\todo{abstract interpretation}
 
+There are several options how to provide an implementation with the computation graph in question.
+It can be required to be written out explicitely by the user, by providing a custom input
+format\todo{example} or a library to build graph \enquote{by hand} through an API\todo{operator
+  overloading: Torch, TF, ...}.  Alternatively, an implementation can allow the user to write out
+computations as a \enquote{normal} program in an existing programming language (or possibly a
+restricted subsete of it), and use metaprogramming techniques to extract graphs from the input
+program.  Such metaprograms can in turn operate on plain source code (cf. Tapenade
+\cite{tapenadedevelopers2019tapenade}), or on another, more abstracted notion used by the
+programming language infrastructure, like the abstract syntax tree (AST), or an intermediate
+representation (IR).
+
+A preliminary presentation of this work has already been given in the abstract
+\cite{gabler2019graph}.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Problem Description}
 \label{sec:problem-description}
 
+The latter variant has recently gained popularity, especially in the AD community\todo{XLA, Zygote}.
+There, the two forms implementation are known as \emph{operator overloading} and \emph{source
+  transformation}.  Operator overloading works by extending existing operations to
+additionally track the executed expressions at runtime on so-called tapes or Wengert lists
+\cite{bartholomew-biggs2000automatic}. It is dynamic, in the sense that a new tape is recorded for every
+execution.  However, being implemented on a library level, it usually requires the programmer to use
+non-native constructs instead of language primitives, leading to cognitive overhead. Further, there
+are additional runtime costs due to the separate interpretation of derivatives stored on the
+tape. Source transformation, on the other hand, operates on the syntactic structure of the whole
+program, during or before compilation. Unlike in operator overloading, it is possible to inspect and
+exploit control structures directly. This can lead to more efficient results, compared to operator
+overloading, since the transformation is done only once per program and eligible for compiler
+optimisations. But in this approach, no records of the actual execution paths are constructed
+explicitly~-- only static information is used at compile time, and cannot be accessed for further
+analysis or transformation. See \cite{baydin2018automatic} for a survey on AD methods.
 
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Related Work}
 \label{sec:related-work}
+
+% swift4tf, xla/jags, ad stuffs + zygote, concolic execution & abstract interpretation
 
 
 %%% Local Variables: 
