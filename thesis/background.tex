@@ -1,7 +1,7 @@
 \chapter{Background}
 \label{cha:background}
 
-This section provides the background for the concepts used later in
+This chapter provides the background for the concepts used later in
 chapters~\ref{cha:impl-dynam-graph} and \ref{cha:graph-track-prob}.  Initially, it gives a quick
 overview of Baysian inference and probabilistic programming in general, necessary to understand the
 requirements and usual approaches of probabilistic programming systems.
@@ -109,16 +109,19 @@ any more formal manipulations on its structure.\todo{overthink advantages}
 Frequently, MCMC methods use variations of the Metropolis-Hastings algorithm (MH), which requires the
 definition of a Markov transition kernel by means of two helper fuctions: a proposal distribution
 with density \(q\), and an acceptance rate \(\alpha\), both depending on the old value in the
-chain:\todo{format as algorithm}
-\begin{enumerate}
-\item Start from an arbitrary \(\kth[1]{\Theta}\).
-\item For each \(k \ge 1\):
-  \begin{enumerate}
-  \item Propose \(\kth[k]{\hat{\Theta}} \sim q(\kth[k-1]{\Theta}, \cdot)\).
-  \item With probability \(\alpha(\kth[k]{\hat{\Theta}}, \kth[k-1]{\Theta})\), set
-    \(\kth[k]{\Theta} = \kth[k]{\hat{\Theta}}\); else, keep \(\kth[k]{\Theta} = \kth[k-1]{\Theta}\).
-  \end{enumerate}
-\end{enumerate}
+chain; see algorithm~\ref{alg:mh}.
+\begin{algorithm}
+  \begin{myalgorithmic}
+  \item Start from an arbitrary \(\kth[1]{\Theta}\).
+  \item For each \(k \ge 1\):
+    \begin{enumerate}
+    \item Propose \(\kth[k]{\hat{\Theta}} \sim q(\kth[k-1]{\Theta}, \cdot)\).
+    \item With probability \(\alpha(\kth[k]{\hat{\Theta}}, \kth[k-1]{\Theta})\), set
+      \(\kth[k]{\Theta} = \kth[k]{\hat{\Theta}}\); else, keep \(\kth[k]{\Theta} = \kth[k-1]{\Theta}\).
+    \end{enumerate}
+  \end{myalgorithmic}
+  \caption{General scheme for the Metropolis-Hastings algorithm.\label{alg:mh}}
+\end{algorithm}
 
 There exist many MH-based schemes with different properties and requirements: the classical
 random-walk Metropolis algorithm with Gaussian proposals, Reversible Jump MCMC, or gradient-informed

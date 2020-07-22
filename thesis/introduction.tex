@@ -1,6 +1,14 @@
 \chapter{Introduction}
 \label{cha:introduction}
 
+This chapter gives an overview over the scope of the thesis and existing approaches in the
+literature.  A preliminary version of this work has already been presented in
+\cite{gabler2019graph}.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Problem Description}
+\label{sec:problem-description}
+
 Many methods in the field of machine learning work on computation graphs of programs that represent
 mathematical expressions.  One example are forms automatic differentiation (AD), which derive an
 \enquote{adjoint} expression from a expression that usually represents a loss function, to calculate
@@ -21,13 +29,6 @@ program.  Such metaprograms can in turn operate on plain source code (cf. Tapena
 \cite{tapenadedevelopers2019tapenade}), or on another, more abstracted notion used by the
 programming language infrastructure, like the abstract syntax tree (AST), or an intermediate
 representation (IR).
-
-A preliminary presentation of this work has already been given in the abstract
-\cite{gabler2019graph}.
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\section{Problem Description}
-\label{sec:problem-description}
 
 The latter variant has recently gained popularity, especially in the AD community\todo{XLA, Zygote}.
 There, the two forms implementation are known as \emph{operator overloading} and \emph{source

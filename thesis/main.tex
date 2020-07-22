@@ -132,6 +132,20 @@
 % \usepackage{tikz}
 % \usepackage{rotating}
 
+% ALGORITHM FLOATS
+\newcommand{\algorithmname}{Algorithm}
+\newcommand{\listalgorithmname}{List of Algorithms}
+\newlistof{listofalgorithms}{loa}{\listalgorithmname}
+\newfloat{algorithm}{loa}{\algorithmname}
+\newfixedcaption{\falgcaption}{algorithm}
+\newlistentry{algorithm}{loa}{0}
+
+\usepackage{float}
+\floatstyle{ruled}
+\restylefloat{algorithm}
+
+\newenvironment{myalgorithmic}{\begin{enumerate}\sffamily}{\end{enumerate}}
+
 %-------------------------------------------------------------------------------
 % DOCUMENT MACROS
 %
@@ -266,8 +280,14 @@
 
 % -------------------------------------------------------------------------------
 % APPENDIX
-% \cleartorecto
-% \backmatter
+\cleartorecto
+\backmatter
+
+\begingroup
+\hypersetup{linkcolor=black, hyperindex=true}
+\listofalgorithms
+\endgroup
+
 % \appendix
 % \appendixpage*
 
