@@ -57,16 +57,16 @@ variables have to be model parameters we are actually interested in; these can b
 
 Going beyond simple applications like the classifier mentioned above, handling the posterior gets
 difficult, though.  Simply evaluating the posterior density
-\(\theta \mapsto \prob{\theta \given x}\) at single points is not enough for usages such as
-prediction, parameter estimation, or evaluation of probabilities of continuous variables.  The
-problem is that almost all of the relevant quantities depend on some sort of expectation over the
-posterior density, an integral of the form
+\(\theta \mapsto \prob{\theta \given x}\) at single points is not enough in a Baysian setting for
+usages such as prediction, parameter estimation, or evaluation of probabilities of continuous
+variables.  The problem is that almost all of the relevant quantities depend on some sort of
+expectation over the posterior density, an integral of the form
 \begin{equation}
   \label{eq:posterior-expectation}
   \Exp{f(\Theta) \given X = x} = \int f(\theta) \prob{\theta \given x} \dif \mu(\theta),
 \end{equation}
-(with the base measure \(\mu\) depending on the type of \(\Theta\)). This in turn involves
-calculating the normalizing marginal
+for a suitable \(f\) (with the base measure \(\mu\) depending on the type of \(\Theta\)). This in
+turn involves calculating the normalizing marginal
 \begin{equation}
   \label{eq:normalizing}
   \prob{x} = \int \prob{x, \tilde{\theta}} \dif \mu(\tilde{\theta}).
@@ -76,14 +76,14 @@ in equation~\ref{eq:bayes} (also called the \enquote{evidence}).
 When the distributions involved form a sufficiently \enquote{nice} combination, e.g., a conjugate
 pair \todo{ref}, the integration can be performed analytically, since the posterior density has a
 closed form for a certain known distribution, or at least is a known integral.  In general, however,
-this is not intractable, not even numerically, and approximations have to be made.  Even for
-discrete variables, combinatorial explosion limits the applicability of simple summation.
+this is not tractable, not even numerically, and approximations have to be made.  Even for discrete
+variables, combinatorial explosion limits the applicability of simple summation.
 
 \newthought{Different techni{q}ues} for posterior approximation are available: among them are
 distribution-based methods like message passing and variational inference for general graphical
-models\todo{ref}.  The methods described in this thesis, however, apply Monte Carlo methods, a
-sampling-based approach. Their basic idea is to derive, from a specified density, a sampling
-procedure with a consistent estimator for expectations:
+models\todo{ref}.  The methods described in this thesis, however, fall into the category of Monte
+Carlo methods, based on sampling. Their fundamentsl idea is to derive, from a specified density, a
+sampling procedure with a consistent estimator for expectations:
 \begin{equation}
   \label{eq:mc-methods}
   \kth{I}(f) \to \Exp{f(\Theta) \given X = x}, \quad \text{as} \quad k
@@ -97,19 +97,16 @@ numbers (LLN) holds:
   \label{eq:mc-lln}
   \kth{I}(f) = \frac{1}{n} \sum_{i=1}^{n} f(\kth{\Theta}) \to \Exp{f(\Theta) \given X = x}
 \end{equation}
-When we can sample \(\kth{\Theta} \sim \prob{\cdot \given x}\) exactly, they are \iid{} and the
-LLN holds trivially; such samplers exist, but might also be difficult to derive or not possess good
-enough convergence properties.  Another large class of samplers is formed by \emph{Markov Chain
-  Monte Carlo} (MCMC) methods, which, instead of sampling exactly from the density, define
-\(\kth{\Theta}\) via a Markov chain: by choosing the transition the right way, the resolving
-Markov chain is ergodic with the target density as the unique stationary distribution.  The
-advantage of MCMC methods is that they mostly treat the density as a black box, without requiring
-any more formal manipulations on its structure.\todo{overthink advantages}
+When we can sample \(\kth{\Theta} \sim \prob{\cdot \given x}\) exactly, they are \iid{} and the LLN
+holds trivially; such samplers exist, but might also be difficult to derive or not possess good
+enough convergence properties (especially in high dimensions).  Another large class of samplers is
+formed by \emph{Markov Chain Monte Carlo} (MCMC) methods, which, instead of sampling exactly from
+the density, define \(\kth{\Theta}\) via a Markov chain: by choosing the transition the right way,
+the resolving Markov chain is ergodic with the target density as the unique stationary distribution.
+The advantage of MCMC methods is that they apply equally well to structurally complex models, and
+mostly treat the density as a black box, without requiring formal manipulations of a specific
+factorization.\todo{overthink advantages}
 
-Frequently, MCMC methods use variations of the Metropolis-Hastings algorithm (MH), which requires the
-definition of a Markov transition kernel by means of two helper fuctions: a proposal distribution
-with density \(q\), and an acceptance rate \(\alpha\), both depending on the old value in the
-chain; see algorithm~\ref{alg:mh}.
 \begin{algorithm}
   \begin{myalgorithmic}
   \item Start from an arbitrary \(\kth[1]{\Theta}\).
@@ -122,10 +119,13 @@ chain; see algorithm~\ref{alg:mh}.
   \end{myalgorithmic}
   \caption{General scheme for the Metropolis-Hastings algorithm.\label{alg:mh}}
 \end{algorithm}
-
-There exist many MH-based schemes with different properties and requirements: the classical
-random-walk Metropolis algorithm with Gaussian proposals, Reversible Jump MCMC, or gradient-informed
-methods like Metropolis Adjusted Langevin and Hamiltonian Monte Carlo (HMC).\todo{cite all that}
+Frequently, MCMC methods use variations of the Metropolis-Hastings algorithm (MH), which requires
+the definition of a Markov transition kernel by means of two helper fuctions: a proposal
+distribution with density \(q\), and an acceptance rate \(\alpha\), both depending on the old value
+in the chain; see algorithm~\ref{alg:mh}.\todo{nicer algorithm formatting} There exist many MH-based
+schemes with different properties and requirements: the classical random-walk Metropolis algorithm
+with Gaussian proposals, Reversible Jump MCMC, or gradient-informed methods like Metropolis Adjusted
+Langevin and Hamiltonian Monte Carlo (HMC).\todo{cite all that}
 
 When we have a multi-component structure \(\Theta = [\Theta_1, \ldots, \Theta_N]\), a full
 transition kernel can be hard to find, and we can instead use a family of componentwise updates,
@@ -146,7 +146,9 @@ Gibbs sampling algorithm: the conditional densities
 \(\Theta_{i} \mapsto p(\Theta_{i} \given \Theta_{-i}, x)\) can directly be used as component
 proposals for a within-Gibbs sampler, leading to a cancelling acceptance rate of
 \(\alpha \equiv 1\).  This sampler has the advantage that it is in many cases rather easy to derive,
-even manually, from a given factorization of the joint density.
+even manually, from a given joint density.
+
+For further MCMC theory, see \cite{vihola2020lectures,murphy2012machine}.
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
