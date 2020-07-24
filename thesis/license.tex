@@ -3,6 +3,9 @@
   \label{license}
   \currentpdfbookmark{License}{license}
 
+  % change to symbolic footnotes for this page
+  \setcounter{footnote}{-1}
+
   \abstracttextfont
   \vspace*{\stretch{1}}
   \begin{center}
@@ -50,10 +53,19 @@
 
       The \LaTeX{} source of this document is available at\\
       \url{https://github.com/phipsgabler/master-thesis} \\
-      or upon request from the author.\footnote{\texttt{pgabler@student.tugraz.at}}
+      or upon request from the author\footnote{\texttt{pgabler@student.tugraz.at}}.
     \end{Center}
   \end{adjustwidth}
   
   \vspace{\stretch{1}}
 
+  % restore normal (arabic) footnotes
+  % \renewcommand*{\thefootnote}{\arabic{footnote}}
+  \setcounter{footnote}{0}
+  
 \end{adjustwidth}
+
+
+%%% Local Variables: 
+%%% TeX-master: "main"
+%%% End:
