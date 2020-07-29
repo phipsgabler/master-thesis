@@ -52,7 +52,7 @@ model can be expressed using Bayes' theorem as the conditional distribution\foot
 \end{equation}
 where \(x\) are the observed data, and \(\theta\) are the unobserved parameters. The posterior
 represents the distribution of the unobserved variables as a combination of the prior belief updated
-by what has been observed~\cite{congdon2006bayesian}.  (In practice, not all of the unobserved
+by what has been observed~\parencite{congdon2006bayesian}.  (In practice, not all of the unobserved
 variables have to be model parameters we are actually interested in; these can be integrated out).
 
 Going beyond simple applications like the classifier mentioned above, handling the posterior gets
@@ -82,7 +82,7 @@ variables, combinatorial explosion limits the applicability of simple summation.
 \newthought{Different techni{q}ues} for posterior approximation are available: among them are
 distribution-based methods like message passing and variational inference for general graphical
 models\todo{ref}.  The methods described in this thesis, however, fall into the category of Monte
-Carlo methods, based on sampling. Their fundamentsl idea is to derive, from a specified density, a
+Carlo methods, based on sampling. Their fundamental idea is to derive, from a specified density, a
 sampling procedure with a consistent estimator for expectations:
 \begin{equation}
   \label{eq:mc-methods}
@@ -90,9 +90,9 @@ sampling procedure with a consistent estimator for expectations:
   \to \infty
 \end{equation}
 in some appropriate stochastic convergence (usually convergence in probability is enough)
-\cite{vihola2020lectures}.  Most of these methods are defined in a form that samples a sequence of
-individual random variables \(\kth{\Theta}\), called a \emph{chain}, for which a law of large
-numbers (LLN) holds:
+\parencite[chapter 1]{vihola2020lectures}.  Most of these methods are defined in a form that samples
+a sequence of individual random variables \(\kth{\Theta}\), called a \emph{chain}, for which a law
+of large numbers (LLN) holds:
 \begin{equation}
   \label{eq:mc-lln}
   \kth{I}(f) = \frac{1}{n} \sum_{i=1}^{n} f(\kth{\Theta}) \to \Exp{f(\Theta) \given X = x}
@@ -125,7 +125,9 @@ distribution with density \(q\), and an acceptance rate \(\alpha\), both dependi
 in the chain; see algorithm~\ref{alg:mh}.\todo{nicer algorithm formatting} There exist many MH-based
 schemes with different properties and requirements: the classical random-walk Metropolis algorithm
 with Gaussian proposals, Reversible Jump MCMC, or gradient-informed methods like Metropolis Adjusted
-Langevin and Hamiltonian Monte Carlo (HMC).\todo{cite all that}
+Langevin and Hamiltonian Monte Carlo (HMC).  I refer to \textcite[chapter 6]{vihola2020lectures} and
+\textcite[chapters 24 and following]{murphy2012machine} for an introduction to MCMC theory and
+algorithms.
 
 When we have a multi-component structure \(\Theta = [\Theta_1, \ldots, \Theta_N]\), a full
 transition kernel can be hard to find, and we can instead use a family of componentwise updates,
@@ -147,8 +149,6 @@ Gibbs sampling algorithm: the conditional densities
 proposals for a within-Gibbs sampler, leading to a cancelling acceptance rate of
 \(\alpha \equiv 1\).  This sampler has the advantage that it is in many cases rather easy to derive,
 even manually, from a given joint density.
-
-For further MCMC theory, see \cite{vihola2020lectures,murphy2012machine}.
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

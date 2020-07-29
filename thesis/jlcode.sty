@@ -1081,11 +1081,11 @@ literate=
 % defining the \jlinl command, which can be used for dispalying inline code 
 % defining the font for inline code
 
-\ifjlc@usecolors
-\def\jlinlfont{\loadcolors\color{jlstring}\ttfamily\small\selectfont}
-\else
-\def\jlinlfont{\loadbwcolors\ttfamily\small\selectfont}
-\fi
+% \ifjlc@usecolors
+% \def\jlinlfont{\loadcolors\color{jlstring}\ttfamily\small\selectfont}
+% \else
+\def\jlinlfont{\loadbwcolors\ttfamily\selectfont}
+% \fi
 
 \newlength{\jlinlem}
 \settowidth{\jlinlem}{\jlinlfont{m}}
