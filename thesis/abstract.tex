@@ -10,17 +10,18 @@
 
   The main contribution is a general system for the extraction of rich computation graphs in the
   Julia programming language, based on a transformation of the intermediate representation (IR) used
-  by the compiler.  These graphs contain the whole recursive structure of any Julia program in terms
-  of executed IR instructions.  The system is flexible enough to be used for multiple purposes that
-  require dynamic program analysis or abstract interpretation, such as automatic differentiation or
-  dependency analysis.
+  by the compiler.  These graphs contain a slice of the whole recursive structure of any Julia
+  program in terms of executed IR instructions.  The system is flexible enough to be used for
+  multiple purposes that require dynamic program analysis or abstract interpretation, such as
+  automatic differentiation or dependency analysis.
 
   The second part of the thesis describes the application of this graph tracking system to
   probabilistic programs written for Turing, a probabilistic programming system implemented as an
   embedded language within Julia.  Through this, an executed Turing model can be analyzed, and the
   dependency structure of involved random variables be extracted from it.  Given this structure,
-  analytical Gibbs conditionals can be calculated and passed to Turing's inference mechanism, where
-  they are used in Markov-Chain Monte Carlo samplers approximating the modelled distribution.
+  analytical Gibbs conditionals can be calculated for a large set of models and passed to Turing's
+  inference mechanism, where they are used in Markov-Chain Monte Carlo samplers approximating the
+  modelled distribution.
 \end{abstract}
 
 %%% Local Variables:

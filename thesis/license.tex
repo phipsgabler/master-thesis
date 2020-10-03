@@ -4,8 +4,8 @@
   \currentpdfbookmark{License}{license}
 
   % change to symbolic footnotes for this page
-  \setcounter{footnote}{-1}
-
+  \renewcommand*{\thefootnote}{\fnsymbol{footnote}}
+  
   \abstracttextfont
   \vspace*{\stretch{1}}
   \begin{center}
@@ -47,20 +47,19 @@
   \vspace{2ex}
   
   \begin{adjustwidth}{0.5\absleftindent}{0.5\absrightindent}
-    \begin{Center}
+    \begin{center}
       % A full |sbt| project containing many of the code samples can be found at
       % \url{https://github.com/phipsgabler/dsl-examples}. 
 
       The \LaTeX{} source of this document is available at\\
       \url{https://github.com/phipsgabler/master-thesis} \\
       or upon request from the author\footnote{\texttt{pgabler@student.tugraz.at}}.
-    \end{Center}
+    \end{center}
   \end{adjustwidth}
   
   \vspace{\stretch{1}}
 
-  % restore normal (arabic) footnotes
-  % \renewcommand*{\thefootnote}{\arabic{footnote}}
+  % restore footnote counter to start with 1
   \setcounter{footnote}{0}
   
 \end{adjustwidth}

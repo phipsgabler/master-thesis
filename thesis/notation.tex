@@ -3,41 +3,56 @@
 \addcontentsline{toc}{chapter}{Notation}
 % \currentpdfbookmark{Notation}{notation}
 
-\begin{description}[style=nextline, leftmargin=4cm]
-\item[\(\Prob{\Theta \in A \given X = x}\)] Random variables and their realizations will usually be
-  denoted with upper and lower case letters, respectively
-  (with some exceptions for Greek variable names).  Sets
-  are written with uppercase letters.
-\item[{\(\Exp{X}, \Var[X]{f(X, Y)}\)}] Expectation and variance; if necessary, the variable with
-  respect to which the moment is taken is indicated.
-\item[\(\phi(x), f_{Z}(x)\)] Density functions are named using letters commonly used for functions,
-  with an optional subscript indicating the random variable they belong to.  Densities always come
-  with implied base measures depending on the type of the random variable.
-\item[\(\prob{x, y \given z}\)] The usual abuse of notation with the letter \enquote{p} standing for
-  any density indicated by the names of the variables given to it is used when no confusion arises
-  (in this case, \(f_{X,Y|Z}\) is implied).
-\item[{\(y \mapsto \prob{x \given y, z}\)}] Anonymous functions are distinguised from function
-  evaluation; this is crucial to differentiate between probability densities and likelihoods, for
-  example.
-\item[\(\int \prob{x} \dif x = 1\)] Integrals over the whole domain of a density are written as
-  indefinite integrals, where the usage is clear.
-\item[{\([x, y, z] = \smash[b]{\begin{bsmallmatrix}x\\y\\z\end{bsmallmatrix}}\)}] For consistency
-  with Julia code, vectors (arrays of rank \(1\)) are written in brackets.  Thereby, the form
-  written in a row denotes a column vector; actual row vectors are written as transposed column
-  vectors.
-\item[{\(\kth{\Theta} = [\kth{\Theta}_1, \ldots, \kth{\Theta}_N]\)}] Superscript indices in
-  parentheses are used for series or sequences of variables, and subscript indices for components of
-  multivariate variables.
-\item[{\(z_{-i} = [z_{1}, \ldots, z_{i-1}, z_{i+1}, \ldots, z_{N}]\)}] Negative indices denote all
-  components of a variable without the negated one.
-\item[{\(\broadcast{f}(x, 1) = [f(x_{1}, 1), \ldots, f(x_{N}, 1)]\)}] Functions with a period
-  indicate vectorized application, as in Julia
-  code\footnote{See~\protect\url{https://docs.julialang.org/en/v1/manual/functions/\#man-vectorized-1}}:
-  the function is applied over all elements of the input arrays individually, whereby arrays of
-  lower rank or scalars are \enquote{broadcasted} along dimensions as necessary.
-\item[{\jlinlfont f(x) = rand(x)}] Julia code (including identifiers mention in the text) is always typeset in
-  typewriter font.
-\end{description}
+\begingroup
+  % change to symbolic footnotes for this page
+  \renewcommand*{\thefootnote}{\fnsymbol{footnote}}
+  \begin{description}[style=nextline, leftmargin=4cm]
+  \item[\(\Prob{\Theta \in A \given X = x}\)] Random variables and their realizations will usually be
+    denoted by upper and lower case letters, respectively (with occasional exceptions for Greek
+    variable names).  Sets are also named by uppercase letters.
+  \item[{\(\Exp{X}, \Var[X]{f(X, Y)}\)}] Expectation and variance; if necessary, the variable with
+    respect to which the moment is taken is indicated as a subscript.
+  \item[\(\phi(x), f_{Z}(x)\)] Density functions are named using letters commonly used for functions,
+    with an optional subscript indicating the random variable they belong to.  Densities always come
+    with implied base measures depending on the type of the random variable.
+  \item[\(\prob{x, y \given z}\)] The usual abuse of notation with the letter \enquote{p} standing for
+    any density indicated by the names of the variables given to it is used when no confusion arises
+    (in this case, \(f_{X,Y|Z}\) is implied).  A \(q\) may be used as well, mostly for proposal
+    distributions or unnormalized densities.
+  \item[{\(X_{i} \from \distr{Normal}(\mu, \sigma)\)}] The tilde notation for describing random
+    variables is used throughout, without explicitely specifying dependence or independence, where
+    understood from context.  Named distributions that are not themselves random variables are spelled
+    out in upright script.
+  \item[{\(Y \from q(\cdot, X_{i-1})\)}] The same notation is used when a random variable is specified
+    to be sampled from a given, possibly unnormalized, density.  In this context and elsewhere, the
+    midpoint is employed to denote anonymous functions of one variable given by partial application.
+  \item[{\(y \mapsto \prob{x \given y, z}\)}] Anonymous functions are distinguised from function
+    evaluation; this is crucial to differentiate between probability densities and likelihoods, for
+    example.
+  \item[\(\int \prob{x} \dif x = 1\)] Integrals over the whole domain of a density or measure are
+    written as indefinite integrals, where the usage is clear.
+  \item[{\([x, y, z] = \smash[b]{\begin{bsmallmatrix}x\\y\\z\end{bsmallmatrix}}\)}] For consistency
+    with Julia code, vectors (arrays of rank \(1\)) are written in brackets, with elements separated
+    by commas.  Thereby, the form written in a row denotes a column vector; actual row vectors are
+    written as transposed column vectors.
+  \item[{\(\kth{\Theta} = [\kth{\Theta}_1, \ldots, \kth{\Theta}_N]\)}] Superscript indices in
+    parentheses are used for series or sequences of variables, and subscript indices for components of
+    multivariate variables.
+  \item[{\(z_{-i} = [z_{1}, \ldots, z_{i-1}, z_{i+1}, \ldots, z_{N}]\)}] Negative indices denote all
+    components of a variable without the negated one.
+  \item[{\(\broadcast{f}(x, 1) = [f(x_{1}, 1), \ldots, f(x_{N}, 1)]\)}] Function application with a
+    period indicates vectorized application, as in Julia
+    code\footnote{See~\protect\url{https://docs.julialang.org/en/v1/manual/functions/\#man-vectorized-1}}:
+    the function is applied over all elements of the input arrays individually, whereby arrays of
+    lower rank or scalars are \enquote{broadcasted} along dimensions as necessary.
+  \item[{\jlinlfont f(x) = rand(x)}] Julia code (including identifiers mention in the text) is always typeset in
+    typewriter font.
+  \end{description}
+
+  % restore footnote counter to start with 1
+  \setcounter{footnote}{0}
+  
+\endgroup
 
 %%% Local Variables: 
 %%% TeX-master: "main"

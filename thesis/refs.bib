@@ -72,6 +72,20 @@
   primaryClass = {cs, stat}
 }
 
+@article{bernstein2020differentiating,
+  title = {Differentiating a {{Tensor Language}}},
+  author = {Bernstein, Gilbert and Mara, Michael and Li, Tzu-Mao and Maclaurin, Dougal and Ragan-Kelley, Jonathan},
+  date = {2020-08-25},
+  url = {http://arxiv.org/abs/2008.11256},
+  urldate = {2020-09-14},
+  abstract = {How does one compile derivatives of tensor programs, such that the resulting code is purely functional (hence easier to optimize and parallelize) and provably efficient relative to the original program? We show that naively differentiating tensor code---as done in popular systems like Tensorflow and PyTorch---can cause asymptotic slowdowns in pathological cases, violating the Cheap Gradients Principle. However, all existing automatic differentiation methods that guarantee this principle (for variable size data) do so by relying on += mutation through aliases/pointers---which complicates downstream optimization. We provide the first purely functional, provably efficient, adjoint/reverse-mode derivatives of array/tensor code by explicitly accounting for sparsity. We do this by focusing on the indicator function from Iverson's APL. We also introduce a new "Tensor SSA" normal form and a new derivation of reverse-mode automatic differentiation based on the universal property of inner-products.},
+  archivePrefix = {arXiv},
+  eprint = {2008.11256},
+  eprinttype = {arxiv},
+  file = {/home/philipp/Zotero/storage/29FNMBQS/Bernstein et al_2020_Differentiating a Tensor Language.pdf;/home/philipp/Zotero/storage/U523BZ74/2008.html},
+  primaryClass = {cs}
+}
+
 @article{bezanson2017julia,
   title = {Julia: {{A Fresh Approach}} to {{Numerical Computing}}},
   shorttitle = {Julia},
@@ -186,10 +200,23 @@
   edition = {2nd ed},
   publisher = {{John Wiley \& Sons}},
   location = {{Chichester, England ; Hoboken, NJ}},
+  annotation = {OCLC: ocm70673258},
   file = {/home/philipp/Zotero/storage/ZZQKXVD6/Congdon_2006_Bayesian statistical modelling.pdf},
   isbn = {978-0-470-01875-0},
   pagetotal = {573},
   series = {Wiley Series in Probability and Statistics}
+}
+
+@thesis{cusumano-towner2020gen,
+  title = {Gen: {{A High}}-{{Level Programming Platform}} for {{Probabilistic Inference}}},
+  author = {Cusumano-Towner, Marco Francis},
+  date = {2020},
+  institution = {{Massachusetts Institute of Technology}},
+  location = {{Massachusetts}},
+  abstract = {Probabilistic inference provides a powerful theoretical framework for engineering intelligent systems. However, diverse modeling approaches and inference algorithms are needed to navigate engineering tradeoffs between robustness, adaptability, accuracy, safety, interpretability, data efficiency, and computational efficiency. Structured generative models represented as symbolic programs provide interpretability. Structure learning of these models provides data-efficient adaptability. Uncertainty quantification is needed for safety. Bottom-up, discriminative inference provides computational efficiency. Iterative “model-in-the-loop” algorithms can improve accuracy by fine-tuning inferences and improve robustness to outof-distribution data. Recent probabilistic programming systems fully or partially automate inference, but are too restrictive for many applications. Differentiable programming systems are also inadequate: they do not support structure learning of generative models or hybrids of “model-in-the-loop” and discriminative inference. Therefore, probabilistic inference is still often implemented by translating tedious mathematical derivations into low-level numerical programs, which are error-prone and difficult to modify and maintain. This thesis presents the design and implementation of the Gen programming platform for probabilistic inference. Gen automates the low-level implementation of probabilistic inference algorithms while remaining flexible enough to support heterogeneous algorithmic approaches and extensible enough for practical inference engineering. Gen users define their models explicitly using probabilistic programs, but instead of compiling the model directly into an inference algorithm implementation, Gen compiles the model into data types that encapsulate low-level inference operations whose semantics are derived from the model, like sampling, density evaluation, and gradients. Users write their inference application in a general-purpose programming language using Gen’s abstract data types as primitives. This thesis defines Gen’s data types and shows that they can be used to compose a variety of inference techniques including sophisticated Monte Carlo algorithms and hybrids of Monte Carlo, variational, and discriminative techniques. The same data types can be generated from multiple probabilistic programming languages that strike different expressiveness and performance tradeoffs. By decoupling probabilistic programming language implementations from inference algorithm design, Gen enables more flexible specialization of both, leading to performance improvements over existing probabilistic programming systems.},
+  file = {/home/philipp/Zotero/storage/2FL2Z6ST/Cusumano-Towner - Gen A High-Level Programming Platform for Probabi.pdf},
+  langid = {english},
+  type = {PhD Thesis}
 }
 
 @article{dahlin2015getting,
@@ -235,6 +262,25 @@
   primaryClass = {cs}
 }
 
+@article{fritz2020synthetic,
+  title = {A Synthetic Approach to {{Markov}} Kernels, Conditional Independence and Theorems on Sufficient Statistics},
+  author = {Fritz, Tobias},
+  date = {2020-08},
+  journaltitle = {Advances in Mathematics},
+  shortjournal = {Advances in Mathematics},
+  volume = {370},
+  pages = {107239},
+  issn = {00018708},
+  doi = {10.1016/j.aim.2020.107239},
+  url = {http://arxiv.org/abs/1908.07021},
+  urldate = {2020-09-18},
+  abstract = {We develop Markov categories as a framework for synthetic probability and statistics, following work of Golubtsov as well as Cho and Jacobs. This means that we treat the following concepts in purely abstract categorical terms: conditioning and disintegration; various versions of conditional independence and its standard properties; conditional products; almost surely; sufficient statistics; versions of theorems on sufficient statistics due to Fisher--Neyman, Basu, and Bahadur. Besides the conceptual clarity offered by our categorical setup, its main advantage is that it provides a uniform treatment of various types of probability theory, including discrete probability theory, measure-theoretic probability with general measurable spaces, Gaussian probability, stochastic processes of either of these kinds, and many others.},
+  archivePrefix = {arXiv},
+  eprint = {1908.07021},
+  eprinttype = {arxiv},
+  file = {/home/philipp/Zotero/storage/F3ZQJNWY/Fritz_2020_A synthetic approach to Markov kernels, conditional independence and theorems.pdf;/home/philipp/Zotero/storage/H9H5BDUZ/1908.html}
+}
+
 @inproceedings{gabler2019graph,
   title = {Graph {{Tracking}} in {{Dynamic Probabilistic Programs}} via {{Source Transformations}}},
   author = {Gabler, Philipp and Trapp, Martin and Ge, Hong and Pernkopf, Franz},
@@ -275,6 +321,7 @@
   url = {https://onlinelibrary.wiley.com/doi/abs/10.1002/widm.1334},
   urldate = {2020-07-29},
   abstract = {Algorithmic differentiation (AD), also known as automatic differentiation, is a technology for accurate and efficient evaluation of derivatives of a function given as a computer model. The evaluations of such models are essential building blocks in numerous scientific computing and data analysis applications, including optimization, parameter identification, sensitivity analysis, uncertainty quantification, nonlinear equation solving, and integration of differential equations. We provide an introduction to AD and present its basic ideas and techniques, some of its most important results, the implementation paradigms it relies on, the connection it has to other domains including machine learning and parallel computing, and a few of the major open problems in the area. Topics we discuss include: forward mode and reverse mode of AD, higher-order derivatives, operator overloading and source transformation, sparsity exploitation, checkpointing, cross-country mode, and differentiating iterative processes. This article is categorized under: Algorithmic Development {$>$} Scalable Statistical Methods Technologies {$>$} Data Preprocessing},
+  annotation = {\_eprint: https://onlinelibrary.wiley.com/doi/pdf/10.1002/widm.1334},
   file = {/home/philipp/Zotero/storage/XAJGF8EA/Gebremedhin_Walther_2020_An introduction to algorithmic differentiation.pdf;/home/philipp/Zotero/storage/G33NZV4X/widm.html},
   langid = {english},
   number = {1}
@@ -600,7 +647,7 @@
   url = {https://dl.acm.org/doi/10.1145/3371087},
   urldate = {2020-04-21},
   abstract = {CCS Concepts: • Mathematics of computing → Probabilistic inference problems; Variational methods; Metropolis-Hastings algorithm; Sequential Monte Carlo methods; • Theory of computation → Semantics and reasoning; Denotational semantics; • Software and its engineering → Formal language definitions.},
-  file = {/home/philipp/Zotero/storage/6ST3KC2V/Lew et al. - 2020 - Trace types and denotational semantics for sound p.pdf},
+  file = {/home/philipp/Zotero/storage/ML85N6AX/Lew et al. - 2020 - Trace types and denotational semantics for sound p.pdf},
   issue = {POPL},
   langid = {english}
 }
@@ -715,7 +762,8 @@
   author = {Minka, Tom and Winn, John and Guiver, John and Zaykov, Yordan and Fabian, Dany and Bronskill, John},
   date = {2018},
   url = {http://dotnet.github.io/infer},
-  urldate = {2019-10-14}
+  urldate = {2019-10-14},
+  annotation = {Microsoft Research Cambridge.}
 }
 
 @report{minka2019automatic,
@@ -882,7 +930,8 @@
   author = {Radul, Alexey},
   date = {2013},
   journaltitle = {Conversations},
-  url = {https://alexey.radul.name/ideas/2013/introduction-to-automatic-differentiation/}
+  url = {https://alexey.radul.name/ideas/2013/introduction-to-automatic-differentiation/},
+  annotation = {Archive-URL: https://web.archive.org/web/20190405034941/https://alexey.radul.name/ideas/2013/introduction-to-automatic-differentiation/}
 }
 
 @article{ramsey2002stochastic,
@@ -945,6 +994,20 @@
   file = {/home/philipp/Zotero/storage/GF9DTUG3/Ruozzi - Message Passing Algorithms for Optimization.pdf},
   langid = {english},
   type = {Dissertation}
+}
+
+@article{schulman2016gradient,
+  title = {Gradient {{Estimation Using Stochastic Computation Graphs}}},
+  author = {Schulman, John and Heess, Nicolas and Weber, Theophane and Abbeel, Pieter},
+  date = {2016-01-05},
+  url = {http://arxiv.org/abs/1506.05254},
+  urldate = {2020-09-20},
+  abstract = {In a variety of problems originating in supervised, unsupervised, and reinforcement learning, the loss function is defined by an expectation over a collection of random variables, which might be part of a probabilistic model or the external world. Estimating the gradient of this loss function, using samples, lies at the core of gradient-based learning algorithms for these problems. We introduce the formalism of stochastic computation graphs---directed acyclic graphs that include both deterministic functions and conditional probability distributions---and describe how to easily and automatically derive an unbiased estimator of the loss function's gradient. The resulting algorithm for computing the gradient estimator is a simple modification of the standard backpropagation algorithm. The generic scheme we propose unifies estimators derived in variety of prior work, along with variance-reduction techniques therein. It could assist researchers in developing intricate models involving a combination of stochastic and deterministic operations, enabling, for example, attention, memory, and control actions.},
+  archivePrefix = {arXiv},
+  eprint = {1506.05254},
+  eprinttype = {arxiv},
+  file = {/home/philipp/Zotero/storage/8E89B845/Schulman et al_2016_Gradient Estimation Using Stochastic Computation Graphs.pdf;/home/philipp/Zotero/storage/SM6EZRXV/1506.html},
+  primaryClass = {cs}
 }
 
 @inproceedings{scibior2015practical,
@@ -1137,21 +1200,7 @@
   booktitle = {Advances in {{Neural Information Processing Systems}}},
   author = {Wigren, Anna and Risuleo, Riccardo Sven and Murray, Lawrence and Lindsten, Fredrik},
   date = {2019},
-  abstract = {Bayesian inference in state-space models is challenging due to high-dimensional
-state trajectories. A viable approach is particle Markov chain Monte Carlo (PM-
-CMC), combining MCMC and sequential Monte Carlo to form “exact approx-
-imations” to otherwise-intractable MCMC methods. The performance of the
-approximation is limited to that of the exact method. We focus on particle Gibbs
-(PG) and particle Gibbs with ancestor sampling (PGAS), improving their per-
-formance beyond that of the ideal Gibbs sampler (which they approximate) by
-marginalizing out one or more parameters. This is possible when the parameter(s)
-has a conjugate prior relationship with the complete data likelihood. Marginaliza-
-tion yields a non-Markov model for inference, but we show that, in contrast to the
-general case, the methods still scale linearly in time. While marginalization can
-be cumbersome to implement, recent advances in probabilistic programming have
-enabled its automation. We demonstrate how the marginalized methods are viable
-as efficient inference backends in probabilistic programming, and demonstrate with
-examples in ecology and epidemiology.},
+  abstract = {Bayesian inference in state-space models is challenging due to high-dimensional state trajectories. A viable approach is particle Markov chain Monte Carlo (PM- CMC), combining MCMC and sequential Monte Carlo to form “exact approx- imations” to otherwise-intractable MCMC methods. The performance of the approximation is limited to that of the exact method. We focus on particle Gibbs (PG) and particle Gibbs with ancestor sampling (PGAS), improving their per- formance beyond that of the ideal Gibbs sampler (which they approximate) by marginalizing out one or more parameters. This is possible when the parameter(s) has a conjugate prior relationship with the complete data likelihood. Marginaliza- tion yields a non-Markov model for inference, but we show that, in contrast to the general case, the methods still scale linearly in time. While marginalization can be cumbersome to implement, recent advances in probabilistic programming have enabled its automation. We demonstrate how the marginalized methods are viable as efficient inference backends in probabilistic programming, and demonstrate with examples in ecology and epidemiology.},
   file = {/home/philipp/Zotero/storage/5JWKEDM8/4792__Submission 4792.pdf}
 }
 
@@ -1199,6 +1248,14 @@ examples in ecology and epidemiology.},
   file = {/home/philipp/Zotero/storage/PJMCI3JT/Wright - AN ALGEBRAIC PERSPECTIVE ON COMPUTING WITH DATA.pdf},
   langid = {english},
   type = {PhD Thesis}
+}
+
+@article{yugibbs,
+  title = {Gibbs {{Sampling Methods}} for {{Dirichlet Process Mixture Model}}: {{Technical Details}}},
+  author = {Yu, Xiaodong},
+  pages = {18},
+  file = {/home/philipp/Zotero/storage/HYAVTPKH/Yu - Gibbs Sampling Methods for Dirichlet Process Mixtu.pdf},
+  langid = {english}
 }
 
 @inproceedings{yuret2016knet,

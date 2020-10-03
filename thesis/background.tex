@@ -97,7 +97,7 @@ of large numbers (LLN) holds:
   \label{eq:mc-lln}
   \kth{I}(f) = \frac{1}{n} \sum_{i=1}^{n} f(\kth{\Theta}) \to \Exp{f(\Theta) \given X = x}
 \end{equation}
-When we can sample \(\kth{\Theta} \sim \prob{\cdot \given x}\) exactly, they are \iid{} and the LLN
+When we can sample \(\kth{\Theta} \from \prob{\cdot \given x}\) exactly, they are \iid{} and the LLN
 holds trivially; such samplers exist, but might also be difficult to derive or not possess good
 enough convergence properties (especially in high dimensions).  Another large class of samplers is
 formed by \emph{Markov Chain Monte Carlo} (MCMC) methods, which, instead of sampling exactly from
@@ -112,7 +112,7 @@ factorization.\todo{overthink advantages}
   \item Start from an arbitrary \(\kth[1]{\Theta}\).
   \item For each \(k \ge 1\):
     \begin{enumerate}
-    \item Propose \(\kth[k]{\hat{\Theta}} \sim q(\kth[k-1]{\Theta}, \cdot)\).
+    \item Propose \(\kth[k]{\hat{\Theta}} \from q(\kth[k-1]{\Theta}, \cdot)\).
     \item With probability \(\alpha(\kth[k]{\hat{\Theta}}, \kth[k-1]{\Theta})\), set
       \(\kth[k]{\Theta} = \kth[k]{\hat{\Theta}}\); else, keep \(\kth[k]{\Theta} = \kth[k-1]{\Theta}\).
     \end{enumerate}
@@ -137,7 +137,7 @@ others fixed:
   \label{eq:conditional-kernels}
   \begin{aligned}
     \kth[k]{\hat{\Theta}}_{-i} &= \kth[k-1]{\Theta}_{-i} \\
-    \kth[k]{\hat{\Theta}}_{i} &\sim q_{i}(\kth[k-1]{\Theta}_{i}, \cdot \given \kth[k-1]{\Theta}_{-i})
+    \kth[k]{\hat{\Theta}}_{i} &\from q_{i}(\kth[k-1]{\Theta}_{i}, \cdot \given \kth[k-1]{\Theta}_{-i})
   \end{aligned}
 \end{equation}
 Components can be scalars or multivariate blocks, and the kernel may itself be any valid transition
