@@ -3,9 +3,7 @@
 \addcontentsline{toc}{chapter}{Notation}
 % \currentpdfbookmark{Notation}{notation}
 
-\begingroup
-  % change to symbolic footnotes for this page
-  \renewcommand*{\thefootnote}{\fnsymbol{footnote}}
+\begin{symbolicfootnotes}
   \begin{description}[style=nextline, leftmargin=4cm]
   \item[\(\Prob{\Theta \in A \given X = x}\)] Random variables and their realizations will usually be
     denoted by upper and lower case letters, respectively (with occasional exceptions for Greek
@@ -48,11 +46,7 @@
   \item[{\jlinlfont f(x) = rand(x)}] Julia code (including identifiers mention in the text) is always typeset in
     typewriter font.
   \end{description}
-
-  % restore footnote counter to start with 1
-  \setcounter{footnote}{0}
-  
-\endgroup
+\end{symbolicfootnotes}
 
 %%% Local Variables: 
 %%% TeX-master: "main"

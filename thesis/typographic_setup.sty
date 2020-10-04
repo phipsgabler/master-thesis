@@ -64,6 +64,19 @@
 \providecommand{\amp}{\textit{\MakeLowercase{\&}}}
 \providecommand{\midp}{\(\cdot\)}
 
+% environment to locally switch to symbolic footnotes, correctly resetting the
+% numbering afterwards (used in introductory material)
+\newcounter{phg@footnotestate}
+\newenvironment{symbolicfootnotes}{%
+  \setcounter{phg@footnotestate}{\value{footnote}}%
+  \setcounter{footnote}{0}%
+  \renewcommand*{\thefootnote}{\fnsymbol{footnote}}%
+  % https://tex.stackexchange.com/a/565263/46356
+  \makeatletter\def\f@@tn@te{blub}\makeatother%
+}{%
+  \setcounter{footnote}{\value{phg@footnotestate}}%
+}
+
 % OTHER USEFUL STUFF
 \providecommand{\email}[1]{\href{mailto:#1}{\nolinkurl{#1}}}
 
