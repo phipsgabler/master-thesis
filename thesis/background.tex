@@ -159,9 +159,26 @@ Probabilistic programming is a means of describing probabilistic models through 
 programming language. Probabilistic programms distinguish themselves from normal programs by the
 possibility of being sampled from conditionally, with some of the internal variables fixed to
 observed values.  While probabilistic programming systems are often implemented as separate,
-domain-specific languages, they can also be embedded into \enquote{host} programming languages with
-sufficient syntactic flexibility.  The latter is advantageous if one wants to use regular
-general-purpose programming constructs or interact with other functionalities of the host language.
+domain-specific languages (DSLs), they can also be embedded into \enquote{host} programming
+languages with sufficient syntactic flexibility.  The latter is advantageous if one wants to use
+regular general-purpose programming constructs or interact with other functionalities of the host
+language.
+
+There are a variety of reasons why one would rather describe an inference problem in terms of a
+program than in more \enquote{mathematical} form, like a graph or likelihood function.  In a good
+DSL, models will read as close to textbook model specifications as possible, while allowing to use
+the host language to express, for example:
+\begin{itemize}
+\item Recursive relationships
+\item Usage of imperative constructs, such as loops, or mutable intermediate computations for
+  efficiency
+\item Manual manipulations, e.g. for memoization, scaling (-Inf), or preliminary termination
+\item Distributions over complex custom data structures, e.g. trees
+\item Inference involving complex transformations from other domains, for which implementations
+  already exist, e.g. neural networks or differential equation solvers
+\item Inference that integrates calls to very complex external systems, e.g. simulators or renderers
+\end{itemize}
+\todo{references for examples}
 
 See \textcite{vandemeent2018introduction} for a general introduction into the implementation of
 PPLs. \Textcite{goodman2014design} gives an in-depth overview of the implementation and usage of one

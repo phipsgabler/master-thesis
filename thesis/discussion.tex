@@ -1,6 +1,26 @@
 \chapter{Discussion}
 \label{cha:discussion}
 
+The history of this project forms a large arc from a general problem in \turingjl{}, over a
+digression into compiler technology, back the the implementation of a proof of concept in the form
+of a very specific inference method.  As we have seen, two separate pieces of software have emerged
+from it: \irtrackerjl{} and \autogibbsjl{}.  The underlying issue~-- that \turingjl{} lacks a
+structural representation of models~-- is not at all resolved by them.
+
+The real difficulty is that dynamic models cannot be satisfactorily handled through static snapshots
+(cf. Venture).
+
+(\juliapackage{Cassette.jl} is a package very similar to \juliapackage{IRTools.jl})
+\begin{quote}
+  Using Cassette on code you wrote is a bit like shooting youself with a experimental mind control
+  weapon, to force your hands to move like you knew how to fly a helicopter. Even if it works, you
+  still had to learn to fly the helicopter in order to program the mind-control weapon to force
+  yourself to act like you knew how to fly a helicopter.\footnote{Lyndon White, private
+    communication on \protect\url{julialang.slack.com}.}
+\end{quote}\todo{ask for permission}
+
+In summary, I 
+
 \section{Future Work}
 \label{sec:future-work}
 
