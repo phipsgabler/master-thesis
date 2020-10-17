@@ -114,21 +114,21 @@ define \(\kth{Y}\) via a Markov chain:
 \begin{equation}
   \label{eq:mc-kernel}
   \begin{aligned}
-    &\Prob{\kth[k+1]{Y} \in \dif y
+    &\Prob{\kth[k+1]{Y} \in \dif\zeta
       \given \kth{Y} = \kth{y}, \ldots, \kth[1]{Y} = \kth[1]{y}} \\
-    &\quad = \Prob{\kth[k+1]{Y} \in \dif y \given \kth{Y} = \kth{y}}  \\
-    &\quad = P(\kth[k+1]{y} \given \kth{y}) \dif\mu(y)
+    &\quad = \Prob{\kth[k+1]{Y} \in \dif\zeta \given \kth{Y} = \kth{y}}  \\
+    &\quad = K(\zeta \given \kth{y}) \dif\mu(\zeta)
   \end{aligned}
 \end{equation}
-(for fixed \(x\)).  By constructing the \emph{transition kernel}, \(P\), in the right way, the
-resulting chain is ergodic with the target density \(\pi\)as the unique stationary distribution,
+for all \(k \ge 1\).  By constructing the \emph{transition kernel}, \(K\), in the right way, the
+resulting chain is ergodic with the target density \(\pi\) as the unique stationary distribution,
 i.e.,
 \begin{equation}
   \label{eq:markov-chain}
-  \int \pi(y)P(\theta \given y) \dif\mu(y) = \pi(\theta)
+  \int \pi(\zeta) K(\theta \given \zeta) \dif\mu(\zeta) = \pi(\theta)
 \end{equation}
 (which for discrete spaces is usually written in matrix form as a left eigenvalue equation on a
-stochastic matrix: \(\pi P = \pi\)).  The advantage of MCMC methods is that they apply equally well
+stochastic matrix: \(\pi K = \pi\)).  The advantage of MCMC methods is that they apply equally well
 to many structurally complex models, and treat densities in a uniform way, without requiring special
 knowledge about the specific distribution in question.  I refer to \textcites[chapter
 6]{vihola2020lectures}{robert1999monte}[chapters 24 and following]{murphy2012machine} for an
@@ -150,7 +150,7 @@ Hamiltonian Monte Carlo (HMC) \parencite{betancourt2018conceptual,girolami2011ri
   \item Start from an arbitrary \(\kth[1]{Y} = \kth[1]{y}\) with \(\pi(\kth{y}) > 0\).
   \item For each \(k \ge 1\):
     \begin{enumerate}
-    \item Propose \(\kth[k]{\hat{Y}} \from q(\kth[k-1]{Y}, \cdot)\).
+    \item Sample a proposal \(\kth[k]{\hat{Y}} \from q(\kth[k-1]{Y}, \cdot)\).
     \item With probability \(\alpha(\kth[k]{\hat{Y}}, \kth[k-1]{Y})\), set
       \(\kth[k]{Y} = \kth[k]{\hat{Y}}\); else, keep \(\kth[k]{Y} = \kth[k-1]{Y}\).
     \end{enumerate}
@@ -181,41 +181,114 @@ cancelling acceptance rate of \(\alpha \equiv 1\).  This approach has the advant
 many models it is rather easy to derive, even manually, from a given joint density; examples are
 extensively covered in \textcite[chapter 24.2]{murphy2012machine}.
 
-\begin{align*}
-  \mu_{k} &\iidfrom \Normal(m, s) \quad\text{for } 1 \le k \le K, \\
-  Z_{n} &\iidfrom \distr{Categorical}(K) \quad\text{for } 1 \le n \le N, \\
-  X_{n} &\iidfrom \Normal(\mu_{Z_{n}}, \sigma) \quad\text{for } 1 \le n \le N
-\end{align*}
+\begin{equation}
+  \label{eq:normal-mixture-1}
+  \begin{aligned}
+    \mu_{k} &\iidfrom \Normal(m, s) \quad\text{for } 1 \le k \le K, \\
+    Z_{n} &\iidfrom \distr{Categorical}(K) \quad\text{for } 1 \le n \le N, \\
+    X_{n} &\iidfrom \Normal(\mu_{Z_{n}}, \sigma) \quad\text{for } 1 \le n \le N
+  \end{aligned}
+\end{equation}
 
-\begin{align*}
-  &q(z_{n} \given z_{-n}, \mu_{1:K}, x_{1:N}) \\
-  &\quad = p(z_{n}) p(x_{n} | \mu_{z_{n}}) / Z \\
-  &\quad = \dfrac{\distr{Categorical}(z_{n}) \, \Normal(x_{n} \given \mu_{z_{n}}, \sigma)}{
-    \sum_{\zeta \in \supp(Z_{n})} \distr{Categorical}(\zeta)\, \Normal(x_{n} \given \mu_{\zeta},
-    \sigma)} \\
-  &\quad = \dfrac{\distr{Categorical}(z_{n}) \, \Normal(x_{n} \given \mu_{z_{n}}, \sigma)}{
-    \sum_{\zeta = 1}^{K} \distr{Categorical}(\zeta)\, \Normal(x_{n} \given \mu_{\zeta}, \sigma)}
-\end{align*}
+% \begin{align*}
+%   &q(z_{n} \given z_{-n}, \mu_{1:K}, x_{1:N}) \\
+%   &\quad = p(z_{n}) p(x_{n} | \mu_{z_{n}}) / Z \\
+%   &\quad = \dfrac{\distr{Categorical}(z_{n}) \, \Normal(x_{n} \given \mu_{z_{n}}, \sigma)}{
+%     \sum_{\zeta \in \supp(Z_{n})} \distr{Categorical}(\zeta)\, \Normal(x_{n} \given \mu_{\zeta},
+%     \sigma)} \\
+%   &\quad = \dfrac{\distr{Categorical}(z_{n}) \, \Normal(x_{n} \given \mu_{z_{n}}, \sigma)}{
+%     \sum_{\zeta = 1}^{K} \distr{Categorical}(\zeta)\, \Normal(x_{n} \given \mu_{\zeta}, \sigma)}
+% \end{align*}
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Probabilistic Programming}
 \label{sec:prob-prog}
 
-Probabilistic programming is a means of describing probabilistic models through the syntax of a
-programming language. Probabilistic programms distinguish themselves from normal programs by the
-possibility of being sampled from conditionally, with some of the internal variables fixed to
-observed values.  While probabilistic programming systems are often implemented as separate,
-domain-specific languages (DSLs), they can also be embedded into \enquote{host} programming
-languages with sufficient syntactic flexibility.  The latter is advantageous if one wants to use
-regular general-purpose programming constructs or interact with other functionalities of the host
-language.
+Probabilistic programming is a means of describing generative models through the syntax of a
+programming language.  It makes sense to consider probabilistic programs not only as syntactic sugar
+for denoting a function that calculates a joint probability density over some set of variables, but
+as structured objects in their own right: they open up possibilities that \enquote{black box}
+density functions cannot automatically provide. In more concise terms from
+\textcite{vandemeent2018introduction}:
+\begin{quote}
+  Probabilistic programming is largely about designing languages, interpreters, and compilers that
+  translate inference problems denoted in programming language syntax into formal mathematical
+  objects that allow and accommodate generic probabilistic inference, particularly Bayesian
+  inference and conditioning.
+\end{quote}
 
-There are a variety of reasons why one would rather describe an inference problem in terms of a
-program than in more \enquote{mathematical} form, like a graph or likelihood function.  In a good
-DSL, models will read as close to textbook model specifications as possible, while allowing to use
-the host language to express, for example:
+A probabilistic program differs from a regular program with stochastic values through the
+possibility of being conditioned on: some of the internal variables can be fixed to observed
+values. As such, the program denotes on the one hand a joint distribution, that can be \emph{forward
+  sampled} from by simply running the program top to bottom and calling a pseudo-random functions.
+But at the same time, it also represents a conditional distribution, given as an unnormalized
+conditional density, which together with an inference algorithm can also be sampled from.  Consider
+the model~\eqref{eq:normal-mixture-1} from above: its mathematical description might be translated
+into a program in \turingjl{} syntax as
+\begin{lstlisting}
+@model function normal_mixture(x, K, m, s, σ)
+    N = length(x)
+
+    μ = Vector{Float64}(undef, K)
+    for k = 1:K
+        μ[k] ~ Normal(m, s)
+    end
+
+    z = Vector{Int}(undef, N)
+    for n = 1:N
+        z[n] ~ Categorical(K)
+    end
+
+    for n = 1:N
+        x[n] ~ Normal(μ[z[n]], σ)
+    end
+
+    return x
+end
+\end{lstlisting}
+We can then \emph{query} the model in several ways:
+\begin{lstlisting}
+julia> m = normal_mixture(x_observations, K, m, s, σ);
+julia> forward = sample(m, Prior(), 10);
+julia> chain = sample(m, MH(), 1000);
+\end{lstlisting}
+The value of \jlinl{forward} will be an dataframe-like object containing 10 values for each variable
+sampled from the forward (i.e., joint) distribution, matching the size of \jlinl{x_observations}.
+Similarly, \jlinl{chain} will contain a length 1000 sample from a Markov chain targetting the
+posterior, created using the MH algorithm.  If we were to write these two functionalities manually,
+in idiomatic Julia, we would end up with at least the following two functions:
+\begin{lstlisting}
+function normal_mixture_sampler(N, K, m, s, σ)
+    μ = rand(Normal(m, s), K)
+    z = rand(Categorical(K), N)
+    x = rand.(Normal.(μ[z], s))
+    return μ, z, x
+end
+
+function normal_mixture_logpdf(μ, z, x, K, m, s, σ)
+    N = length(x)
+    ℓ = 0.0
+    ℓ += sum(logpdf(Normal(m, s), μ[k]) for k = 1:K)
+    ℓ += sum(logpdf(Categorical(K), z[n]) for n = 1:N)
+    ℓ += sum(logpdf(Normal(μ[z[n]]), x[n]) for n = 1:N)
+    return ℓ
+end
+\end{lstlisting}
+And still, with these, there would be no flexible interface for sampling algorithms to automatically
+detect all latent and observed variables, put them all into a dataframe with their names, etc.
+
+While probabilistic programming languages (PPLs) are often implemented as separate, domain-specific
+languages (DSLs), they can also be embedded into \enquote{host} programming languages with
+sufficient syntactic flexibility.  The latter is advantageous if one wants to use regular
+general-purpose programming constructs or interact with other functionalities of the host language.
+
+There are a variety of further reasons why one would rather describe an inference problem in terms
+of a program than in more \enquote{mathematical} form, like a graph or likelihood function.  In a
+good DSL, models will read as close to textbook model specifications as possible, while allowing to
+use the host language to express, for example:
 \begin{itemize}
+  \firmlist
 \item Recursive relationships
 \item Usage of imperative constructs, such as loops, or mutable intermediate computations for
   efficiency
@@ -226,6 +299,9 @@ the host language to express, for example:
 \item Inference that integrates calls to very complex external systems, e.g. simulators or renderers
 \end{itemize}
 \todo{references for examples}
+
+In this sense, a probabilistic programming syntax defines a common format for model description,
+more general.
 
 See \textcite{vandemeent2018introduction} for a general introduction into the implementation of
 PPLs. \Textcite{goodman2014design} gives an in-depth overview of the implementation and usage of one
