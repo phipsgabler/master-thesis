@@ -18,7 +18,7 @@ the basis of the implementation.
 \section{Bayesian Inference and MCMC methods}
 \label{sec:bayes-infer}
 
-Generative modelling is a technique for modelling phenomena based on the assumption that
+Generative modelling is an approach for modelling phenomena based on the assumption that
 observables can be fully described through some stochastic process.  When we assume this process to
 belong to a specified family of processes, the estimation of the \enquote{best} process is a form of
 learning: if we have a good description of how obserations are generated, we can make summary
@@ -37,13 +37,14 @@ As an example, consider image classification: if we assume that certain percenta
 set picture cats and dogs, respectively, the distribution of these labels forms the prior.  Given
 the information which kind of animal is depicted on it, an image can then be generated as a matrix
 of pixels based on a distribution of images conditioned on labels.  The posterior distribution is
-then conditional distribution of the label given an image.  When we have this information, we
-can, for example, build a Baysian classifier, by returning for a newly observed image that label
-which has the higher probability under the posterior.
+then conditional distribution of the label given an image.  When we have this information, we can,
+for example, build a Baysian classifier, by returning for a newly observed image that label which
+has the highest probability under the posterior.
 
 This kind of learning is called Bayesian inference since, in the form of densities, the form of the
-model can be expressed using Bayes' theorem as the conditional distribution\footnote{Note the abuse
-  of notation regarding \(\prob{\cdot}\); see page~\pageref{cha:notation} on notation.}
+model can be expressed using Bayes' theorem as the conditional distribution with
+density\footnote{Note the abuse of notation regarding \(\prob{\cdot}\); see
+  page~\pageref{cha:notation} on notation.}
 \begin{equation}
   \label{eq:bayes}
   \overbrace{\prob{\theta \given x}}^{\text{posterior}} =
@@ -65,90 +66,136 @@ expectation over the posterior density, an integral of the form
   \label{eq:posterior-expectation}
   \Exp{f(\Theta) \given X = x} = \int f(\theta) \prob{\theta \given x} \dif \mu(\theta),
 \end{equation}
-for a suitable \(f\) (with the base measure \(\mu\) depending on the type of \(\Theta\)). This in
-turn involves calculating the normalizing marginal
+for some measurable function \(f\) (with the base measure \(\mu\) depending on the type of
+\(\Theta\)). This in turn involves calculating the normalizing marginal
 \begin{equation}
   \label{eq:normalizing}
   \prob{x} = \int \prob{x, \tilde{\theta}} \dif \mu(\tilde{\theta}).
 \end{equation}
-in equation~\ref{eq:bayes} (also called the \enquote{evidence}).
+in equation~\ref{eq:bayes}, often called the \enquote{evidence}.
 
 When the distributions involved form a sufficiently \enquote{nice} combination, e.g., a conjugate
-pair \todo{ref}, the integration can be performed analytically, since the posterior density has a
-closed form for a certain known distribution, or at least is a known integral.  In general, however,
-this is not tractable, not even numerically, and approximations have to be made.  Even for discrete
-variables, combinatorial explosion limits the applicability of simple summation.
+pair \parencites[see][chapter 2.2.2]{marin2007bayesian}[chapter
+9.2.5]{murphy2012machine}, the integration can be performed analytically, since the posterior
+density has a closed form for a certain known distribution, or at least is a known integral.  In
+general, however, this is not tractable, not even by standard numerical integration methods, and
+approximations have to be made.  Even for discrete variables, the applicability of simple summation
+is limited by combinatorial explosion.
 
 \newthought{Different techni{q}ues} for posterior approximation are available: among them are
-distribution-based methods like message passing and variational inference for general graphical
-models\todo{ref}.  The methods described in this thesis, however, fall into the category of Monte
-Carlo methods, based on sampling. Their fundamental idea is to derive, from a specified density, a
-sampling procedure with a consistent estimator for expectations:
+distribution-based approaches for general graphical models, such as variational inference
+\parencite[chapter 21 and 22]{murphy2012machine} and other methods generalized under the framework
+of message passing \parencite{minka2005divergence}.  The methods described in this thesis, however,
+fall into the category of Monte Carlo methods, and are based on sampling \parencites[chapter
+23]{murphy2012machine}{vihola2020lectures}.  Their fundamental idea is to derive, for a specified
+density of \(\Theta \from \pi\), a sampling procedure with a consistent estimator for expectations:
 \begin{equation}
   \label{eq:mc-methods}
-  \kth{I}(f) \to \Exp{f(\Theta) \given X = x}, \quad \text{as} \quad k
+  \kth{I}(f) \to \Exp{f(\Theta)}, \quad \text{as} \quad k
   \to \infty
 \end{equation}
-in some appropriate stochastic convergence (usually convergence in probability is enough)
-\parencite[chapter 1]{vihola2020lectures}.  Most of these methods are defined in a form that samples
-a sequence of individual random variables \(\kth{\Theta}\), called a \emph{chain}, for which a law
-of large numbers (LLN) holds:
+in some appropriate stochastic convergence (usually convergence in probability is enough).  We leave
+out the conditional dependency on \(X\) here for simplicity in notation, and since the data are
+usually fixed in inference problems.
+
+Examples of such methods are rejection sampling, importance sampling, and particle filters.  Many
+Monte Carlo methods are defined in a form that directly samples a sequence of individual random
+variables \(\sequence{\kth{Y}}\), called a \emph{chain}, for which the estimator is given by the
+arithmetic mean, such that a law of large numbers (LLN) holds:
 \begin{equation}
   \label{eq:mc-lln}
-  \kth{I}(f) = \frac{1}{n} \sum_{i=1}^{n} f(\kth{\Theta}) \to \Exp{f(\Theta) \given X = x}
+  \kth{I}(f) = \frac{1}{n} \sum_{i=1}^{n} f(\kth{Y}) \to \Exp{f(\Theta)}
 \end{equation}
-When we can sample \(\kth{\Theta} \from \prob{\cdot \given x}\) exactly, they are \iid{} and the LLN
-holds trivially; such samplers exist, but might also be difficult to derive or not possess good
-enough convergence properties (especially in high dimensions).  Another large class of samplers is
-formed by \emph{Markov Chain Monte Carlo} (MCMC) methods, which, instead of sampling exactly from
-the density, define \(\kth{\Theta}\) via a Markov chain: by choosing the transition the right way,
-the resolving Markov chain is ergodic with the target density as the unique stationary distribution.
-The advantage of MCMC methods is that they apply equally well to structurally complex models, and
-mostly treat the density as a black box, without requiring formal manipulations of a specific
-factorization.\todo{overthink advantages}
+When we can sample \(\kth{Y} \from \pi\) exactly, they are \iid{} and the LLN holds trivially; such
+samplers exist, but might also be difficult to derive or not possess good enough convergence
+properties (especially in high dimensions).  Another large class of samplers is formed by
+\emph{Markov Chain Monte Carlo} (MCMC) methods, which, instead of sampling exactly from the density,
+define \(\kth{Y}\) via a Markov chain:
+\begin{equation}
+  \label{eq:mc-kernel}
+  \begin{aligned}
+    &\Prob{\kth[k+1]{Y} \in \dif y
+      \given \kth{Y} = \kth{y}, \ldots, \kth[1]{Y} = \kth[1]{y}} \\
+    &\quad = \Prob{\kth[k+1]{Y} \in \dif y \given \kth{Y} = \kth{y}}  \\
+    &\quad = P(\kth[k+1]{y} \given \kth{y}) \dif\mu(y)
+  \end{aligned}
+\end{equation}
+(for fixed \(x\)).  By constructing the \emph{transition kernel}, \(P\), in the right way, the
+resulting chain is ergodic with the target density \(\pi\)as the unique stationary distribution,
+i.e.,
+\begin{equation}
+  \label{eq:markov-chain}
+  \int \pi(y)P(\theta \given y) \dif\mu(y) = \pi(\theta)
+\end{equation}
+(which for discrete spaces is usually written in matrix form as a left eigenvalue equation on a
+stochastic matrix: \(\pi P = \pi\)).  The advantage of MCMC methods is that they apply equally well
+to many structurally complex models, and treat densities in a uniform way, without requiring special
+knowledge about the specific distribution in question.  I refer to \textcites[chapter
+6]{vihola2020lectures}{robert1999monte}[chapters 24 and following]{murphy2012machine} for an
+introductions to MCMC theory and practice.
+
+Frequently, MCMC methods use variations of the \emph{Metropolis-Hastings algorithm} (MH), which
+replace the general definition of the transitions kernel by two helper fuctions: a proposal
+distribution, given by a conditional density \(q\) that needs to be easy to sample from, and an
+acceptance rate \(\alpha\).  Subsequent samples are then produced by proposing values from \(q\)
+given the previous element of the cahin, and incorporating them into the chain with a probability
+given through \(\alpha\) (see algorithm~\ref{alg:mh}).\todo{nicer algorithm formatting} There exist
+many MH-based schemes with different properties and requirements: from the classical random-walk
+Metropolis algorithm with Gaussian proposals, over Reversible Jump MCMC for varying dimensions
+\parencite{green1995reversible}, to gradient-informed methods like Metropolis Adjusted Langevin and
+Hamiltonian Monte Carlo (HMC) \parencite{betancourt2018conceptual,girolami2011riemann}.
 
 \begin{algorithm}
   \begin{myalgorithmic}
-  \item Start from an arbitrary \(\kth[1]{\Theta}\).
+  \item Start from an arbitrary \(\kth[1]{Y} = \kth[1]{y}\) with \(\pi(\kth{y}) > 0\).
   \item For each \(k \ge 1\):
     \begin{enumerate}
-    \item Propose \(\kth[k]{\hat{\Theta}} \from q(\kth[k-1]{\Theta}, \cdot)\).
-    \item With probability \(\alpha(\kth[k]{\hat{\Theta}}, \kth[k-1]{\Theta})\), set
-      \(\kth[k]{\Theta} = \kth[k]{\hat{\Theta}}\); else, keep \(\kth[k]{\Theta} = \kth[k-1]{\Theta}\).
+    \item Propose \(\kth[k]{\hat{Y}} \from q(\kth[k-1]{Y}, \cdot)\).
+    \item With probability \(\alpha(\kth[k]{\hat{Y}}, \kth[k-1]{Y})\), set
+      \(\kth[k]{Y} = \kth[k]{\hat{Y}}\); else, keep \(\kth[k]{Y} = \kth[k-1]{Y}\).
     \end{enumerate}
   \end{myalgorithmic}
   \caption{General scheme for the Metropolis-Hastings algorithm.\label{alg:mh}}
 \end{algorithm}
-Frequently, MCMC methods use variations of the Metropolis-Hastings algorithm (MH), which requires
-the definition of a Markov transition kernel by means of two helper fuctions: a proposal
-distribution with density \(q\), and an acceptance rate \(\alpha\), both depending on the old value
-in the chain; see algorithm~\ref{alg:mh}.\todo{nicer algorithm formatting} There exist many MH-based
-schemes with different properties and requirements: the classical random-walk Metropolis algorithm
-with Gaussian proposals, Reversible Jump MCMC, or gradient-informed methods like Metropolis Adjusted
-Langevin and Hamiltonian Monte Carlo (HMC).  I refer to \textcite[chapter 6]{vihola2020lectures} and
-\textcite[chapters 24 and following]{murphy2012machine} for an introduction to MCMC theory and
-algorithms.
 
-When we have a multi-component structure \(\Theta = [\Theta_1, \ldots, \Theta_N]\), a full
-transition kernel can be hard to find, and we can instead use a family of componentwise updates,
-given by conditional kernels \(q_{i}\) operating on only one component of \(\Theta\), with the
-others fixed:
+Still, when we have a multi-component structure \(\Theta = [\Theta_1, \ldots, \Theta_N]\), a good
+transition kernel can be hard to find (especially manually).  One way to break down the problem is
+to use a family of componentwise updates, given by conditional kernels \(q_{i}\) operating on only
+one component of \(\Theta\), with the others fixed:
 \begin{equation}
   \label{eq:conditional-kernels}
   \begin{aligned}
-    \kth[k]{\hat{\Theta}}_{-i} &= \kth[k-1]{\Theta}_{-i} \\
-    \kth[k]{\hat{\Theta}}_{i} &\from q_{i}(\kth[k-1]{\Theta}_{i}, \cdot \given \kth[k-1]{\Theta}_{-i})
+    \kth[k]{\hat{Y}}_{-i} &= \kth[k-1]{Y}_{-i} \\
+    \kth[k]{\hat{Y}}_{i} &\from q_{i}(\kth[k-1]{Y}_{i}, \cdot \given \kth[k-1]{Y}_{-i})
   \end{aligned}
 \end{equation}
-Components can be scalars or multivariate blocks, and the kernel may itself be any valid transition
-kernel.  This allows one to freely mix different MCMC methods.
+The components can be scalar or multivariate blocks, and the kernel may itself be any valid
+transition kernel \parencite[chapter 6.6]{vihola2020lectures}.  This allows one to freely mix
+different MCMC methods suitable for each variable in a problem.
 
-This \enquote{within-Gibbs} sampler bears its name because it is a generalization of the classical
-Gibbs sampling algorithm: the conditional densities
-\(\Theta_{i} \mapsto p(\Theta_{i} \given \Theta_{-i}, x)\) can directly be used as component
-proposals for a within-Gibbs sampler, leading to a cancelling acceptance rate of
-\(\alpha \equiv 1\).  This sampler has the advantage that it is in many cases rather easy to derive,
-even manually, from a given joint density.
+This so-called \enquote{within-Gibbs} sampler bears its name because it is a generalization of the
+classical \emph{Gibbs sampling} algorithm: often, the simplest available set of transition kernels
+is given by the conditional densities \(\Theta_{i} \mapsto p(\Theta_{i} \given \Theta_{-i},
+x)\). They can directly be used as component proposals for a within-Gibbs sampler, leading to a
+cancelling acceptance rate of \(\alpha \equiv 1\).  This approach has the advantage that it is in
+many models it is rather easy to derive, even manually, from a given joint density; examples are
+extensively covered in \textcite[chapter 24.2]{murphy2012machine}.
+
+\begin{align*}
+  \mu_{k} &\iidfrom \Normal(m, s) \quad\text{for } 1 \le k \le K, \\
+  Z_{n} &\iidfrom \distr{Categorical}(K) \quad\text{for } 1 \le n \le N, \\
+  X_{n} &\iidfrom \Normal(\mu_{Z_{n}}, \sigma) \quad\text{for } 1 \le n \le N
+\end{align*}
+
+\begin{align*}
+  &q(z_{n} \given z_{-n}, \mu_{1:K}, x_{1:N}) \\
+  &\quad = p(z_{n}) p(x_{n} | \mu_{z_{n}}) / Z \\
+  &\quad = \dfrac{\distr{Categorical}(z_{n}) \, \Normal(x_{n} \given \mu_{z_{n}}, \sigma)}{
+    \sum_{\zeta \in \supp(Z_{n})} \distr{Categorical}(\zeta)\, \Normal(x_{n} \given \mu_{\zeta},
+    \sigma)} \\
+  &\quad = \dfrac{\distr{Categorical}(z_{n}) \, \Normal(x_{n} \given \mu_{z_{n}}, \sigma)}{
+    \sum_{\zeta = 1}^{K} \distr{Categorical}(\zeta)\, \Normal(x_{n} \given \mu_{\zeta}, \sigma)}
+\end{align*}
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

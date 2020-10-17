@@ -86,6 +86,20 @@
   primaryClass = {cs}
 }
 
+@online{betancourt2018conceptual,
+  title = {A {{Conceptual Introduction}} to {{Hamiltonian Monte Carlo}}},
+  author = {Betancourt, Michael},
+  date = {2018-07-15},
+  url = {http://arxiv.org/abs/1701.02434},
+  urldate = {2020-10-17},
+  abstract = {Hamiltonian Monte Carlo has proven a remarkable empirical success, but only recently have we begun to develop a rigorous understanding of why it performs so well on difficult problems and how it is best applied in practice. Unfortunately, that understanding is confined within the mathematics of differential geometry which has limited its dissemination, especially to the applied communities for which it is particularly important. In this review I provide a comprehensive conceptual account of these theoretical foundations, focusing on developing a principled intuition behind the method and its optimal implementations rather of any exhaustive rigor. Whether a practitioner or a statistician, the dedicated reader will acquire a solid grasp of how Hamiltonian Monte Carlo works, when it succeeds, and, perhaps most importantly, when it fails.},
+  archivePrefix = {arXiv},
+  eprint = {1701.02434},
+  eprinttype = {arxiv},
+  file = {/home/philipp/Zotero/storage/5N2EZ4J6/Betancourt_2018_A Conceptual Introduction to Hamiltonian Monte Carlo.pdf;/home/philipp/Zotero/storage/YQ23HB6W/1701.html},
+  primaryClass = {stat}
+}
+
 @article{bezanson2017julia,
   title = {Julia: {{A Fresh Approach}} to {{Numerical Computing}}},
   shorttitle = {Julia},
@@ -363,6 +377,24 @@
   langid = {english}
 }
 
+@article{girolami2011riemann,
+  title = {Riemann Manifold {{Langevin}} and {{Hamiltonian Monte Carlo}} Methods},
+  author = {Girolami, Mark and Calderhead, Ben},
+  date = {2011},
+  journaltitle = {Journal of the Royal Statistical Society: Series B (Statistical Methodology)},
+  volume = {73},
+  pages = {123--214},
+  issn = {1467-9868},
+  doi = {10.1111/j.1467-9868.2010.00765.x},
+  url = {https://rss.onlinelibrary.wiley.com/doi/abs/10.1111/j.1467-9868.2010.00765.x},
+  urldate = {2020-10-17},
+  abstract = {Summary. The paper proposes Metropolis adjusted Langevin and Hamiltonian Monte Carlo sampling methods defined on the Riemann manifold to resolve the shortcomings of existing Monte Carlo algorithms when sampling from target densities that may be high dimensional and exhibit strong correlations. The methods provide fully automated adaptation mechanisms that circumvent the costly pilot runs that are required to tune proposal densities for Metropolis–Hastings or indeed Hamiltonian Monte Carlo and Metropolis adjusted Langevin algorithms. This allows for highly efficient sampling even in very high dimensions where different scalings may be required for the transient and stationary phases of the Markov chain. The methodology proposed exploits the Riemann geometry of the parameter space of statistical models and thus automatically adapts to the local structure when simulating paths across this manifold, providing highly efficient convergence and exploration of the target density. The performance of these Riemann manifold Monte Carlo methods is rigorously assessed by performing inference on logistic regression models, log-Gaussian Cox point processes, stochastic volatility models and Bayesian estimation of dynamic systems described by non-linear differential equations. Substantial improvements in the time-normalized effective sample size are reported when compared with alternative sampling approaches. MATLAB code that is available from http://www.ucl.ac.uk/statistics/research/rmhmc allows replication of all the results reported.},
+  annotation = {\_eprint: https://rss.onlinelibrary.wiley.com/doi/pdf/10.1111/j.1467-9868.2010.00765.x},
+  file = {/home/philipp/Zotero/storage/VBU87IF4/Girolami_Calderhead_2011_Riemann manifold Langevin and Hamiltonian Monte Carlo methods.pdf;/home/philipp/Zotero/storage/EDMRBNC9/j.1467-9868.2010.00765.html},
+  langid = {english},
+  number = {2}
+}
+
 @online{goodman2012church,
   title = {Church: A Language for Generative Models},
   shorttitle = {Church},
@@ -395,6 +427,25 @@
   urldate = {2020-07-29},
   abstract = {Previous studies in numerical analysis have shown how the calculation of a Jacobian, Hessian, and their factorizations can be accelerated when their sparsity pattern is known. However, accurate...},
   file = {/home/philipp/Zotero/storage/FTEFLWGT/Gowda et al_2019_Sparsity Programming.pdf;/home/philipp/Zotero/storage/ZDXPHV3A/forum.html}
+}
+
+@article{green1995reversible,
+  title = {Reversible Jump {{Markov}} Chain {{Monte Carlo}} Computation and {{Bayesian}} Model Determination},
+  author = {Green, Peter J.},
+  date = {1995-12-01},
+  journaltitle = {Biometrika},
+  shortjournal = {Biometrika},
+  volume = {82},
+  pages = {711--732},
+  publisher = {{Oxford Academic}},
+  issn = {0006-3444},
+  doi = {10.1093/biomet/82.4.711},
+  url = {https://academic.oup.com/biomet/article/82/4/711/252058},
+  urldate = {2020-10-17},
+  abstract = {Abstract.  Markov chain Monte Carlo methods for Bayesian computation have until recently been restricted to problems where the joint distribution of all variabl},
+  file = {/home/philipp/Zotero/storage/SR4VKZNF/Green_1995_Reversible jump Markov chain Monte Carlo computation and Bayesian model.pdf;/home/philipp/Zotero/storage/IKUAKG7S/252058.html},
+  langid = {english},
+  number = {4}
 }
 
 @book{griewank2008evaluating,
@@ -723,6 +774,19 @@
   primaryClass = {cs, stat}
 }
 
+@book{marin2007bayesian,
+  title = {Bayesian Core: A Practical Approach to Computational {{Bayesian}} Statistics},
+  shorttitle = {Bayesian Core},
+  author = {Marin, Jean-Michel and Robert, Christian P.},
+  date = {2007},
+  publisher = {{Springer}},
+  location = {{New York}},
+  file = {/home/philipp/Zotero/storage/M59PIE92/Marin_Robert_2007_Bayesian core.pdf},
+  isbn = {978-0-387-38979-0 978-0-387-38983-7},
+  pagetotal = {255},
+  series = {Springer Texts in Statistics}
+}
+
 @software{mauro2019simple,
   title = {Simple {{Traits}} for {{Julia}}. {{Contribute}} to Mauro3/{{SimpleTraits}}.Jl Development by Creating an Account on {{GitHub}}},
   author = {Mauro},
@@ -983,6 +1047,15 @@
   file = {/home/philipp/Zotero/storage/D8J3RZI4/Revels et al. - 2018 - Dynamic Automatic Differentiation of GPU Broadcast.pdf},
   langid = {english},
   primaryClass = {cs}
+}
+
+@book{robert1999monte,
+  title = {Monte {{Carlo Statistical Methods}}},
+  author = {Robert, Christian P. and Casella, George},
+  date = {1999},
+  publisher = {{Springer}},
+  location = {{New York}},
+  file = {/home/philipp/Zotero/storage/S8ECC634/Monte-Carlo-Statistical-Methods.pdf}
 }
 
 @article{rompf2010lightweight,

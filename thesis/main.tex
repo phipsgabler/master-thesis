@@ -161,6 +161,7 @@
 
 
 % MATH STUFF
+\newcommand{\iid}{i.i.d.}
 \newcommand{\prob}[2][\empty]{{p}_{#1}(#2)}
 \newcommand{\Prob}[1]{\mathbb{P}[#1]}
 \newcommand{\Exp}[2][\empty]{\mathbb{E}_{\ifx#1\empty\empty\else{\! #1}\fi}[#2]}
@@ -171,6 +172,7 @@
 \newcommand\given[1][]{\:#1\vert\:}
 \newcommand{\distr}[1]{\mathrm{#1}}
 \newcommand{\from}{\sim}
+\newcommand{\iidfrom}{\stackrel{\text{iid}}{\sim}}
 \newcommand{\kldiv}[2]{\mathrm{D}_{\text{KL}}(#1 \parallel #2)}
 % \newcommand{\transp}[1]{#1^{\mathrm{T}}}
 \newcommand{\inverse}[1]{#1^{-1}}
@@ -179,8 +181,9 @@
 \newcommand{\ZZ}{\mathbb{Z}}
 \newcommand{\Sqrt}[1]{#1^{\frac{1}{2}}}
 \newcommand{\kth}[2][k]{#2^{(#1)}}
-\newcommand{\Normal}[1]{\mathcal{N}(#1)}
-\newcommand{\MVNormal}[1]{\mathcal{N}_{\text{MV}}(#1)}
+\newcommand{\sequence}[2][k \ge 1]{(#2)_{#1}}
+\newcommand{\Normal}{\distr{Normal}}
+\newcommand{\MVNormal}{\distr{MvNormal}}
 \newcommand{\vect}[1]{\boldsymbol{#1}}
 \newcommand{\Likelihood}[1]{\mathcal{L}(#1)}
 \newcommand{\Loglikelihood}[1]{\ell(#1)}
@@ -192,6 +195,7 @@
 \DeclareMathOperator{\tr}{tr}
 \DeclareMathOperator{\rank}{rank}
 \DeclareMathOperator{\sgn}{sgn}
+\DeclareMathOperator{\supp}{supp}
 
 % Broadcast syntax for math mode, from https://tex.stackexchange.com/a/490779/46356
 \makeatletter
@@ -214,8 +218,6 @@
   \fi
 }
 \makeatother
-
-\newcommand{\iid}{i.i.d.}
 
 \newcommand{\juliapackage}[1]{\texttt{#1}}
 \newcommand{\turingjl}{\juliapackage{Turing.jl}}
