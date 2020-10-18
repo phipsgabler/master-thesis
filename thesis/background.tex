@@ -131,21 +131,21 @@ i.e.,
 stochastic matrix: \(\pi K = \pi\)).  The advantage of MCMC methods is that they apply equally well
 to many structurally complex models, and treat densities in a uniform way, without requiring special
 knowledge about the specific distribution in question.  I refer to \textcites[chapter
-6]{vihola2020lectures}{robert1999monte}[chapters 24 and following]{murphy2012machine} for an
+6]{vihola2020lectures}{robert1999monte}[chapters 24 and following]{murphy2012machine} as
 introductions to MCMC theory and practice.
 
-Frequently, MCMC methods use variations of the \emph{Metropolis-Hastings algorithm} (MH), which
-replace the general definition of the transitions kernel by two helper fuctions: a proposal
-distribution, given by a conditional density \(q\) that needs to be easy to sample from, and an
-acceptance rate \(\alpha\).  Subsequent samples are then produced by proposing values from \(q\)
-given the previous element of the cahin, and incorporating them into the chain with a probability
-given through \(\alpha\) (see algorithm~\ref{alg:mh}).\todo{nicer algorithm formatting} There exist
-many MH-based schemes with different properties and requirements: from the classical random-walk
-Metropolis algorithm with Gaussian proposals, over Reversible Jump MCMC for varying dimensions
+Frequently, MCMC methods are variations of the \emph{Metropolis-Hastings algorithm} (MH), which
+splits the general definition of the transition kernel into two parts: a proposal distribution,
+given by a conditional density \(q\) that needs to be easy to sample from, and an acceptance rate
+\(\alpha\).  Subsequent samples are then produced by proposing values from \(q\) given the previous
+element of the chain, and incorporating them into the chain with a probability given through
+\(\alpha\) (see algorithm~\ref{alg:mh}).\todo{nicer algorithm formatting} There exist many MH-based
+schemes with different properties and requirements: from the classical random-walk Metropolis
+algorithm with Gaussian proposals, over Reversible Jump MCMC for varying dimensions
 \parencite{green1995reversible}, to gradient-informed methods like Metropolis Adjusted Langevin and
 Hamiltonian Monte Carlo (HMC) \parencite{betancourt2018conceptual,girolami2011riemann}.
 
-\begin{algorithm}
+\begin{algorithm}[t]
   \begin{myalgorithmic}
   \item Start from an arbitrary \(\kth[1]{Y} = \kth[1]{y}\) with \(\pi(\kth{y}) > 0\).
   \item For each \(k \ge 1\):
@@ -177,10 +177,19 @@ This so-called \enquote{within-Gibbs} sampler bears its name because it is a gen
 classical \emph{Gibbs sampling} algorithm: often, the simplest available set of transition kernels
 is given by the conditional densities \(\Theta_{i} \mapsto p(\Theta_{i} \given \Theta_{-i},
 x)\). They can directly be used as component proposals for a within-Gibbs sampler, leading to a
-cancelling acceptance rate of \(\alpha \equiv 1\).  This approach has the advantage that it is in
-many models it is rather easy to derive, even manually, from a given joint density; examples are
-extensively covered in \textcite[chapter 24.2]{murphy2012machine}.
+cancelling acceptance rate of \(\alpha \equiv 1\).  This approach has the advantage of being very
+algorithmic, which makes it rather easy to apply, even by hand, to many models, and simply to
+express algorithmically.  Hence, the method is a popular starting point for general probabilistic
+programming systems, most prominently BUGS \parencite{lunn2000winbugs} and JAGS
+\parencite{plummer2003jags}.
 
+In many real-world models, the factorization structure is quite sparse and results in small Markov
+blankets.  The algorithm to derive Gibbs conditionals exploits this large independency between
+variables.  In short, it consists of \enquote{trimming} the dependency graph of the model to the
+local Markov blankets of each target variable, and deriving either a full conditional from it (for
+discrete or conjugate variables), or using an appropriate local sampler if that is not possible.
+
+As an example, consider a Gaussian mixture model specified as follows:
 \begin{equation}
   \label{eq:normal-mixture-1}
   \begin{aligned}
@@ -189,17 +198,42 @@ extensively covered in \textcite[chapter 24.2]{murphy2012machine}.
     X_{n} &\iidfrom \Normal(\mu_{Z_{n}}, \sigma) \quad\text{for } 1 \le n \le N
   \end{aligned}
 \end{equation}
-
-% \begin{align*}
-%   &q(z_{n} \given z_{-n}, \mu_{1:K}, x_{1:N}) \\
-%   &\quad = p(z_{n}) p(x_{n} | \mu_{z_{n}}) / Z \\
-%   &\quad = \dfrac{\distr{Categorical}(z_{n}) \, \Normal(x_{n} \given \mu_{z_{n}}, \sigma)}{
-%     \sum_{\zeta \in \supp(Z_{n})} \distr{Categorical}(\zeta)\, \Normal(x_{n} \given \mu_{\zeta},
-%     \sigma)} \\
-%   &\quad = \dfrac{\distr{Categorical}(z_{n}) \, \Normal(x_{n} \given \mu_{z_{n}}, \sigma)}{
-%     \sum_{\zeta = 1}^{K} \distr{Categorical}(\zeta)\, \Normal(x_{n} \given \mu_{\zeta}, \sigma)}
-% \end{align*}
-
+To derive the conditional distribution of \(Z_{n}\) given the remaining variables, we start by
+writing down the factorization of the joint distribution:
+\begin{equation}
+  p(z_{1:N}, \mu_{1:K}, x_{1:N}) = \prod_{k} p(\mu_{k}) \prod_{n} p(z_{n}) \prod_{n} p(x_{n} | \mu_{z_{n}}).
+\end{equation}
+From this, we can derive an unnormalized distribution proportional to the conditional by removing
+all factors not including the target variable:
+\begin{equation}
+    p(z_{n} \given z_{-n}, \mu_{1:K}, x_{1:N}) \propto p(z_{n}) p(x_{n} | \mu_{z_{n}})
+\end{equation}
+This is equivalent to finding the Markov blanket of \(Z_{n}\): only those conditionals relating the
+target variable to its children and parents remain.  Since the clusters are drawn from a categorical
+distribution, the support is discrete, and we can find the normalization constant by summation:
+\begin{equation}
+  \setlength{\jot}{0.8\baselineskip}
+  \begin{aligned}
+    &p(z_{n} \given z_{-n}, \mu_{1:K}, x_{1:N}) \\
+    % &\quad = p(z_{n}) p(x_{n} | \mu_{z_{n}}) / Z \\
+    &\quad = \dfrac{\distr{Categorical}(z_{n}) \, \Normal(x_{n} \given \mu_{z_{n}}, \sigma)}{
+      \sum_{\zeta \in\, \supp(Z_{n})} \distr{Categorical}(\zeta)\, \Normal(x_{n} \given \mu_{\zeta},
+      \sigma)} \\
+    &\quad = \dfrac{\distr{Categorical}(z_{n}) \, \Normal(x_{n} \given \mu_{z_{n}}, \sigma)}{
+      \sum_{\zeta = 1}^{K} \distr{Categorical}(\zeta)\, \Normal(x_{n} \given \mu_{\zeta}, \sigma)}
+  \end{aligned}
+\end{equation}
+Next, the conditionals of the \(\mu_{k}\) have the form
+\begin{equation}
+  \setlength{\jot}{0.8\baselineskip}
+  \begin{aligned}
+    &p(\mu_{k} \given z_{1:N}, \mu_{-k}, x_{1:N}) \\
+    &\quad \propto p(\mu_k) \prod_{n} p(x_{n} | \mu_{z_{n}}) \\
+    &\quad = \prod_{n} \Normal(\mu_{k} \given m, s) \, \Normal(x_{n} \given \mu_{z_{n}}, \sigma)
+  \end{aligned}
+\end{equation}
+which we recognize as a conjugate prior on the mean of a normal distribution.
+More examples are extensively covered in \textcite[chapter 24.2]{murphy2012machine}.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Probabilistic Programming}

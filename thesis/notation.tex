@@ -17,6 +17,12 @@
     any density indicated by the names of the variables given to it is used when no confusion arises
     (in this case, \(f_{X,Y|Z}\) is implied).  A \(q\) may be used as well, mostly for proposal
     distributions or unnormalized densities.
+  \item[{\(\Prob{X \in A} = P_{X}(A) = \int_{A} p_{X}(x) \dif\mu(x)\)}] A capital \(P\) with subscript
+    is used for the probability measure associated with a random variable.
+  \item[\(\Prob{X \in \dif x} = p_{X}(x) \dif\mu(x)\)] Differentials of this form are used to
+    concisely express densities of random variables (i.e., Radon-Nikodym derivatives of the
+    associated probability measure).  The example is equivalent to the statement
+    \(\od{P_{X}}{\mu} = p_{X}\).
   \item[{\(X_{i} \from \distr{Normal}(\mu, \sigma)\)}] The tilde notation for describing random
     variables is used throughout, often without explicitely specifying dependence or independence,
     where understood from context.  Named distributions that are not themselves random variables are
@@ -43,8 +49,8 @@
     code\footnote{See~\protect\url{https://docs.julialang.org/en/v1/manual/functions/\#man-vectorized-1}}:
     the function is applied over all elements of the input arrays individually, whereby arrays of
     lower rank or scalars are \enquote{broadcasted} along dimensions as necessary.
-  \item[{\jlinlfont f(x) = rand(x)}] Julia code (including identifiers mention in the text) is always typeset in
-    typewriter font.
+  \item[{\jlinlfont f(x) = rand(x)}] Julia code (including identifiers mention in the text) is
+    always typeset in typewriter font.
   \end{description}
 \end{symbolicfootnotes}
 
