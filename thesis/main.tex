@@ -2,39 +2,46 @@
 \usepackage[final,protrusion,babel]{microtype}
 \usepackage[utf8]{inputenc}
 \usepackage[T1]{fontenc}
+\usepackage{typographic_setup}
+
 \usepackage[english]{babel}
 \usepackage[style=english]{csquotes}
 \usepackage{xspace}
 \usepackage[final]{graphicx}
 \usepackage[textsize=tiny]{todonotes}
-\usepackage[final,hyperfootnotes=false]{hyperref}
+\usepackage[final]{hyperref}
 
 % \usepackage{placeins}           % \FloatBarrier
 %\usepackage{float}             % H float placement
-\usepackage[originalcommands]{ragged2e} % improved ragged paragraphs in abstract
+% \usepackage[originalcommands]{ragged2e} % improved ragged paragraphs in abstract
 \usepackage{eso-pic}
 
-\usepackage{amsmath}
-\usepackage{amssymb}
+% \usepackage{amsmath}
+% \usepackage{amssymb}
+% \usepackage{MnSymbol} % incompatible with amssymb and amsfonts
+\usepackage{commath}
+% \usepackage{mathtools} % improvements on amsmath
 %\usepackage{pifont}
 % \usepackage{fourier-orns}
 
-\usepackage{typographic_setup}
-\usepackage[final]{mylistings}
+% \usepackage[final]{mylistings}
+\usepackage[final]{listings}
 \usepackage[charsperline=94]{jlcode}
 
 \title{Automatic Graph Tracking in Probabilistic Programs via Source Transformations}
 
+% LINKS AND PDF OPTIONS
 \hypersetup{
   pdfinfo={
     Author={Philipp Gabler},
     Title={\thetitle}
   },
-  % colorlinks=false
+  colorlinks=true,
+  citecolor=textblue,
+  linkcolor=textblue,
+  urlcolor=textblue,
+  hyperfootnotes=false
 }
-
-\usepackage{commath}
-\usepackage{mathtools}
 
 %-------------------------------------------------------------------------------
 % BIBLATEX

@@ -8,8 +8,8 @@
 \RequirePackage{libertine} % libertine with biolinum
 \RequirePackage[scaled=0.95, varqu]{inconsolata} % monospace font
 
-\RequirePackage[libertine, slantedGreek, smallerops]{newtxmath} % matching math fonts
-\def\libertine@figurestyle{OsF} % restore old style figures
+\RequirePackage[libertine, slantedGreek]{newtxmath} % matching math fonts
+\def\libertine@figurestyle{OsF} % restore old style figures (messed up by newtxmath)
 \renewcommand*{\rmdefault}{LinuxLibertineT-OsF}
 
 % better superscripts
@@ -19,7 +19,44 @@
 \RequirePackage{enumitem}
 \RequirePackage{booktabs}
 \RequirePackage[normalem]{ulem}
-\RequirePackage{hyperref}
+
+% MnSymbol selective loading
+% see https://tex.stackexchange.com/a/246205/46356
+\def\MnSymbolGlyphs#1{% IF ONE NEEDS TO LOCATE GLYPHS
+  \usepackage{MnSymbol,fonttable}%
+  \AtBeginDocument{\fonttable{MnSymbol#110}}%
+}
+\def\ImportFromMnSymbol#1{%
+  \DeclareFontFamily{U} {MnSymbol#1}{}
+  \DeclareFontShape{U}{MnSymbol#1}{m}{n}{
+   <-6> MnSymbol#15
+   <6-7> MnSymbol#16
+   <7-8> MnSymbol#17
+   <8-9> MnSymbol#18
+   <9-10> MnSymbol#19
+   <10-12> MnSymbol#110
+   <12-> MnSymbol#112}{}
+  \DeclareFontShape{U}{MnSymbol#1}{b}{n}{
+   <-6> MnSymbol#1-Bold5
+   <6-7> MnSymbol#1-Bold6
+   <7-8> MnSymbol#1-Bold7
+   <8-9> MnSymbol#1-Bold8
+   <9-10> MnSymbol#1-Bold9
+   <10-12> MnSymbol#1-Bold10
+   <12-> MnSymbol#1-Bold12}{}
+  \DeclareSymbolFont{MnSy#1} {U} {MnSymbol#1}{m}{n}
+}
+\newcommand\DeclareMnSymbol[4]{\DeclareMathSymbol{#1}{#2}{MnSy#3}{#4}}
+\ImportFromMnSymbol{F}
+\def\Decl@Mn@Op#1#2#3{\def#1{\DOTSB#3\slimits@}}
+% \MnSymbolGlyphs{F} % this will print the font table on the first page
+
+\DeclareMnSymbol{\mntprod}{\mathop}{F}{76}
+\DeclareMnSymbol{\mndprod}{\mathop}{F}{77}
+\DeclareMnSymbol{\mntsum}{\mathop}{F}{80}
+\DeclareMnSymbol{\mndsum}{\mathop}{F}{81}
+\Decl@Mn@Op\sum\mndsum\mntsum
+\Decl@Mn@Op\prod\mndprod\mntprod
 
 %-------------------------------------------------------------------------------
 % ADDITIONAL MACROS
@@ -174,14 +211,6 @@
 \postsubtitle{\end{center}\ifdefempty{\@subtitle}{}{\vspace{0.2em}}}
 
 \thanksmarkseries{arabic}
-
-% LINKS AND PDF OPTIONS
-\hypersetup{%
-  colorlinks=true,
-  citecolor=textblue,
-  linkcolor=textblue,
-  urlcolor=textblue
-}
 
 % space to underline
 \setlength{\ULdepth}{-1pt}

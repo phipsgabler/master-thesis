@@ -28,7 +28,8 @@
 \RequirePackage{listings}
 \RequirePackage[normalem]{ulem}
 \RequirePackage{xcolor}
-\RequirePackage[mathb]{mathabx}
+% \RequirePackage{amssy mb} % for \hookleftarrow
+% \RequirePackage{MnSymbol}
 \RequirePackage{microtype}
 
 %-------------------------------------------------------------------------------
@@ -57,11 +58,11 @@
 }
 
 \newlength{\ml@hookwidth}
-\setlength{\ml@hookwidth}{\widthof{\ensuremath{\drsh}}}
+\setlength{\ml@hookwidth}{\widthof{\ensuremath{\hookleftarrow}}}
 \newlength{\ml@widthafterhook}
 \setlength{\ml@widthafterhook}{\ml@fullbasewidth - \ml@hookwidth}
-\newcommand{\ml@lefthook}{\textcolor{black}{\ensuremath{\dlsh}}}
-\newcommand{\ml@righthook}{\textcolor{black}{\ensuremath{\drsh}}}
+\newcommand{\ml@lefthook}{\textcolor{black}{\ensuremath{\hookleftarrow}}}
+\newcommand{\ml@righthook}{\textcolor{black}{\ensuremath{\hookleftarrow}}}
 
 
 %-------------------------------------------------------------------------------
