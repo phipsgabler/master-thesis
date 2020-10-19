@@ -128,10 +128,10 @@ i.e., for all measurable sets \(A\),
   \label{eq:stationarity}
   \int \pi(y) K(A \given y) \dif\mu(y) = \int_A \pi(y) \dif\mu(y),
 \end{equation}
-and the LLN for Markov chains holds.  (For discrete spaces, this relation is written more familiarly
-a left eigenvalue equation on a stochastic matrix: \(\pi K = \pi\)).  The advantage of MCMC methods
-is that they apply equally well to many structurally complex models, and treat densities in a
-uniform way, without requiring special knowledge about the specific distribution in question.  I
+and the LLN for Markov chains holds.  (For discrete spaces, this relation is more familiarly written
+as a left eigenvalue equation on a stochastic matrix: \(\pi K = \pi\).)  The advantage of MCMC
+methods is that they apply equally well to many structurally complex models, and treat densities in
+a uniform way, without requiring special knowledge about the specific distribution in question.  I
 refer to \textcites[chapter 6]{vihola2020lectures}{robert1999monte}[chapters 24 and
 following]{murphy2012machine} as introductions to MCMC theory and practice.
 
@@ -244,11 +244,11 @@ extensively covered in \textcite[chapter 24.2]{murphy2012machine}.
 \section{Probabilistic Programming}
 \label{sec:prob-prog}
 
-Probabilistic programming is a means of describing generative models through the syntax of a
-programming language.  It makes sense to consider probabilistic programs not only as syntactic sugar
-for denoting a function that calculates a joint probability density over some set of variables, but
-as structured objects in their own right: they open up possibilities that \enquote{black box}
-density functions cannot automatically provide. In more concise terms from
+Probabilistic programming is a means of describing generative models, as described in the previous
+section, through the syntax of a programming language.  It is beneficial to consider probabilistic
+programs not only as syntactic sugar for denoting the implementation of a joint probability density
+over some set of variables, but as structured objects in their own right: they open up possibilities
+that \enquote{black box} density functions cannot automatically provide. In more concise terms from
 \textcite{vandemeent2018introduction}:
 \begin{quote}
   Probabilistic programming is largely about designing languages, interpreters, and compilers that
@@ -264,7 +264,8 @@ values. As such, the program denotes on the one hand a joint distribution, that 
 But at the same time, it also represents a conditional distribution, given as an unnormalized
 conditional density, which together with an inference algorithm can also be sampled from.  Consider
 the model~\eqref{eq:normal-mixture-1} from above: its mathematical description might be translated
-into a program in \turingjl{} syntax as
+into a program in \turingjl{} syntax \parencite{ge2018turing,tarek2020dynamicppl}\todo{more
+  prominent turing introduction} as
 \begin{lstlisting}
 @model function normal_mixture(x, K, m, s, σ)
     N = length(x)
@@ -286,7 +287,7 @@ into a program in \turingjl{} syntax as
     return x
 end
 \end{lstlisting}
-We can then \emph{query} the model in several ways:
+We can then sample from the model in several ways:
 \begin{lstlisting}
 julia> m = normal_mixture(x_observations, K, m, s, σ);
 julia> forward = sample(m, Prior(), 10);
@@ -295,8 +296,9 @@ julia> chain = sample(m, MH(), 1000);
 The value of \jlinl{forward} will be an dataframe-like object containing 10 values for each variable
 sampled from the forward (i.e., joint) distribution, matching the size of \jlinl{x_observations}.
 Similarly, \jlinl{chain} will contain a length 1000 sample from a Markov chain targetting the
-posterior, created using the MH algorithm.  If we were to write these two functionalities manually,
-in idiomatic Julia, we would end up with at least the following two functions:
+posterior, conditially on \jlinl{x_observations}, created using the MH algorithm.  If we were to
+write out these two functionalities manually, in idiomatic Julia, we would end up with at least the
+following two functions:
 \begin{lstlisting}
 function normal_mixture_sampler(N, K, m, s, σ)
     μ = rand(Normal(m, s), K)
@@ -314,37 +316,49 @@ function normal_mixture_logpdf(μ, z, x, K, m, s, σ)
     return ℓ
 end
 \end{lstlisting}
-And still, with these, there would be no flexible interface for sampling algorithms to automatically
-detect all latent and observed variables, put them all into a dataframe with their names, etc.
+And still, with these, we would lack much of the flexibility that models written in \dppljl{} form:
+no general interface for sampling algorithms to automatically detect all latent and observed
+variables; no possility for other, nonstandard execution forms as are needed for Variational
+Inference or gradient computation for HMC; no automatic dataframe construction for chains.  All
+these points highlight the advantages of dedicated probabilistic programming languages (PPLs) over
+manual likelihood functions.
 
-While probabilistic programming languages (PPLs) are often implemented as separate, domain-specific
-languages (DSLs), they can also be embedded into \enquote{host} programming languages with
-sufficient syntactic flexibility.  The latter is advantageous if one wants to use regular
-general-purpose programming constructs or interact with other functionalities of the host language.
+\newthought{Many PPLs are implemented} as external domain-specific languages (DSLs), like Stan
+\parencite{carpenter2017stan}, JAGS \parencite{plummer2003jags}, and BUGS
+\parencite{lunn2000winbugs,lunn2009bugs}.  Others are specified in the \enquote{meta-syntax} of Lisp
+S-expressions, as Church \parencite{goodman2012church}, Anglican \parencite{wood2015new}, or Venture
+\parencite{mansinghka2014venture}.  A third group is embedded into host programming languages with
+sufficient syntactic flexibility, for example Gen \parencite{cusumano-towner2020gen} and Soss
+\parencite{scherrer2019soss} in Julia (besides the already named Turing), or Pyro
+\parencite{bingham2018pyro} and PyMC3 \parencite{salvatier2016probabilistic} in Python.
 
-There are a variety of further reasons why one would rather describe an inference problem in terms
-of a program than in more \enquote{mathematical} form, like a graph or likelihood function.  In a
-good DSL, models will read as close to textbook model specifications as possible, while allowing to
-use the host language to express, for example:
+The latter approach is advantageous when one wants to use regular general-purpose programming
+constructs or interact with other functionalities of the host language.  There are also a variety of
+further reasons why one would rather describe an inference problem in terms of a program than in
+more \enquote{mathematical} form, like as a graph or likelihood function.  In a good probabilistic
+programming DSL, models will read as close to textbook model specifications as possible, while
+allowing to use the host language to:
 \begin{itemize}
   \firmlist
-\item Recursive relationships
-\item Usage of imperative constructs, such as loops, or mutable intermediate computations for
-  efficiency
-\item Manual manipulations, e.g. for memoization, scaling (-Inf), or preliminary termination
-\item Distributions over complex custom data structures, e.g. trees
-\item Inference involving complex transformations from other domains, for which implementations
-  already exist, e.g. neural networks or differential equation solvers
-\item Inference that integrates calls to very complex external systems, e.g. simulators or renderers
+\item define recursive relationships,
+\item write models using imperative constructs, such as loops, or mutable intermediate computations
+  for efficiency,
+\item extend the model execution by manual manipulations, e.g. for memoization, scaling, or
+  preliminary termination
+\item use distributions over complex custom data structures, e.g. trees,
+\item perform inference involving complex transformations from other domains, for which
+  implementations already exist, e.g. neural networks or differential equation solvers , or
+\item integrate calls to very complex external systems, e.g. simulators or renderers.
 \end{itemize}
-\todo{references for examples}
+See \textcite{vandemeent2018introduction} for a general introduction into some common implementation
+approaches for PPLs. \Textcite{goodman2014design} gives a detailed overview of the internals of one
+specific, continuation-based implementation called WebPPL (using a Lisp-based syntax).
 
-In this sense, a probabilistic programming syntax defines a common format for model description,
-more general.
+% In this sense, a probabilistic programming syntax defines a common format for model description,
+% more general.
 
-See \textcite{vandemeent2018introduction} for a general introduction into the implementation of
-PPLs. \Textcite{goodman2014design} gives an in-depth overview of the implementation and usage of one
-specific, continuation-based implementation called WebPPL.
+
+
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Compilation and Metaprogramming in Julia}
