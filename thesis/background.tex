@@ -70,7 +70,7 @@ for some measurable function \(f\) (with the base measure \(\mu\) depending on t
 \(\Theta\)). This in turn involves calculating the normalizing marginal
 \begin{equation}
   \label{eq:normalizing}
-  \prob{x} = \int \prob{x, \tilde{\theta}} \dif \mu(\tilde{\theta}).
+  \prob{x} = \int \prob{x, \theta} \dif \mu(\theta).
 \end{equation}
 in equation~\ref{eq:bayes}, often called the \enquote{evidence}.
 
@@ -91,7 +91,7 @@ fall into the category of Monte Carlo methods, and are based on sampling \parenc
 density of \(\Theta \from \pi\), a sampling procedure with a consistent estimator for expectations:
 \begin{equation}
   \label{eq:mc-methods}
-  \kth{I}(f) \to \Exp{f(\Theta)}, \quad \text{as} \quad k
+  \kth{I}(f) \to \Exp{f(\Theta)} = \int f(\theta) \pi(\theta) \dif\mu(\theta), \quad \text{as} \quad k
   \to \infty
 \end{equation}
 in some appropriate stochastic convergence (usually convergence in probability is enough).  We leave
@@ -104,35 +104,36 @@ variables \(\sequence{\kth{Y}}\), called a \emph{chain}, for which the estimator
 arithmetic mean, such that a law of large numbers (LLN) holds:
 \begin{equation}
   \label{eq:mc-lln}
-  \kth{I}(f) = \frac{1}{n} \sum_{i=1}^{n} f(\kth{Y}) \to \Exp{f(\Theta)}
+  \kth{I}(f) = \frac{1}{k} \sum_{i=1}^{k} f(\kth[i]{Y}) \to \Exp{f(\Theta)}
 \end{equation}
 When we can sample \(\kth{Y} \from \pi\) exactly, they are \iid{} and the LLN holds trivially; such
 samplers exist, but might also be difficult to derive or not possess good enough convergence
 properties (especially in high dimensions).  Another large class of samplers is formed by
 \emph{Markov Chain Monte Carlo} (MCMC) methods, which, instead of sampling exactly from the density,
-define \(\kth{Y}\) via a Markov chain:
+define \(\kth{Y}\) via a (time-homogeneous) Markov chain:
 \begin{equation}
   \label{eq:mc-kernel}
   \begin{aligned}
-    &\Prob{\kth[k+1]{Y} \in \dif\zeta
+    &\Prob{\kth[k+1]{Y} \in \dif y
       \given \kth{Y} = \kth{y}, \ldots, \kth[1]{Y} = \kth[1]{y}} \\
-    &\quad = \Prob{\kth[k+1]{Y} \in \dif\zeta \given \kth{Y} = \kth{y}}  \\
-    &\quad = K(\zeta \given \kth{y}) \dif\mu(\zeta)
+    &\quad = \Prob{\kth[k+1]{Y} \in \dif y \given \kth{Y} = \kth{y}}  \\
+    &\quad = K(dy \given \kth{y}) \\
+    % &\quad = k(y \given \kth{y}) \dif\mu(y)
   \end{aligned}
 \end{equation}
 for all \(k \ge 1\).  By constructing the \emph{transition kernel}, \(K\), in the right way, the
 resulting chain is ergodic with the target density \(\pi\) as the unique stationary distribution,
-i.e.,
+i.e., for all measurable sets \(A\),
 \begin{equation}
-  \label{eq:markov-chain}
-  \int \pi(\zeta) K(\theta \given \zeta) \dif\mu(\zeta) = \pi(\theta)
+  \label{eq:stationarity}
+  \int \pi(y) K(A \given y) \dif\mu(y) = \int_A \pi(y) \dif\mu(y),
 \end{equation}
-(which for discrete spaces is usually written in matrix form as a left eigenvalue equation on a
-stochastic matrix: \(\pi K = \pi\)).  The advantage of MCMC methods is that they apply equally well
-to many structurally complex models, and treat densities in a uniform way, without requiring special
-knowledge about the specific distribution in question.  I refer to \textcites[chapter
-6]{vihola2020lectures}{robert1999monte}[chapters 24 and following]{murphy2012machine} as
-introductions to MCMC theory and practice.
+and the LLN for Markov chains holds.  (For discrete spaces, this relation is written more familiarly
+a left eigenvalue equation on a stochastic matrix: \(\pi K = \pi\)).  The advantage of MCMC methods
+is that they apply equally well to many structurally complex models, and treat densities in a
+uniform way, without requiring special knowledge about the specific distribution in question.  I
+refer to \textcites[chapter 6]{vihola2020lectures}{robert1999monte}[chapters 24 and
+following]{murphy2012machine} as introductions to MCMC theory and practice.
 
 Frequently, MCMC methods are variations of the \emph{Metropolis-Hastings algorithm} (MH), which
 splits the general definition of the transition kernel into two parts: a proposal distribution,
@@ -158,10 +159,10 @@ Hamiltonian Monte Carlo (HMC) \parencite{betancourt2018conceptual,girolami2011ri
   \caption{General scheme for the Metropolis-Hastings algorithm.\label{alg:mh}}
 \end{algorithm}
 
-Still, when we have a multi-component structure \(\Theta = [\Theta_1, \ldots, \Theta_N]\), a good
-transition kernel can be hard to find (especially manually).  One way to break down the problem is
-to use a family of componentwise updates, given by conditional kernels \(q_{i}\) operating on only
-one component of \(\Theta\), with the others fixed:
+\newthought{For multi-component structures}, of the form \(\Theta = [\Theta_1, \ldots, \Theta_N]\),
+a good proposal distribution can be hard to find, though.  One way to break down the problem is to
+use a family of componentwise updates, given by conditional distributions \(q_{i}\) operating on
+only one component of \(\Theta\), with the others fixed:
 \begin{equation}
   \label{eq:conditional-kernels}
   \begin{aligned}
@@ -174,22 +175,23 @@ transition kernel \parencite[chapter 6.6]{vihola2020lectures}.  This allows one 
 different MCMC methods suitable for each variable in a problem.
 
 This so-called \enquote{within-Gibbs} sampler bears its name because it is a generalization of the
-classical \emph{Gibbs sampling} algorithm: often, the simplest available set of transition kernels
-is given by the conditional densities \(\Theta_{i} \mapsto p(\Theta_{i} \given \Theta_{-i},
-x)\). They can directly be used as component proposals for a within-Gibbs sampler, leading to a
-cancelling acceptance rate of \(\alpha \equiv 1\).  This approach has the advantage of being very
-algorithmic, which makes it rather easy to apply, even by hand, to many models, and simply to
-express algorithmically.  Hence, the method is a popular starting point for general probabilistic
-programming systems, most prominently BUGS \parencite{lunn2000winbugs} and JAGS
-\parencite{plummer2003jags}.
+classical \emph{Gibbs sampling} algorithm \parencite{geman1984stochastic}: often, the simplest
+available set of transition kernels is given by the conditional densities
+\(\theta_{i} \mapsto p(\theta_{i} \given \theta_{-i}, x)\). They can directly be used as component
+proposals for a within-Gibbs sampler, leading to a cancelling acceptance rate of
+\(\alpha \equiv 1\).  This approach has the advantage of being very algorithmic, which makes it
+rather easy to apply, even by hand, to many models, and simply to express algorithmically.  Hence,
+the method is a popular starting point for general probabilistic programming systems, most
+prominently BUGS \parencite{lunn2000winbugs,lunn2009bugs} and JAGS \parencite{plummer2003jags}.
 
 In many real-world models, the factorization structure is quite sparse and results in small Markov
-blankets.  The algorithm to derive Gibbs conditionals exploits this large independency between
-variables.  In short, it consists of \enquote{trimming} the dependency graph of the model to the
-local Markov blankets of each target variable, and deriving either a full conditional from it (for
-discrete or conjugate variables), or using an appropriate local sampler if that is not possible.
+blankets.  Algorithms to derive Gibbs samplers exploit this large independency between variables.
+In short, they \enquote{trim} the dependency graph of the model to the local Markov blankets of each
+target variable, and derive either a full conditional from it, where possible (for discrete or
+conjugate variables), or otherwise approximate it through appropriate local sampling (e.g., slice
+sampling).
 
-As an example, consider a Gaussian mixture model specified as follows:
+As an example, consider a simple Gaussian mixture model with equal weights, specified as follows:
 \begin{equation}
   \label{eq:normal-mixture-1}
   \begin{aligned}
@@ -199,12 +201,12 @@ As an example, consider a Gaussian mixture model specified as follows:
   \end{aligned}
 \end{equation}
 To derive the conditional distribution of \(Z_{n}\) given the remaining variables, we start by
-writing down the factorization of the joint distribution:
+writing down the factorization of the joint density:
 \begin{equation}
   p(z_{1:N}, \mu_{1:K}, x_{1:N}) = \prod_{k} p(\mu_{k}) \prod_{n} p(z_{n}) \prod_{n} p(x_{n} | \mu_{z_{n}}).
 \end{equation}
-From this, we can derive an unnormalized distribution proportional to the conditional by removing
-all factors not including the target variable:
+From this, we can derive an unnormalized density proportional to the conditional by removing all
+factors not including the target variable:
 \begin{equation}
     p(z_{n} \given z_{-n}, \mu_{1:K}, x_{1:N}) \propto p(z_{n}) p(x_{n} | \mu_{z_{n}})
 \end{equation}
@@ -216,24 +218,27 @@ distribution, the support is discrete, and we can find the normalization constan
   \begin{aligned}
     &p(z_{n} \given z_{-n}, \mu_{1:K}, x_{1:N}) \\
     % &\quad = p(z_{n}) p(x_{n} | \mu_{z_{n}}) / Z \\
-    &\quad = \dfrac{\distr{Categorical}(z_{n}) \, \Normal(x_{n} \given \mu_{z_{n}}, \sigma)}{
-      \sum_{\zeta \in\, \supp(Z_{n})} \distr{Categorical}(\zeta)\, \Normal(x_{n} \given \mu_{\zeta},
-      \sigma)} \\
-    &\quad = \dfrac{\distr{Categorical}(z_{n}) \, \Normal(x_{n} \given \mu_{z_{n}}, \sigma)}{
-      \sum_{\zeta = 1}^{K} \distr{Categorical}(\zeta)\, \Normal(x_{n} \given \mu_{\zeta}, \sigma)}
+    &\quad = \dfrac{\distr{Categorical}(z_{n} \given K) \, \Normal(x_{n} \given \mu_{z_{n}}, \sigma)}{
+      \sum_{k \in\, \supp(Z_{n})} \distr{Categorical}(k \given K)\, \Normal(x_{n} \given \mu_{k},
+      \sigma)}, \\
+    % &\quad = \dfrac{\distr{Categorical}(z_{n} \given K) \, \Normal(x_{n} \given \mu_{z_{n}}, \sigma)}{
+    %   \sum_{k = 1}^{K} \distr{Categorical}(k \given K)\, \Normal(x_{n} \given \mu_{k}, \sigma)},
   \end{aligned}
 \end{equation}
-Next, the conditionals of the \(\mu_{k}\) have the form
+which can be expressed as a general discrete distribution over \(\supp(Z_{n}) = \{1, \ldots, K\}\),
+with the unnormalized weights given by the numerator.  Next, the conditionals of the \(\mu_{k}\)
+have the form
 \begin{equation}
   \setlength{\jot}{0.8\baselineskip}
   \begin{aligned}
     &p(\mu_{k} \given z_{1:N}, \mu_{-k}, x_{1:N}) \\
-    &\quad \propto p(\mu_k) \prod_{n} p(x_{n} | \mu_{z_{n}}) \\
-    &\quad = \prod_{n} \Normal(\mu_{k} \given m, s) \, \Normal(x_{n} \given \mu_{z_{n}}, \sigma)
+    &\quad \propto p(\mu_k) \prod_{n} p(x_{n} | \mu_{k})^{\indicator{z_{n} \, = \, k}} \\
+    &\quad = \prod_{n} \left( \Normal(\mu_{k} \given m, s) \,
+      \Normal(x_{n} \given \mu_{k}, \sigma) \right)^{\indicator{z_{n} \, = \, k}}
   \end{aligned}
 \end{equation}
-which we recognize as a conjugate prior on the mean of a normal distribution.
-More examples are extensively covered in \textcite[chapter 24.2]{murphy2012machine}.
+which we recognize as a product of conjugate pairs of normal distributions.  More examples are
+extensively covered in \textcite[chapter 24.2]{murphy2012machine}.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Probabilistic Programming}
