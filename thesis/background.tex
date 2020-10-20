@@ -135,14 +135,14 @@ a uniform way, without requiring special knowledge about the specific distributi
 refer to \textcites[chapter 6]{vihola2020lectures}{robert1999monte}[chapters 24 and
 following]{murphy2012machine} as introductions to MCMC theory and practice.
 
-Frequently, MCMC methods are variations of the \emph{Metropolis-Hastings algorithm} (MH), which
-splits the general definition of the transition kernel into two parts: a proposal distribution,
-given by a conditional density \(q\) that needs to be easy to sample from, and an acceptance rate
-\(\alpha\).  Subsequent samples are then produced by proposing values from \(q\) given the previous
-element of the chain, and incorporating them into the chain with a probability given through
-\(\alpha\) (see algorithm~\ref{alg:mh}).\todo{nicer algorithm formatting} There exist many MH-based
-schemes with different properties and requirements: from the classical random-walk Metropolis
-algorithm with Gaussian proposals, over Reversible Jump MCMC for varying dimensions
+\newthought{Fre{q}uently, MCMC methods} are variations of the \emph{Metropolis-Hastings algorithm}
+(MH), which splits the general definition of the transition kernel into two parts: a proposal
+distribution, given by a conditional density \(q\) that needs to be easy to sample from, and an
+acceptance rate \(\alpha\).  Subsequent samples are then produced by proposing values from \(q\)
+given the previous element of the chain, and incorporating them into the chain with a probability
+given through \(\alpha\) (see algorithm~\ref{alg:mh}).\todo{nicer algorithm formatting} There exist
+many MH-based schemes with different properties and requirements: from the classical random-walk
+Metropolis algorithm with Gaussian proposals, over Reversible Jump MCMC for varying dimensions
 \parencite{green1995reversible}, to gradient-informed methods like Metropolis Adjusted Langevin and
 Hamiltonian Monte Carlo (HMC) \parencite{betancourt2018conceptual,girolami2011riemann}.
 
@@ -159,10 +159,10 @@ Hamiltonian Monte Carlo (HMC) \parencite{betancourt2018conceptual,girolami2011ri
   \caption{General scheme for the Metropolis-Hastings algorithm.\label{alg:mh}}
 \end{algorithm}
 
-\newthought{For multi-component structures}, of the form \(\Theta = [\Theta_1, \ldots, \Theta_N]\),
-a good proposal distribution can be hard to find, though.  One way to break down the problem is to
-use a family of componentwise updates, given by conditional distributions \(q_{i}\) operating on
-only one component of \(\Theta\), with the others fixed:
+For multi-component structures, of the form \(\Theta = [\Theta_1, \ldots, \Theta_N]\), a good
+proposal distribution can be hard to find, though.  One way to break down the problem is to use a
+family of componentwise updates, given by conditional distributions \(q_{i}\) operating on only one
+component of \(\Theta\), with the others fixed:
 \begin{equation}
   \label{eq:conditional-kernels}
   \begin{aligned}
@@ -244,12 +244,12 @@ extensively covered in \textcite[chapter 24.2]{murphy2012machine}.
 \section{Probabilistic Programming}
 \label{sec:prob-prog}
 
-Probabilistic programming is a means of describing generative models, as described in the previous
-section, through the syntax of a programming language.  It is beneficial to consider probabilistic
-programs not only as syntactic sugar for denoting the implementation of a joint probability density
-over some set of variables, but as structured objects in their own right: they open up possibilities
-that \enquote{black box} density functions cannot automatically provide. In more concise terms from
-\textcite{vandemeent2018introduction}:
+Probabilistic programming is a structured way implementing generative models, as described in the
+previous section, through the syntax of a programming language.  It is beneficial to consider
+probabilistic programs not only as syntactic sugar for denoting the implementation of a joint
+probability density over some set of variables, but as organized objects in their own right: they
+open up possibilities that \enquote{black box} density functions cannot automatically provide. In
+more concise terms from \textcite{vandemeent2018introduction}:
 \begin{quote}
   Probabilistic programming is largely about designing languages, interpreters, and compilers that
   translate inference problems denoted in programming language syntax into formal mathematical
@@ -257,16 +257,22 @@ that \enquote{black box} density functions cannot automatically provide. In more
   inference and conditioning.
 \end{quote}
 
-A probabilistic program differs from a regular program with stochastic values through the
-possibility of being conditioned on: some of the internal variables can be fixed to observed
-values. As such, the program denotes on the one hand a joint distribution, that can be \emph{forward
-  sampled} from by simply running the program top to bottom and calling a pseudo-random functions.
-But at the same time, it also represents a conditional distribution, given as an unnormalized
-conditional density, which together with an inference algorithm can also be sampled from.  Consider
-the model~\eqref{eq:normal-mixture-1} from above: its mathematical description might be translated
-into a program in \turingjl{} syntax \parencite{ge2018turing,tarek2020dynamicppl}\todo{more
-  prominent turing introduction} as
-\begin{lstlisting}
+A probabilistic program differs from a regular program (that may also contain stochastic parts)
+through the possibility of being conditioned on: some of the internal variables can be fixed to
+observed values, from outside. As such, the program denotes on the one hand a joint distribution,
+that can be \emph{forward sampled} from by simply running the program top to bottom and producing
+(pseudo-) random values.  But at the same time, it also represents a conditional distribution, in
+form on the unnormalized conditional density, which together with an inference algorithm can also be
+sampled from.  Consider the model~\eqref{eq:normal-mixture-1} from above: its mathematical
+description might be translated into a program in \turingjl{} syntax
+\parencite{ge2018turing,tarek2020dynamicppl}\todo{more prominent turing introduction} as written in
+listing~\ref{lst:normal}.
+% \begin{codelisting}[t]
+\begin{lstlisting}[%
+  float=t, frame=tb, caption={%
+  \turingjl{} implementation of a Gaussian mixture model with prior on the cluster centers,
+  equal cluster weights, and all other parameters fixed.},
+  label={lst:normal}]
 @model function normal_mixture(x, K, m, s, σ)
     N = length(x)
 
@@ -287,6 +293,7 @@ into a program in \turingjl{} syntax \parencite{ge2018turing,tarek2020dynamicppl
     return x
 end
 \end{lstlisting}
+\todo{Fix floated listings layout}
 We can then sample from the model in several ways:
 \begin{lstlisting}
 julia> m = normal_mixture(x_observations, K, m, s, σ);
@@ -332,19 +339,19 @@ sufficient syntactic flexibility, for example Gen \parencite{cusumano-towner2020
 \parencite{scherrer2019soss} in Julia (besides the already named Turing), or Pyro
 \parencite{bingham2018pyro} and PyMC3 \parencite{salvatier2016probabilistic} in Python.
 
-The latter approach is advantageous when one wants to use regular general-purpose programming
-constructs or interact with other functionalities of the host language.  There are also a variety of
-further reasons why one would rather describe an inference problem in terms of a program than in
-more \enquote{mathematical} form, like as a graph or likelihood function.  In a good probabilistic
-programming DSL, models will read as close to textbook model specifications as possible, while
-allowing to use the host language to:
+The latter approach is advantageous when one wants to enable the use of regular, general-purpose
+programming constructs or interact with other functionalities of the host language.  There are also
+a variety of further reasons why one would rather describe an inference problem in terms of a
+program than in more \enquote{mathematical} form, like as a graph or likelihood function.  In a good
+probabilistic programming DSL, models will read as close to textbook model specifications as
+possible, while allowing to use the host language to:
 \begin{itemize}
   \firmlist
 \item define recursive relationships,
 \item write models using imperative constructs, such as loops, or mutable intermediate computations
   for efficiency,
-\item extend the model execution by manual manipulations, e.g. for memoization, scaling, or
-  preliminary termination
+\item optimize details of th execution, e.g. for memoization, likelihood scaling, or preliminary
+  termination
 \item use distributions over complex custom data structures, e.g. trees,
 \item perform inference involving complex transformations from other domains, for which
   implementations already exist, e.g. neural networks or differential equation solvers , or
@@ -354,15 +361,102 @@ See \textcite{vandemeent2018introduction} for a general introduction into some c
 approaches for PPLs. \Textcite{goodman2014design} gives a detailed overview of the internals of one
 specific, continuation-based implementation called WebPPL (using a Lisp-based syntax).
 
-% In this sense, a probabilistic programming syntax defines a common format for model description,
-% more general.
+\begin{lstlisting}[float=p, caption={Expansion of model~\ref{lst:normal}.}, label={lst:normal-expanded}]
+function normal_mixture(x, K, m, s, σ)
+    function evaluator((rng, model, varinfo, sampler, context, x, K, m, s, σ)
+        N = length(x)
+        μ = Vector{Float64}(undef, K)
+        for k = 1:K
+            dist_mu = Normal(m, s)
+            vn_mu = @varname μ[k]
+            inds_mu = ((k,),)
+            μ[k] = tilde_assume(
+                rng, context, sampler, dist_mu, vn_mu, inds_mu, varinfo
+            )
+        end
+        z = Vector{Int}(undef, N)
+        for n = 1:N
+            dist_z = Categorical(K)
+            vn_z = @varname z[n]
+            inds_z = ((n,),)
+            z[n] = tilde_assume(
+                rng, context, sampler, dist_z, vn_z, inds_z, varinfo
+            )
+        end
+        for n = 1:N
+            dist_x = Normal(μ[z[n]], σ)
+            vn_x = @varname(x[n])
+            inds_x = ((n,),)
+            if isassumption(model, x, vn_x)
+                x[n] = tilde_assume(
+                    rng, context, sampler, dist_x, vn_x, inds_x, varinfo
+                )
+            else
+                tilde_observe(
+                    context, sampler, dist_x, x[n], vn_x, inds_x, varinfo
+                )
+            end
+        end
+        return x
+    end
+    return Model(
+        :normal_mixture, evaluator, 
+        (x = x, K = K, m = m, s = s, σ = σ), 
+        NamedTuple()
+    )
+end
+\end{lstlisting}
 
+\newthought{Models in \turingjl{}} work by transforming the model code, which is syntactically a
+valid Julia function definition, through the macro \jlinl{@model}.\todo{cite DPPL paper} The result
+is new function which produces instances of a structure of type \jlinl{Model}, that in turn will
+contain the observations, some metadata, and a nested function with the slightly changed original
+model code. In the concrete case of the model in listing~\ref{lst:normal}, the resulting code would
+be approximately equal to the code in listing~\ref{lst:normal-expanded}.  The purpose of this is the
+following: the outer function, the \enquote{generator}, constructs an instance of the model for
+given parameters~-- usually done once per inference problem, to fix the observations and
+hyperparameters.  Subsequently, the \jlinl{sample} function can be applied to this instance with
+different values for the sampling algorithm, which in turn will use the \jlinl{evaluator} function
+of the instance to run the model with chosen \jlinl{sampler} and \jlinl{context} arguments, that are
+passed to the \enquote{tilde functions}, to which the statements of the form \jlinl{expr ~ D} are
+converted.
 
+Inside the \enquote{tilde functions}, the real stochastic work happens.\todo{observe vs assume}
+Depending on the \jlinl{sampler} and the \jlinl{context}, values may be generated and stored in the
+\jlinl{varinfo} object, as happens for most \enquote{real} samplers.  In this case, one call to the
+\jlinl{evaluator} corresponds to one (Gibbs) sampling step.  In other situations, model evaluation
+serves the purpose of density evaluation, in which no new values need to be produced; this use case
+is needed for probability queries, or density-based inference methods (which might additionally use
+automatic differentiation on the density evaluation procedure).  All shared information for external
+usage is thereby conventionally stored in the \jlinl{varinfo} object, which resembles a dictionary
+from variable names\footnote{These \jlinl{VarName} objects, constructed by the macro
+  \jlinl{@varname}, simply represent an indexed variable by a symbol and an index tuple.} to
+values (internal sampler state can also be stored in the \jlinl{sampler} object).  Through the
+\jlinl{sample} interface, the resulting values are then stored in a \jlinl{Chains} object, a data
+frame containing a value for each variable at each sampling step.
+
+A special distinction is made for variables that are contained in the model arguments.  These by
+default serve as observed variables, and will only contribute to the likelihood, instead of being
+sampled.  But in certain cases, such as in probability evaluation or when using the complete model
+in a generative way, this behaviour can be different.  For this purpose, the variables \jlinl{x[i]}
+in the example are wrapped in a conditional statement.
+
+From the point of view of a sampling algorithm, all that it sees is a sequence of tilde statements,
+consisting of a value, a variable name, and a distribution.  Turing, crucially, does not have a
+representation of model structure.  This is sufficient for many kinds of inference algorithms that
+it already implements~-- Metropolis-Hastings, several particle methods, HMC and NUTS, and
+within-Gibbs combinations of these~-- but does not allow more intelligent usage of the available
+information.  For example, to use a true, conditional, Gibbs sampler, the user has to calculate the
+conditionals themselves.  Optimizations such as partial reevaluation of a model to save
+calculations, automatic conjugacy detection, or model transformations such as Rao-Blackwellization
+cannot be performed in this representation.\todo{cite autoconj etc.}
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Compilation and Metaprogramming in Julia}
 \label{sec:comp-metapr-julia}
+
+sldk sldks dlks dlksfj dlkfjs lkdjf slkdjls dkf
 
 \textcite{singer2018introduction}
 
