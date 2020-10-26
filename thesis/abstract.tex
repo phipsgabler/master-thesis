@@ -11,9 +11,9 @@
   The main contribution is a general system for the extraction of rich computation graphs in the
   Julia programming language, based on a transformation of the intermediate representation (IR) used
   by the compiler.  These graphs contain a slice of the whole recursive structure of any Julia
-  program in terms of executed IR instructions.  The system is flexible enough to be used for
-  multiple purposes that require dynamic program analysis or abstract interpretation, such as
-  automatic differentiation or dependency analysis.
+  program in terms of executed IR instructions, including control flow operations.  The system is
+  flexible enough to be used for multiple purposes that require dynamic program analysis or abstract
+  interpretation, such as automatic differentiation or dependency analysis.
 
   The second part of the thesis describes the application of this graph tracking system to
   probabilistic programs written for \turingjl, a probabilistic programming system implemented as an

@@ -263,7 +263,8 @@ observed values, from outside. As such, the program denotes on the one hand a jo
 that can be \emph{forward sampled} from by simply running the program top to bottom and producing
 (pseudo-) random values.  But at the same time, it also represents a conditional distribution, in
 form on the unnormalized conditional density, which together with an inference algorithm can also be
-sampled from.  Consider the model~\eqref{eq:normal-mixture-1} from above: its mathematical
+\emph{backward sampled} from.  (Other terms, such as \enquote{evaluation} and \enquote{querying},
+are used as well.)  Consider the model~\eqref{eq:normal-mixture-1} from above: its mathematical
 description might be translated into a program in \turingjl{} syntax
 \parencite{ge2018turing,tarek2020dynamicppl}\todo{more prominent turing introduction} as written in
 listing~\ref{lst:normal}.

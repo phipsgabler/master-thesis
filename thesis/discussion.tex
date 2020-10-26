@@ -8,7 +8,7 @@ from it: \irtrackerjl{} and \autogibbsjl{}.  The underlying issue~-- that \turin
 structural representation of models~-- is not at all resolved by them.
 
 The real difficulty is that dynamic models cannot be satisfactorily handled through static snapshots
-(cf. Venture).
+(cf. Venture).  TODO: compare to AutoGrad.
 
 (\juliapackage{Cassette.jl} is a package very similar to \juliapackage{IRTools.jl})
 \begin{quote}
@@ -16,8 +16,9 @@ The real difficulty is that dynamic models cannot be satisfactorily handled thro
   weapon, to force your hands to move like you knew how to fly a helicopter. Even if it works, you
   still had to learn to fly the helicopter in order to program the mind-control weapon to force
   yourself to act like you knew how to fly a helicopter.\footnote{Lyndon White, private
-    communication on \protect\url{julialang.slack.com}.}
-\end{quote}\todo{ask for permission}
+    communication on \protect\url{https://julialang.slack.com}.}
+\end{quote}
+
 
 
 
@@ -71,6 +72,13 @@ common interface for evaluators: the latter tends to assume much more about the 
 model syntax is essentially fixed: the notation of random variables used in model specification by
 hand, extended through general Julia syntax.
 
+
+% names/traces and tildes must not be separated semantically from the host language!
+
+% cf. oryx: https://www.tensorflow.org/probability/oryx
+
+% cf. soss: already similar approach with regards to symbolic ~> compilation, but expression-based
+% with combinators, not statement/IR-based.
 
 
 

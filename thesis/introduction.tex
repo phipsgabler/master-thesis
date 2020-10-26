@@ -40,14 +40,13 @@ the name \emph{source transformations}, can in turn operate on plain source code
 programming language infrastructure, like the abstract syntax tree (AST), or an intermediate
 representation (IR).  They operate on the syntactic structure of the whole program, during or before
 compilation.  Unlike in operator overloading, it is hence possible to inspect and exploit control
-structures directly.  For example, this technique is used in recent TensorFlow versions through
-AutoGrad, to automatically construct graphs from regular Python functions.  This can lead to more
-efficient results, compared to operator overloading, since the transformation is done only once per
-program and eligible for compiler optimisations.  Additionally, the user is not restricted to the
-domain specific language provided by a libray, and can use regular language constructs, data
-structures, and custom functions rather freely.  But in this approach, usually, no records of the
-actual execution paths are constructed explicitly~-- purely static information is used only at
-compile time, and cannot be accessed for further analysis or transformation during execution.
+structures directly. This can lead to more efficient results, compared to operator overloading,
+since the transformation is done only once per program and eligible for compiler optimisations.
+Additionally, the user is not restricted to the domain specific language provided by a libray, and
+can use regular language constructs, data structures, and custom functions rather freely.  But in
+this approach, usually, no records of the actual execution paths are constructed explicitly~--
+purely static information is used only at compile time, and cannot be accessed for further analysis
+or transformation during execution.
 
 \newthought{In a variety} of domains, though, the execution path of programs can drastically change
 at each run.  Examples of this from machine learning are models with non-uniform data, such as parse
@@ -68,34 +67,63 @@ see \textcite{bradbury2018jax,lattner2020mlir}.  While the main focus of these e
 optimization of linear algebra/tensor calculations and automatic differentiation, other use cases
 start to emerge, for example automatic detection of sparsity patterns \parencite{gowda2019sparsity}.
 
-In this paper, we present automatic extraction of computation graphs suitable for message-
-passing algorithms on both static and dynamic models, using source transformation instead of
-operator overloading.1 Inspired by recent work on differential programming (Innes, 2018a), our
-approach transforms the intermediate representation, used by the Julia programming language
-(Bezanson et al., 2017), of any Julia program. This system can be used to dynamically
-track computation graphs of machine learning models implemented in existing deep learning
-libraries, e.g. Yuret (2016) and Innes (2018b), and probabilistic programming systems, e.g. Ge
-et al. (2018), without having to explicitely declare graph structures. The transformation
-is implemented as a custom part of the compilation process. Its result is passed on to the
-compiler, where it can be optimised further. At run time, both data and control path are
-tracked alongside the original calculations, in the form of a so-called extended Wengert list.
-Such a list holds sub-lists of all functions called during execution, enriched by recorded control
-flow decisions and meta information that can be used to analyse the execution. Thus, the
-system combines a source transformation with a tape-based runtime approach. This allows
-us to exploit the model structure for applications such as automatic conjugacy detection.
-
+In this thesis, I present a novel variant of automatic extraction of computation graphs suitable for
+static and dynamic models, using source transformation instead of operator overloading.  Inspired by
+recent work on differential programming \parencite{innes2018don}, the approach transforms the
+intermediate representation used by the compiler of the Julia programming language.  This system can
+be used to dynamically track computation graphs of any Julia program, including machine learning
+models and probabilistic programming systems, without having to explicitely declare graph
+structures. The transformation is implemented as a custom part of the compilation process.  Its
+result is passed on to the compiler, where it can be optimised further. At run time, both data and
+control path are tracked alongside the original calculations, in the form of a nested data
+structure.  This data structure contains all functions called during execution, enriched by recorded
+control flow decisions and meta information that can be used to analyse the execution. Thus, the
+system combines advantages of a source transformation with a tape-based runtime approach.
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Related Work}
 \label{sec:related-work}
 
+The topic of this thesis crosses several disciplines~-- at least automatic differentiation, compiler
+and programming language theory, and probabilitstic programming.  Since these have not always worked
+together, similar principles may be have been found or (re-)introduced in each of them.
+
+Automatic differentiation has a long history, in which different styles becoming more or less
+fashionable depending on the dominating use-case and available languages and infrastructure.  While
+traditionally, numerical code in Fortran or C was differentiated by whole-source transfomation
+systems like Tapenade \parencite{tapenadedevelopers2019tapenade}.  In recent years, after phase of
+many library-based (or \enquote{operator overloading}) systems that were driven by the rise of deep
+learning, compiler-based approaches have regained popularity lately.  There are efforts to add
+built-in automatic differentiation to the Swift programming language \parencite{swift2019}, and work
+in Julia \parencite{innes2018don} has started to apply source transformation to the intermediate
+representation of the compiler, which enables differentiating through complex control flow, custom
+data types, and nested functions.
+
+Generalizations of the kinds of analyses and transformations found in these systems can be found
+under the term \emph{abstract interpretation} \todo{cite this}
+
+% MLIR
+
 % swift4tf, xla/jags, ad stuffs + zygote, concolic execution & abstract interpretation
 % e.g. DyNet (Neubig et al., 2017), Chainer (Tokui et
-% al., 2015), and PyTorch (Paszke et al., 2017). TensorFlow Fold (Looks et al., 2017) follows a more
-% elaborate approach and provides \enquote{dynamic batching} operators to define static graphs
-% emulating dynamic operations.
-% autograd does the same thing!
+% al., 2015), and PyTorch (Paszke et al., 2017). 
+
+As for the trade-off between transformation-based and library-based implementations, several hybrid
+graph tracking approaches between source transformation and graph tracking exist.  Among AD systems,
+recent TensorFlow versions have introduced
+AutoGraph\footnote{\url{https://www.tensorflow.org/api_docs/python/tf/autograph}, visited
+  on~2020-10-26}, which rewrites regular Python functions to traced TensorFlow implementations by
+replacing control flow statements by TensorFlow combinators which.  Such functions still need to be
+re-traced whenever a non-tensor input argument changes.  Its predecessor TensorFlow Fold
+\parencite{looks2017deep} follows a similar, but more explicit style and provides many of these
+combinators as \enquote{dynamic batching operators} to define static graphs emulating dynamic
+operations.  The \enquote{dynamicity} problem can be approached in other ways as well:
+\emph{stochastic memoization} is employed in the probabilistic programming languages Church
+\parencite{goodman2014church} and Venture \parencite{mansinghka2014venture} to produce what in the
+latter is called \enquote{probabilistic execution traces}: multiple different traces are dynamically
+stored as alternative paralles paths in the execution trace, with possible interconnections.
+
 
 %%% Local Variables: 
 %%% TeX-master: "main"

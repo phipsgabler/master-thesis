@@ -233,13 +233,12 @@
 }
 
 @software{chewxy2020gorgonia,
-  title = {Gorgonia/Gorgonia},
-  shorttitle = {Gorgonia/Gorgonia},
-  author = {Chewxy and Olivier Wulveryck and {siquus} and Dimitrii Lopanov and Vadim and {tantanchen} and Mark Kremer and {gareth} and {mattn} and Bart and Ivan Fraixedes and Darrell and Naseer Dari and Dan Kortschak and J. Emrys Landivar and Ethan Lynn and {stock1218} and Masashi SHIBATA and Nabil Servais and Pascal Masschelier and {kabaka0} and {wzzhu} and David R Soller and Andrew Murray and Ben Leitner and Bradley Kemp and Davor Kapsa and Francesc Campoy and Geoff Sindel and Harald Nordgren},
-  date = {2020-09-28},
-  doi = {10.5281/zenodo.3381671},
-  abstract = {When vectors were broadcast with a repeat of 1, one of the values is accidentally zero'd. This leaves very strange artifacts in neural networks. This has now been fixed},
-  file = {/home/philipp/Zotero/storage/XMNLHUQN/4054193.html}
+  title = {Gorgonia/Gorgonia: {{Bugfix}} Release: {{Vectors}} Were Not Properly Broadcasted},
+  author = {{Chewxy} and Wulveryck, Olivier and {siquus} and Lopanov, Dimitrii and {Vadim} and {tantanchen} and Kremer, Mark and {gareth} and {mattn} and {Bart} and Fraixedes, Ivan and {Darrell} and Dari, Naseer and Kortschak, Dan and Landivar, J. Emrys and Lynn, Ethan and {stock1218} and SHIBATA, Masashi and Servais, Nabil and Masschelier, Pascal and {kabaka0} and {wzzhu} and Soller, David R and Murray, Andrew and Leitner, Ben and Kemp, Bradley and Kapsa, Davor and Campoy, Francesc and Sindel, Geoff and Nordgren, Harald},
+  date = {2020-09},
+  doi = {10.5281/zenodo.4054193},
+  organization = {{Zenodo}},
+  version = {0.9.15}
 }
 
 @report{cohen2016automatic,
@@ -461,6 +460,21 @@
   eprint = {1206.3255},
   eprinttype = {arxiv},
   file = {/home/philipp/Zotero/storage/DYGF5DNS/Goodman et al_2012_Church.pdf;/home/philipp/Zotero/storage/C92LCFDC/1206.html},
+  primaryClass = {cs}
+}
+
+@online{goodman2014church,
+  title = {Church: A Language for Generative Models},
+  shorttitle = {Church},
+  author = {Goodman, Noah and Mansinghka, Vikash and Roy, Daniel M. and Bonawitz, Keith and Tenenbaum, Joshua B.},
+  date = {2014-07-15},
+  url = {http://arxiv.org/abs/1206.3255},
+  urldate = {2020-10-26},
+  abstract = {We introduce Church, a universal language for describing stochastic generative processes. Church is based on the Lisp model of lambda calculus, containing a pure Lisp as its deterministic subset. The semantics of Church is defined in terms of evaluation histories and conditional distributions on such histories. Church also includes a novel language construct, the stochastic memoizer, which enables simple description of many complex non-parametric models. We illustrate language features through several examples, including: a generalized Bayes net in which parameters cluster over trials, infinite PCFGs, planning by inference, and various non-parametric clustering models. Finally, we show how to implement query on any Church program, exactly and approximately, using Monte Carlo techniques.},
+  archivePrefix = {arXiv},
+  eprint = {1206.3255},
+  eprinttype = {arxiv},
+  file = {/home/philipp/Zotero/storage/H9M3QKTR/Goodman et al_2014_Church.pdf},
   primaryClass = {cs}
 }
 
@@ -860,6 +874,15 @@
   urldate = {2019-12-30},
   abstract = {I wrote a blog post about how to implement your own (operator overloading based) automatic differentiation (AD) in one day (actually 3 hrs) last year. AD looks like magic sometimes, but I'm going to t},
   file = {/home/philipp/Zotero/storage/INQWEZXX/yassad.html}
+}
+
+@article{maclaurinautograd,
+  title = {Autograd: {{Eﬀortless Gradients}} in {{Numpy}}},
+  author = {Maclaurin, Dougal and Duvenaud, David and Adams, Ryan P},
+  pages = {3},
+  abstract = {Automatic differentiation can greatly speed up prototyping and implementation of machine learning models. However, most packages are implicitly domain-specific, requiring the use of a restricted mini-language for specifying functions. We introduce autograd, a package which differentiates standard Python and Numpy code, and can differentiate code containing while loops, branches, closures, classes and even its own gradient evaluations.},
+  file = {/home/philipp/Zotero/storage/XDWTWS7W/Maclaurin et al. - Autograd Eﬀortless Gradients in Numpy.pdf},
+  langid = {english}
 }
 
 @online{mansinghka2014venture,
