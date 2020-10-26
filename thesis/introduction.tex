@@ -13,21 +13,24 @@ Another one are message passing algorithms \parencite{minka2005divergence}, whic
 the basic data structure for the operation they perform: passing values between nodes, representing
 random variables that depend on each other (in fact, message passing generalizes various other
 methods, including AD).  But also in more or less unrelated fields, such as program analysis or
-program transformation (cf. XXX\todo{examples}), the same requirements might occur through the need
-to derive abstract graphs of program flow from a given program.\todo{abstract interpretation}
+program transformation \parencite[cf.][]{muchnick1997advanced,singer2018static,aho1986compilers},
+the same requirements might occur through the need to derive abstract graphs of program flow from a
+given program for the purpose of abstract interpretation.
 
 There are several options how to provide the computation graph in question to an application, many
 of which are already established in the AD community (see \textcite{baydin2018automatic} for a
 survey on AD methods).  For one, graphs can be required to be written out explicitely by the user,
-by defining a custom input format\todo{example} or a library to build graphs \enquote{by hand}
-through an API (e.g., PyTorch \parencite{paszke2017automatic} or TensorFlow
+by defining providing a library to build graphs \enquote{by hand}
+(e.g. \textcite{chewxy2020gorgonia,jia2014caffe}~-- these interfaces tend to be more low level) or
+through a higher-level API (e.g. PyTorch \parencite{paszke2017automatic} or TensorFlow
 \parencite{abadi2015tensorflow}).  Such APIs are called \emph{operator overloading} in AD language,
 because they extend existing operations to additionally track the computation graph at runtime on
 so-called tapes or Wengert lists \parencite{bartholomew-biggs2000automatic}.  This kind of tracking
 is dynamic, in the sense that a new tape is recorded for every execution.  However, being
 implemented on a library level, it usually requires the programmer to use non-native constructs
-instead of language primitives, leading to cognitive overhead. Furthermore, there are additional
-runtime costs due to the separate interpretation of derivatives stored on the tape.
+instead of language primitives, leading to cognitive overhead.  This notably happens for control
+statements, which can rarely be \enquote{overloaded}.  Furthermore, there are additional runtime
+costs due to the separate interpretation of derivatives stored on the tape.
 
 Alternatively, an implementation can allow the user to write out computations as a \enquote{normal}
 program in an existing programming language (or possibly a restricted subset of it), and use
@@ -37,13 +40,14 @@ the name \emph{source transformations}, can in turn operate on plain source code
 programming language infrastructure, like the abstract syntax tree (AST), or an intermediate
 representation (IR).  They operate on the syntactic structure of the whole program, during or before
 compilation.  Unlike in operator overloading, it is hence possible to inspect and exploit control
-structures directly. This can lead to more efficient results, compared to operator overloading,
-since the transformation is done only once per program and eligible for compiler optimisations.
-Additionally, the user is not restricted to the domain specific language provided by a libray, and
-can use regular language constructs, data structures, and custom functions rather freely.  But in
-this approach, no records of the actual execution paths are constructed explicitly~-- purely static
-information is used only at compile time, and cannot be accessed for further analysis or
-transformation during execution.
+structures directly.  For example, this technique is used in recent TensorFlow versions through
+AutoGrad, to automatically construct graphs from regular Python functions.  This can lead to more
+efficient results, compared to operator overloading, since the transformation is done only once per
+program and eligible for compiler optimisations.  Additionally, the user is not restricted to the
+domain specific language provided by a libray, and can use regular language constructs, data
+structures, and custom functions rather freely.  But in this approach, usually, no records of the
+actual execution paths are constructed explicitly~-- purely static information is used only at
+compile time, and cannot be accessed for further analysis or transformation during execution.
 
 \newthought{In a variety} of domains, though, the execution path of programs can drastically change
 at each run.  Examples of this from machine learning are models with non-uniform data, such as parse
@@ -52,14 +56,33 @@ Bayesian nonparametric models \parencite{hjort2010bayesian}, or simply the occur
 control flow in any probabilistic model.  Such programs we call dynamic models.  The lack of an
 explicit, unique graph structure makes it impossible, or at least diffult, to apply source
 transformation approaches on them.  Operator overloading is the more direct way for supporting
-dynamic models, since it automatically records a new tape for each input. In fact, many
-state-of-the-art machine learning libraries are based on dynamic graphs using operator overloading
-in some form.
+dynamic models, since it automatically records a new tape for each input. In fact, many of the
+already mentioned state-of-the-art machine learning libraries are based on dynamic graphs using
+operator overloading in some form.
 
 However, relying on operator overloading makes it impossible to take advantage of the benefits of
 source transformations, such as utilizing information about the control flow, integrating with
 optimizations at compile time, or exploiting the source model structure.  The source transformation
-approach based on intermediate representations has recently gained popularity in machine learning.
+approach based on intermediate representations has recently gained popularity in machine learning;
+see \textcite{bradbury2018jax,lattner2020mlir}.  While the main focus of these efforts has been
+optimization of linear algebra/tensor calculations and automatic differentiation, other use cases
+start to emerge, for example automatic detection of sparsity patterns \parencite{gowda2019sparsity}.
+
+In this paper, we present automatic extraction of computation graphs suitable for message-
+passing algorithms on both static and dynamic models, using source transformation instead of
+operator overloading.1 Inspired by recent work on differential programming (Innes, 2018a), our
+approach transforms the intermediate representation, used by the Julia programming language
+(Bezanson et al., 2017), of any Julia program. This system can be used to dynamically
+track computation graphs of machine learning models implemented in existing deep learning
+libraries, e.g. Yuret (2016) and Innes (2018b), and probabilistic programming systems, e.g. Ge
+et al. (2018), without having to explicitely declare graph structures. The transformation
+is implemented as a custom part of the compilation process. Its result is passed on to the
+compiler, where it can be optimised further. At run time, both data and control path are
+tracked alongside the original calculations, in the form of a so-called extended Wengert list.
+Such a list holds sub-lists of all functions called during execution, enriched by recorded control
+flow decisions and meta information that can be used to analyse the execution. Thus, the
+system combines a source transformation with a tape-based runtime approach. This allows
+us to exploit the model structure for applications such as automatic conjugacy detection.
 
 
 
@@ -72,6 +95,7 @@ approach based on intermediate representations has recently gained popularity in
 % al., 2015), and PyTorch (Paszke et al., 2017). TensorFlow Fold (Looks et al., 2017) follows a more
 % elaborate approach and provides \enquote{dynamic batching} operators to define static graphs
 % emulating dynamic operations.
+% autograd does the same thing!
 
 %%% Local Variables: 
 %%% TeX-master: "main"

@@ -10,6 +10,14 @@
   type = {Preliminary White Paper}
 }
 
+@book{aho1986compilers,
+  title = {Compilers: {{Principles}}, Techniques and Tools},
+  author = {Aho, A and Sethi, R and Ullman, J},
+  date = {1986},
+  publisher = {{Addison-Wesley}},
+  location = {{Massachusetts}}
+}
+
 @article{andrieu2010particlea,
   title = {Particle {{Markov}} Chain {{Monte Carlo}} Methods},
   shorttitle = {Particle {{Markov}} Chain {{Monte Carlo}} Methods},
@@ -183,6 +191,14 @@
   type = {Presentation}
 }
 
+@software{bradbury2018jax,
+  title = {{{JAX}}: Composable Transformations of {{Python}}+{{NumPy}} Programs},
+  author = {Bradbury, James and Frostig, Roy and Hawkins, Peter and Johnson, Matthew James and Leary, Chris and Maclaurin, Dougal and Wanderman-Milne, Skye},
+  date = {2018},
+  url = {http://github.com/google/jax},
+  version = {0.1.55}
+}
+
 @online{carpenter2015stan,
   title = {The {{Stan Math Library}}: {{Reverse}}-{{Mode Automatic Differentiation}} in {{C}}++},
   shorttitle = {The {{Stan Math Library}}},
@@ -214,6 +230,16 @@
   issue = {1},
   langid = {english},
   number = {1}
+}
+
+@software{chewxy2020gorgonia,
+  title = {Gorgonia/Gorgonia},
+  shorttitle = {Gorgonia/Gorgonia},
+  author = {Chewxy and Olivier Wulveryck and {siquus} and Dimitrii Lopanov and Vadim and {tantanchen} and Mark Kremer and {gareth} and {mattn} and Bart and Ivan Fraixedes and Darrell and Naseer Dari and Dan Kortschak and J. Emrys Landivar and Ethan Lynn and {stock1218} and Masashi SHIBATA and Nabil Servais and Pascal Masschelier and {kabaka0} and {wzzhu} and David R Soller and Andrew Murray and Ben Leitner and Bradley Kemp and Davor Kapsa and Francesc Campoy and Geoff Sindel and Harald Nordgren},
+  date = {2020-09-28},
+  doi = {10.5281/zenodo.3381671},
+  abstract = {When vectors were broadcast with a repeat of 1, one of the values is accidentally zero'd. This leaves very strange artifacts in neural networks. This has now been fixed},
+  file = {/home/philipp/Zotero/storage/XMNLHUQN/4054193.html}
 }
 
 @report{cohen2016automatic,
@@ -620,6 +646,21 @@
   organization = {{Invenia Technical Computing}}
 }
 
+@online{jia2014caffe,
+  title = {Caffe: {{Convolutional Architecture}} for {{Fast Feature Embedding}}},
+  shorttitle = {Caffe},
+  author = {Jia, Yangqing and Shelhamer, Evan and Donahue, Jeff and Karayev, Sergey and Long, Jonathan and Girshick, Ross and Guadarrama, Sergio and Darrell, Trevor},
+  date = {2014-06-20},
+  url = {http://arxiv.org/abs/1408.5093},
+  urldate = {2020-10-26},
+  abstract = {Caffe provides multimedia scientists and practitioners with a clean and modifiable framework for state-of-the-art deep learning algorithms and a collection of reference models. The framework is a BSD-licensed C++ library with Python and MATLAB bindings for training and deploying general-purpose convolutional neural networks and other deep models efficiently on commodity architectures. Caffe fits industry and internet-scale media needs by CUDA GPU computation, processing over 40 million images a day on a single K40 or Titan GPU (\$\textbackslash approx\$ 2.5 ms per image). By separating model representation from actual implementation, Caffe allows experimentation and seamless switching among platforms for ease of development and deployment from prototyping machines to cloud environments. Caffe is maintained and developed by the Berkeley Vision and Learning Center (BVLC) with the help of an active community of contributors on GitHub. It powers ongoing research projects, large-scale industrial applications, and startup prototypes in vision, speech, and multimedia.},
+  archivePrefix = {arXiv},
+  eprint = {1408.5093},
+  eprinttype = {arxiv},
+  file = {/home/philipp/Zotero/storage/C3KDQ3XI/Jia et al_2014_Caffe.pdf;/home/philipp/Zotero/storage/PB9C2H3W/1408.html},
+  primaryClass = {cs}
+}
+
 @article{jordan1999introduction,
   title = {An Introduction to Variational Methods for Graphical Models},
   author = {Jordan, Michael I. and Ghahramani, Zoubin and Jaakkola, Tommi S. and Saul, Lawrence K.},
@@ -697,6 +738,21 @@
   file = {/home/philipp/Zotero/storage/BAV8URGH/Lam et al_2015_Numba.pdf},
   isbn = {978-1-4503-4005-2},
   series = {{{LLVM}} '15}
+}
+
+@online{lattner2020mlir,
+  title = {{{MLIR}}: {{A Compiler Infrastructure}} for the {{End}} of {{Moore}}'s {{Law}}},
+  shorttitle = {{{MLIR}}},
+  author = {Lattner, Chris and Amini, Mehdi and Bondhugula, Uday and Cohen, Albert and Davis, Andy and Pienaar, Jacques and Riddle, River and Shpeisman, Tatiana and Vasilache, Nicolas and Zinenko, Oleksandr},
+  date = {2020-02-29},
+  url = {http://arxiv.org/abs/2002.11054},
+  urldate = {2020-10-26},
+  abstract = {This work presents MLIR, a novel approach to building reusable and extensible compiler infrastructure. MLIR aims to address software fragmentation, improve compilation for heterogeneous hardware, significantly reduce the cost of building domain specific compilers, and aid in connecting existing compilers together. MLIR facilitates the design and implementation of code generators, translators and optimizers at different levels of abstraction and also across application domains, hardware targets and execution environments. The contribution of this work includes (1) discussion of MLIR as a research artifact, built for extension and evolution, and identifying the challenges and opportunities posed by this novel design point in design, semantics, optimization specification, system, and engineering. (2) evaluation of MLIR as a generalized infrastructure that reduces the cost of building compilers-describing diverse use-cases to show research and educational opportunities for future programming languages, compilers, execution environments, and computer architecture. The paper also presents the rationale for MLIR, its original design principles, structures and semantics.},
+  archivePrefix = {arXiv},
+  eprint = {2002.11054},
+  eprinttype = {arxiv},
+  file = {/home/philipp/Zotero/storage/VPAFW998/Lattner et al_2020_MLIR.pdf;/home/philipp/Zotero/storage/7REMWQFZ/2002.html},
+  primaryClass = {cs}
 }
 
 @online{laue2019equivalence,
@@ -829,7 +885,6 @@
   publisher = {{Springer}},
   location = {{New York}},
   file = {/home/philipp/Zotero/storage/M59PIE92/Marin_Robert_2007_Bayesian core.pdf},
-  isbn = {978-0-387-38979-0 978-0-387-38983-7},
   pagetotal = {255},
   series = {Springer Texts in Statistics}
 }
@@ -1210,13 +1265,13 @@
   langid = {english}
 }
 
-@incollection{singer2018introduction,
-  title = {Introduction},
-  booktitle = {Single {{Static Assignment Book}}},
+@book{singer2018static,
+  title = {Static {{Single Assignment Book}}},
   author = {Singer, J.},
   date = {2018},
   url = {http://ssabook.gforge.inria.fr/latest/book-full.pdf},
-  urldate = {2020-07-30}
+  urldate = {2020-07-30},
+  file = {/home/philipp/Zotero/storage/FJ8W43HY/Singer - 2018 - Static Single Assignment Book.pdf}
 }
 
 @inproceedings{socher2011parsing,
@@ -1239,11 +1294,6 @@
   url = {//mc-stan.org/},
   urldate = {2020-10-19},
   langid = {english}
-}
-
-@book{static,
-  title = {Static {{Single Assignment Book}}},
-  file = {/home/philipp/Zotero/storage/FJ8W43HY/book-full.pdf}
 }
 
 @software{swift2019,

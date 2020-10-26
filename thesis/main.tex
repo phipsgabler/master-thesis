@@ -2,6 +2,23 @@
 \usepackage[final,protrusion,babel]{microtype}
 \usepackage[utf8]{inputenc}
 \usepackage[T1]{fontenc}
+
+\newcommand{\longtitle}{Automatic Graph Tracking in Probabilistic Programs via Source Transformations}
+
+% LINKS AND PDF OPTIONS
+\usepackage[final]{hyperref}
+\hypersetup{
+  pdfinfo={
+    Author={Philipp Gabler},
+    Title={\longtitle}
+  },
+  colorlinks=true,
+  citecolor=textblue,
+  linkcolor=textblue,
+  urlcolor=textblue,
+  hyperfootnotes=false
+}
+
 \usepackage{typographic_setup}
 
 \usepackage[english]{babel}
@@ -9,7 +26,6 @@
 \usepackage{xspace}
 \usepackage[final]{graphicx}
 \usepackage[textsize=tiny]{todonotes}
-\usepackage[final]{hyperref}
 
 \usepackage[section]{placeins}           % \FloatBarrier
 %\usepackage{float}             % H float placement
@@ -28,20 +44,6 @@
 \usepackage[final]{listings}
 \usepackage[charsperline=94, usebox=false]{jlcode}
 
-\title{Automatic Graph Tracking in Probabilistic Programs via Source Transformations}
-
-% LINKS AND PDF OPTIONS
-\hypersetup{
-  pdfinfo={
-    Author={Philipp Gabler},
-    Title={\thetitle}
-  },
-  colorlinks=true,
-  citecolor=textblue,
-  linkcolor=textblue,
-  urlcolor=textblue,
-  hyperfootnotes=false
-}
 
 %-------------------------------------------------------------------------------
 % BIBLATEX
@@ -85,9 +87,6 @@
 \renewcommand*{\finalnamedelim}{;\space}
 
 \addbibresource{refs.bib}
-
-% \usepackage{breakurl}
-%\hypersetup{breaklinks=false}
 
 %-------------------------------------------------------------------------------
 % OTHER SETTINGS
@@ -236,7 +235,9 @@
 
 %-------------------------------------------------------------------------------
 % DOCUMENT
-%-------------------------------------------------------------------------------
+% -------------------------------------------------------------------------------
+\title{\longtitle}
+
 \begin{document}
 \chapterstyle{hangnum}
 \pagestyle{plain}
