@@ -56,6 +56,7 @@
 % \RequirePackage{amssymb}             % for the ϰ symbol
 % \RequirePackage{MnSymbol} % replaces amssymb
 \RequirePackage{eurosym}             % for the € symbol
+\RequirePackage{pmboxdraw} % for unicode box drawing characters, https://tex.stackexchange.com/a/355403/46356
 \PassOptionsToPackage{T1}{fontenc}
 \RequirePackage{fontenc}             % for the « and » symbols
 \RequirePackage{calc}                % for the creation of the code box
@@ -1041,6 +1042,13 @@ literate=
 {⋰}{{\ucc{${\scriptstyle \riddots}$}}}{3}
 {ℓ}{{\ucc{$\ell$}}}{1}
 %
+% box drawing characters
+%
+{┌}{{\ucc{\textSFi}}}{1}
+{│}{{\ucc{\textSFxi}}}{1}
+{└}{{\ucc{\textSFii}}}{1}
+{─}{{\ucc{\textSFx}}}{1}
+{┄}{{\ucc{\textSFx}}}{1}
 }
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
