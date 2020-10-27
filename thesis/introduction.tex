@@ -62,10 +62,11 @@ operator overloading in some form.
 However, relying on operator overloading makes it impossible to take advantage of the benefits of
 source transformations, such as utilizing information about the control flow, integrating with
 optimizations at compile time, or exploiting the source model structure.  The source transformation
-approach based on intermediate representations has recently gained popularity in machine learning;
-see \textcite{bradbury2018jax,lattner2020mlir}.  While the main focus of these efforts has been
-optimization of linear algebra/tensor calculations and automatic differentiation, other use cases
-start to emerge, for example automatic detection of sparsity patterns \parencite{gowda2019sparsity}.
+approach based on intermediate compiler representations has recently gained popularity in machine
+learning; see \textcite{bradbury2018jax,lattner2020mlir}.  While the main focus of these efforts has
+been optimization of linear algebra/tensor calculations and automatic differentiation, other use
+cases start to emerge, for example automatic detection of sparsity patterns
+\parencite{gowda2019sparsity}.
 
 In this thesis, I present a novel variant of automatic extraction of computation graphs suitable for
 static and dynamic models, using source transformation instead of operator overloading.  Inspired by
@@ -90,24 +91,33 @@ and programming language theory, and probabilitstic programming.  Since these ha
 together, similar principles may be have been found or (re-)introduced in each of them.
 
 Automatic differentiation has a long history, in which different styles becoming more or less
-fashionable depending on the dominating use-case and available languages and infrastructure.  While
-traditionally, numerical code in Fortran or C was differentiated by whole-source transfomation
+fashionable depending on the dominating use-case and available languages and infrastructure.
+Traditionally, numerical code in Fortran or C was differentiated by whole-source transfomation
 systems like Tapenade \parencite{tapenadedevelopers2019tapenade}.  In recent years, after phase of
 many library-based (or \enquote{operator overloading}) systems that were driven by the rise of deep
-learning, compiler-based approaches have regained popularity lately.  There are efforts to add
-built-in automatic differentiation to the Swift programming language \parencite{swift2019}, and work
-in Julia \parencite{innes2018don} has started to apply source transformation to the intermediate
-representation of the compiler, which enables differentiating through complex control flow, custom
-data types, and nested functions.
+learning \parencite{abadi2015tensorflow,paszke2017automatic,neubig2017dynet,tokui2015chainer},
+compiler-based approaches have regained popularity lately.  There are ongoing efforts to add
+built-in automatic differentiation to the Swift programming language in Swift for TensorFlow
+\parencite{swift2019}, and work in Julia for Zygote \parencite{innes2018don} has started to apply
+source transformation to the intermediate representation of the compiler, which enables
+differentiating through complex control flow, custom data types, and nested functions.  A similar
+approach to Zygote is taken in Python with Tangent \parencite{vanmerrienboer2018tangent}.
 
 Generalizations of the kinds of analyses and transformations found in these systems can be found
-under the term \emph{abstract interpretation} \todo{cite this}
+under multiple terms in the compiler literature.  Data- and control-flow analysis problems, as well
+as other forms of information propagation in programs, can be described\emph{abstract
+  interpretation} \parencite{muchnick1997advanced,singer2018static}.  These methods, which find
+fixed points in relations defined over a program, can in turn be seen as a form of message passing,
+under which not only a variety of learning algorithms can be summarized
+\parencite{minka2005divergence}, but also automatic differentiation \parencite{minka2019automatic}
+and gradient based optimization \parencite{dauwels2005steepest}.  Other forms of abstract analysis
+can serve sparsity detection \parencite{gowda2019sparsity} or the detection of program parts that
+need not to be reevaluation after input changes \parencite{becker2020dynamic}.  In many of these
+methods, not the original form of the program is used, but a syntactically simplified lowered form.
+Such forms can be dependency graphs as used in compiler theory, or 
 
-% MLIR
 
-% swift4tf, xla/jags, ad stuffs + zygote, concolic execution & abstract interpretation
-% e.g. DyNet (Neubig et al., 2017), Chainer (Tokui et
-% al., 2015), and PyTorch (Paszke et al., 2017). 
+% MLIR xla/jags, concolic execution & abstract interpretation
 
 As for the trade-off between transformation-based and library-based implementations, several hybrid
 graph tracking approaches between source transformation and graph tracking exist.  Among AD systems,
@@ -120,7 +130,7 @@ re-traced whenever a non-tensor input argument changes.  Its predecessor TensorF
 combinators as \enquote{dynamic batching operators} to define static graphs emulating dynamic
 operations.  The \enquote{dynamicity} problem can be approached in other ways as well:
 \emph{stochastic memoization} is employed in the probabilistic programming languages Church
-\parencite{goodman2014church} and Venture \parencite{mansinghka2014venture} to produce what in the
+\parencite{goodman2012church} and Venture \parencite{mansinghka2014venture} to produce what in the
 latter is called \enquote{probabilistic execution traces}: multiple different traces are dynamically
 stored as alternative paralles paths in the execution trace, with possible interconnections.
 
