@@ -104,20 +104,30 @@ differentiating through complex control flow, custom data types, and nested func
 approach to Zygote is taken in Python with Tangent \parencite{vanmerrienboer2018tangent}.
 
 Generalizations of the kinds of analyses and transformations found in these systems can be found
-under multiple terms in the compiler literature.  Data- and control-flow analysis problems, as well
-as other forms of information propagation in programs, can be described\emph{abstract
-  interpretation} \parencite{muchnick1997advanced,singer2018static}.  These methods, which find
-fixed points in relations defined over a program, can in turn be seen as a form of message passing,
-under which not only a variety of learning algorithms can be summarized
+under multiple terms in the compiler literature: data- and control-flow analysis, information
+propagation, or abstract interpretation \parencite{muchnick1997advanced,singer2018static}.  These
+methods, most of which find fixed points in relations defined over a program, can in turn be seen as
+a form of message passing, under which not only a variety of learning algorithms can be summarized
 \parencite{minka2005divergence}, but also automatic differentiation \parencite{minka2019automatic}
 and gradient based optimization \parencite{dauwels2005steepest}.  Other forms of abstract analysis
-can serve sparsity detection \parencite{gowda2019sparsity} or the detection of program parts that
-need not to be reevaluation after input changes \parencite{becker2020dynamic}.  In many of these
-methods, not the original form of the program is used, but a syntactically simplified lowered form.
-Such forms can be dependency graphs as used in compiler theory, or 
+exist for program optimization, e.g., sparsity detection \parencite{gowda2019sparsity} or the
+detection of program parts that need not to be reevaluation after input changes
+\parencite{becker2020dynamic}.
 
-
-% MLIR xla/jags, concolic execution & abstract interpretation
+Many implementations of these methods do not use the original form of the program, but a
+syntactically simplified lowered form.  Such forms can be dependency graphs as used in compiler
+theory, or the intermediate languages used by actual compiler implementations.  Recently, special
+intermediate language for machine learning applications have been introduced.  One of them is MLIR
+(\enquote{machine learning intermediate language}, \textcite{lattner2020mlir}) with the purpose of
+forming a reusable mid-layer between programming languages and runtimes, featuring exchangeability
+between different machine learning frameworks and and \enquote{accelerators} (pieces of hardware),
+while taking advantage of modern compiler technology similar to LLVM
+\parencite{llvmproject2019llvm}.  A similar role is played by Swift's intermediate representation in
+the Swift for TensorFlow project.  XLA (\enquote{accelerated linear algebra}, \textcite{xla2020})
+plays a similar role for expression-graph based machine learning systems, compiling those graphs
+directly to optimized code; this system forms the basis of JAX \parencite{bradbury2018jax}, which
+allows to JIT-compile numerical Python functions, that would otherwise be slow, to efficient
+platform code.\todo{concolic execution?}
 
 As for the trade-off between transformation-based and library-based implementations, several hybrid
 graph tracking approaches between source transformation and graph tracking exist.  Among AD systems,
