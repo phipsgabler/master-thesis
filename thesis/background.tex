@@ -457,8 +457,20 @@ cannot be performed in this representation.\todo{cite autoconj etc.}
 \section{Compilation and Metaprogramming in Julia}
 \label{sec:comp-metapr-julia}
 
-sldk sldks dlks dlksfj dlkfjs lkdjf slkdjls dkf\texttt{\S}
+Julia \parencite{bezanson2017julia} is a programming language with a dynamic, strong type system
+with nominal, parametric subtyping and elaborate multiple dispatch.  It uses LLVM
+\parencite{llvmproject2019llvm} for JIT-compilation and while it is dynamically typed, a combination
+of method specialization and type inference allows it to produce very optimized, fast machine code
+\parencite{bezanson2018julia}.  The language is syntactically designed to bear a certain resemblance
+to Matlab, Python, or Ruby, but contrary to them, it is its own compiler, not primarily the reliance
+on third-party numerical libraries (e.g., BLAS and LAPACK), that is enabling C-like speed.
 
+On top of that, the language is built on a very different, open compilation model.  Underlying the
+surface syntax is an abstract syntax tree (AST), that is used internally to the compiler, but also
+exposed to the programmer through macros, which allow to transform pieces of code at compile time.
+These macros resemble proper hygienic, LISP-style code transformations, not simple
+text-substitutions as C preprocessor macros.  As an example, look at the following function that
+sums up the sines of a list of numbers:
 \begin{lstlisting}
 function foo(x)
     y = zero(eltype(x))
@@ -468,22 +480,24 @@ function foo(x)
     return y
 end
 \end{lstlisting}
-
-The macro invocation of \jlinl{@show} will be converted to a function call receiving as input the
-expression
+The macro invocation of \jlinl{@show} will be treated by the compiler, during parsing, as a function
+call receiving as input the following data structure, representing \jlinl{y += sin(x[i])} in
+S-expression-like form:
 \begin{lstlisting}
 Expr(:+=, :y, Expr(:call, :sin, Expr(:ref, :x, :i)))
 \end{lstlisting}
 In this particular case, the nested structure is not taken advantage of or transformed, but simply
-taken as is and used to print the value of the expression, labelled by it's form in the code:
+converted to a string used to print the value of the expression, labelled by its form in the code.
+It is then spliced back into the AST and compiled further as
 \begin{lstlisting}
 function foo(x)
     y = zero(eltype(x))
     for i = eachindex(x)
         begin
-            Base.println(
+            println(
                 "y += sin(x[i]) = ",
-                Base.repr(var"#24#value" = (y += sin(x[i]))))
+                repr(var"#24#value" = (y += sin(x[i])))
+            )
             var"#24#value"
         end
     end
@@ -491,8 +505,11 @@ function foo(x)
 end
 \end{lstlisting}
 After macro expansion, the code of the function is \emph{lowered} into an intermediate
-representation consisting of only function calls and branches.  For example, the for loop in the
-example is converted into code equivalent to
+representation consisting of only function calls and branches.  This comprises of sevaral
+transformations: for one, certain syntactic constructs are \enquote{desugared} into primitive
+function calls.  For example, array accesses, \jlinl{x[i]}, are replaced by calls to the library
+function \jlinl{getindex(x, i)}.  The for loop in the example is converted into a while loop using
+the \jlinl{iterate} library function:
 \begin{lstlisting}
 iterable = eachindex(x)
 iter_result = iterate(iterable)
@@ -502,146 +519,155 @@ while !(iter_result === nothing)
     iter_result = iterate(iterable, state)
 end
 \end{lstlisting}
-which is then lowered into three blocks related through conditional branching statements.
+After that, all remaining control flow statements (e.g., while loops and conditionals) are converted
+into a sequence of labelled code blocks with (possibly conditional) jumps between them. Our example
+is therefore lowered into four blocks as follows:
 \begin{lstlisting}
-1 ─ %1  = Main.eltype(x)
-│         y = Main.zero(%1)
-│   %3  = Main.eachindex(x)
-│         @_4 = Base.iterate(%3)
+1 ─ %1  = eltype(x)
+│         y = zero(%1)
+│   %3  = eachindex(x)
+│         @_4 = iterate(%3)
 │   %5  = @_4 === nothing
-│   %6  = Base.not_int(%5)
+│   %6  = not_int(%5)
 └──       goto §4 if not %6
 2 ┄ %8  = @_4
 │         i = Core.getfield(%8, 1)
 │   %10 = Core.getfield(%8, 2)
 │   %11 = y
-│   %12 = Base.getindex(x, i)
-│   %13 = Main.sin(%12)
+│   %12 = getindex(x, i)
+│   %13 = sin(%12)
 │   %14 = %11 + %13
 │         y = %14
 │         value = %14
-│   %17 = Base.repr(%14)
-│         Base.println("y += sin(x[i]) = ", %17)
+│   %17 = repr(%14)
+│         println("y += sin(x[i]) = ", %17)
 │         value
-│         @_4 = Base.iterate(%3, %10)
+│         @_4 = iterate(%3, %10)
 │   %21 = @_4 === nothing
-│   %22 = Base.not_int(%21)
+│   %22 = not_int(%21)
 └──       goto §4 if not %22
 3 ─       goto §2
 4 ┄       return y
 \end{lstlisting}
-
-\begin{lstlisting}
-1: (%1, %2)
-  %3 = Main.eltype(%2)
-  %4 = Main.zero(%3)
-  %5 = Main.eachindex(%2)
-  %6 = Base.iterate(%5)
-  %7 = %6 === nothing
-  %8 = Base.not_int(%7)
-  br 3 (%4) unless %8
-  br 2 (%6, %4)
-2: (%9, %10)
-  %11 = Core.getfield(%9, 1)
-  %12 = Core.getfield(%9, 2)
-  %13 = Base.getindex(%2, %11)
-  %14 = Main.sin(%13)
-  %15 = %10 + %14
-  %16 = Base.repr(%15)
-  %17 = Base.println("y += sin(x[i]) = ", %16)
-  %18 = Base.iterate(%5, %12)
-  %19 = %18 === nothing
-  %20 = Base.not_int(%19)
-  br 3 (%15) unless %20
-  br 2 (%18, %15)
-3: (%21)
-  return %21
-\end{lstlisting}
-
+Note that until now, the operations involved were purely syntactic in nature, and could be perfomed
+by solely taking into account the code of the function \jlinl{foo}.  As soon as \jlinl{foo} is
+called on a concrete type, though, the most specific method fitting to the argument types will be
+selected, and type inference on its body be started.  If we go on and call \jlinl{foo([1.0])}, with
+\jlinl{Vector{Int}} as the sole argument type, the following will be inferred:
 % code_warntype
 \begin{lstlisting}
-1 ─ %1  = Main.eltype(x)::Core.Compiler.Const(Float64, false)
-│         (y = Main.zero(%1))
-│   %3  = Main.eachindex(x)::Base.OneTo{Int64}
-│         (@_4 = Base.iterate(%3))
+1 ─ %1  = eltype(x)::Core.Compiler.Const(Float64, false)
+│         (y = zero(%1))
+│   %3  = eachindex(x)::OneTo{Int64}
+│         (@_4 = iterate(%3))
 │   %5  = (@_4 === nothing)::Bool
-│   %6  = Base.not_int(%5)::Bool
+│   %6  = not_int(%5)::Bool
 └──       goto §4 if not %6
 2 ┄ %8  = @_4::Tuple{Int64,Int64}::Tuple{Int64,Int64}
 │         (i = Core.getfield(%8, 1))
 │   %10 = Core.getfield(%8, 2)::Int64
 │   %11 = y::Float64
-│   %12 = Base.getindex(x, i)::Float64
-│   %13 = Main.sin(%12)::Float64
+│   %12 = getindex(x, i)::Float64
+│   %13 = sin(%12)::Float64
 │   %14 = (%11 + %13)::Float64
 │         (y = %14)
 │         (value = %14)
-│   %17 = Base.repr(%14)::String
-│         Base.println("y += sin(x[i]) = ", %17)
+│   %17 = repr(%14)::String
+│         println("y += sin(x[i]) = ", %17)
 │         value
-│         (@_4 = Base.iterate(%3, %10))
+│         (@_4 = iterate(%3, %10))
 │   %21 = (@_4 === nothing)::Bool
-│   %22 = Base.not_int(%21)::Bool
+│   %22 = not_int(%21)::Bool
 └──       goto §4 if not %22
 3 ─       goto §2
 4 ┄       return y
 \end{lstlisting}
 
+
 % code_typed
 \begin{lstlisting}
-1 ── %1  = Base.arraysize(x, 1)::Int64
-│    %2  = Base.slt_int(%1, 0)::Bool
-│    %3  = Base.ifelse(%2, 0, %1)::Int64
-│    %4  = Base.slt_int(%3, 1)::Bool
+1 ── %1  = arraysize(x, 1)::Int64
+│    %2  = slt_int(%1, 0)::Bool
+│    %3  = ifelse(%2, 0, %1)::Int64
+│    %4  = slt_int(%3, 1)::Bool
 └───       goto §3 if not %4
 2 ──       goto §4
 3 ──       goto §4
 4 ┄─ %8  = φ (§2 => true, §3 => false)::Bool
 │    %9  = φ (§3 => 1)::Int64
 │    %10 = φ (§3 => 1)::Int64
-│    %11 = Base.not_int(%8)::Bool
+│    %11 = not_int(%8)::Bool
 └───       goto §22 if not %11
 5 ┄─ %13 = φ (§4 => 0.0, §21 => %18)::Float64
 │    %14 = φ (§4 => %9, §21 => %42)::Int64
 │    %15 = φ (§4 => %10, §21 => %43)::Int64
-│    %16 = Base.arrayref(true, x, %14)::Float64
-│    %17 = invoke Main.sin(%16::Float64)::Float64
-│    %18 = Base.add_float(%13, %17)::Float64
-│    %19 = Base.sle_int(1, 1)::Bool
+│    %16 = arrayref(true, x, %14)::Float64
+│    %17 = invoke sin(%16::Float64)::Float64
+│    %18 = add_float(%13, %17)::Float64
+│    %19 = sle_int(1, 1)::Bool
 └───       goto §7 if not %19
-6 ── %21 = Base.sle_int(1, 0)::Bool
+6 ── %21 = sle_int(1, 0)::Bool
 └───       goto §8
 7 ──       nothing::Nothing
 8 ┄─ %24 = φ (§6 => %21, §7 => false)::Bool
 └───       goto §10 if not %24
-9 ──       invoke Base.getindex(()::Tuple, 1::Int64)::Union{}
+9 ──       invoke getindex(()::Tuple, 1::Int64)::Union{}
 └───       $(Expr(:unreachable))::Union{}
 10 ┄       goto §11
 11 ─       goto §12
 12 ─       goto §13
 13 ─       goto §14
-14 ─ %32 = invoke Base.:(var"#sprint#339")(
+14 ─ %32 = invoke :(var"#sprint#339")(
              nothing::Nothing, 0::Int64, sprint::typeof(sprint), 
              show::Function, %18::Float64
            )::String
 └───       goto §15
 15 ─       goto §16
 16 ─       goto §17
-17 ─       invoke Base.println("y += sin(x[i]) = "::String, %32::String)::Any
+17 ─       invoke println("y += sin(x[i]) = "::String, %32::String)::Any
 │    %37 = (%15 === %3)::Bool
 └───       goto §19 if not %37
 18 ─       goto §20
-19 ─ %40 = Base.add_int(%15, 1)::Int64
+19 ─ %40 = add_int(%15, 1)::Int64
 └───       goto §20
 20 ┄ %42 = φ (§19 => %40)::Int64
 │    %43 = φ (§19 => %40)::Int64
 │    %44 = φ (§18 => true, §19 => false)::Bool
-│    %45 = Base.not_int(%44)::Bool
+│    %45 = not_int(%44)::Bool
 └───       goto §22 if not %45
 21 ─       goto §5
 22 ┄ %48 = φ (§20 => %18, §4 => 0.0)::Float64
 └───       return %48
 \end{lstlisting}
+
+\begin{lstlisting}
+1: (%1, %2)
+  %3 = eltype(%2)
+  %4 = zero(%3)
+  %5 = eachindex(%2)
+  %6 = iterate(%5)
+  %7 = %6 === nothing
+  %8 = not_int(%7)
+  br 3 (%4) unless %8
+  br 2 (%6, %4)
+2: (%9, %10)
+  %11 = Core.getfield(%9, 1)
+  %12 = Core.getfield(%9, 2)
+  %13 = getindex(%2, %11)
+  %14 = sin(%13)
+  %15 = %10 + %14
+  %16 = repr(%15)
+  %17 = println("y += sin(x[i]) = ", %16)
+  %18 = iterate(%5, %12)
+  %19 = %18 === nothing
+  %20 = not_int(%19)
+  br 3 (%15) unless %20
+  br 2 (%18, %15)
+3: (%21)
+  return %21
+\end{lstlisting}
+
+
 
 \textcite{singer2018static}
 
