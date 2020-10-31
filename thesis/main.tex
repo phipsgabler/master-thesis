@@ -23,12 +23,10 @@
 
 \usepackage[english]{babel}
 \usepackage[style=english]{csquotes}
-\usepackage{xspace}
+% \usepackage{xspace}
 \usepackage[final]{graphicx}
 \usepackage[textsize=tiny]{todonotes}
 
-\usepackage[section]{placeins}           % \FloatBarrier
-%\usepackage{float}             % H float placement
 % \usepackage[originalcommands]{ragged2e} % improved ragged paragraphs in abstract
 \usepackage{eso-pic}
 
@@ -92,34 +90,57 @@
 % OTHER SETTINGS
 %
 
-% \AtBeginDocument{%
-%   \lstMakeShortInline[style={inline}]|
-% }
-
 % toc
 % \setlength{\cftbeforechapterskip}{1ex} % decrease space between sections
 
-% floats and epigraphs
+% floats
 \newlength{\capwidth}
 \addtolength{\capwidth}{\textwidth}
 \addtolength{\capwidth}{-4ex}
 \captionwidth{\capwidth}
 \captionstyle[\raggedright]{}
+% \renewcommand{\textfloatsep}{\baselineskip}
 
+\setFloatBlockFor{section} % like \usepackage[section]{placeins}, but from memoir
+
+% listing floats
+\newfloat[chapter]{lstfloat}{lolst}{Listing}
+\newsubfloat{lstfloat}
+\makeatother
+\lstdefinestyle{lstfloat}{%
+  aboveskip=\smallskipamount,
+  belowskip=\smallskipamount,
+  frame=tb,
+  rulecolor=\color{black},
+}
+
+% algorithm floats
+\newcommand{\algorithmname}{Algorithm}
+\newcommand{\listalgorithmname}{List of Algorithms}
+\newlistof{listofalgorithms}{loa}{\listalgorithmname}
+\newfloat{algorithm}{loa}{\algorithmname}
+\newfixedcaption{\falgcaption}{algorithm}
+\newlistentry{algorithm}{loa}{0}
+
+\newenvironment{myalgorithmic}{\begin{enumerate}\sffamily}{\end{enumerate}}
+
+% \usepackage{float}
+% \floatstyle{ruled}
+% \restylefloat{algorithm}
+
+% epigraphs
 \setlength{\epigraphwidth}{\textwidth}
 \setlength{\epigraphrule}{0pt}
 
-\renewcommand{\textfloatsep}{\baselineskip}
-
-\setcounter{topnumber}{1}       % allow only one float per page
+% \setcounter{topnumber}{1}       % allow only one float per page
 
 % no need for colors here...
 % \colorlet{textred}{darkgray!80}
 % \colorlet{textblue}{darkgray!80}
 
-\newcommand{\lstlistingautorefname}{Listing}
+% \newcommand{\lstlistingautorefname}{Listing}
 
-% csquotes
+% csquotes blockquote
 % redefine spacing above/below; hacking original latex definition from 
 % http://mirrors.ctan.org/macros/latex/base/classes.dtx
 \makeatletter
@@ -138,19 +159,6 @@
 % \usepackage{tikz}
 % \usepackage{rotating}
 
-% ALGORITHM FLOATS
-\newcommand{\algorithmname}{Algorithm}
-\newcommand{\listalgorithmname}{List of Algorithms}
-\newlistof{listofalgorithms}{loa}{\listalgorithmname}
-\newfloat{algorithm}{loa}{\algorithmname}
-\newfixedcaption{\falgcaption}{algorithm}
-\newlistentry{algorithm}{loa}{0}
-
-\usepackage{float}
-\floatstyle{ruled}
-\restylefloat{algorithm}
-
-\newenvironment{myalgorithmic}{\begin{enumerate}\sffamily}{\end{enumerate}}
 
 %-------------------------------------------------------------------------------
 % DOCUMENT MACROS

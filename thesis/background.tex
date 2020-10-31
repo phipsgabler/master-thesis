@@ -244,6 +244,32 @@ extensively covered in \textcite[chapter 24.2]{murphy2012machine}.
 \section{Probabilistic Programming}
 \label{sec:prob-prog}
 
+\begin{lstfloat}
+  \begin{lstlisting}[style=lstfloat]
+@model function normal_mixture(x, K, m, s, σ)
+    N = length(x)
+
+    μ = Vector{Float64}(undef, K)
+    for k = 1:K
+        μ[k] ~ Normal(m, s)
+    end
+
+    z = Vector{Int}(undef, N)
+    for n = 1:N
+        z[n] ~ Categorical(K)
+    end
+
+    for n = 1:N
+        x[n] ~ Normal(μ[z[n]], σ)
+    end
+
+    return x
+end
+\end{lstlisting}
+    \caption{\turingjl{} implementation of a Gaussian mixture model with prior on the cluster centers,
+    equal cluster weights, and all other parameters fixed.\label{lst:normal}}
+\end{lstfloat}
+
 Probabilistic programming is a structured way implementing generative models, as described in the
 previous section, through the syntax of a programming language.  It is beneficial to consider
 probabilistic programs not only as syntactic sugar for denoting the implementation of a joint
@@ -268,33 +294,7 @@ are used as well.)  Consider the model~\eqref{eq:normal-mixture-1} from above: t
 on it in \turingjl{} \parencite{ge2018turing}, the probabilistic programming language used in this
 thesis, its mathematical description might be translated into the Julia program given in
 listing~\ref{lst:normal}.
-% \begin{codelisting}[t]
-\begin{lstlisting}[%
-  float=t, frame=tb, caption={%
-  \turingjl{} implementation of a Gaussian mixture model with prior on the cluster centers,
-  equal cluster weights, and all other parameters fixed.},
-  label={lst:normal}]
-@model function normal_mixture(x, K, m, s, σ)
-    N = length(x)
 
-    μ = Vector{Float64}(undef, K)
-    for k = 1:K
-        μ[k] ~ Normal(m, s)
-    end
-
-    z = Vector{Int}(undef, N)
-    for n = 1:N
-        z[n] ~ Categorical(K)
-    end
-
-    for n = 1:N
-        x[n] ~ Normal(μ[z[n]], σ)
-    end
-
-    return x
-end
-\end{lstlisting}
-\todo{Fix floated listings layout}
 We can then sample from the model in several ways using Julia:
 \begin{lstlisting}
 julia> m = normal_mixture(x_observations, K, m, s, σ);
@@ -364,7 +364,8 @@ See \textcite{vandemeent2018introduction} for a general introduction into some c
 approaches for PPLs. \Textcite{goodman2014design} gives a detailed overview of the internals of one
 specific, continuation-based implementation called WebPPL (using a Lisp-based syntax).
 
-\begin{lstlisting}[float=p, caption={Expansion of model~\ref{lst:normal}.}, label={lst:normal-expanded}]
+\begin{lstfloat}
+  \begin{lstlisting}[style=lstfloat]
 function normal_mixture(x, K, m, s, σ)
     function evaluator((rng, model, varinfo, sampler, context, x, K, m, s, σ)
         N = length(x)
@@ -409,6 +410,9 @@ function normal_mixture(x, K, m, s, σ)
     )
 end
 \end{lstlisting}
+    \caption{Macro-expanded and slightly simplified code of the model in
+    listing~\ref{lst:normal}.\label{lst:normal-expanded}}
+\end{lstfloat}
 
 \newthought{Models in \turingjl{}} are written in \dppljl{} syntax \parencite{tarek2020dynamicppl},
 which transforms valid Julia function definitions into a reusable representation (\jlinl{@model} is
@@ -528,51 +532,25 @@ end
 \end{lstlisting}
 Consequently, all remaining control flow statements (e.g., while loops and conditionals) are
 converted into a sequence of labelled code blocks with (possibly conditional) jumps between
-them. Our example is therefore lowered into four blocks as follows:
-\begin{lstlisting}
-1 ─ %1  = eltype(x)
-│         y = zero(%1)
-│   %3  = eachindex(x)
-│         @_4 = iterate(%3)
-│   %5  = @_4 === nothing
-│   %6  = not_int(%5)
-└──       goto §4 if not %6
-2 ┄ %8  = @_4
-│         i = Core.getfield(%8, 1)
-│   %10 = Core.getfield(%8, 2)
-│   %11 = y
-│   %12 = getindex(x, i)
-│   %13 = sin(%12)
-│   %14 = %11 + %13
-│         y = %14
-│         value = %14
-│   %17 = repr(%14)
-│         println("y += sin(x[i]) = ", %17)
-│         value
-│         @_4 = iterate(%3, %10)
-│   %21 = @_4 === nothing
-│   %22 = not_int(%21)
-└──       goto §4 if not %22
-3 ─       goto §2
-4 ┄       return y
-\end{lstlisting}
-Note that until now, the operations involved were purely syntactic in nature, and could be perfomed
-by solely taking into account the code of the function \jlinl{foo}.  As soon as \jlinl{foo} is
-called on a concrete type, though, the most specific method fitting to the argument types will be
-selected, and type inference on its body be started.  If we go on and call \jlinl{foo([1.0])}, with
-\jlinl{Vector\{Int\}} as the sole argument type, the following will be inferred:
-% code_warntype
-\begin{lstlisting}
-1 ─ %1  = eltype(x)::Core.Compiler.Const(Float64, false)
+them. Our example is therefore lowered into four blocks as in listing~\ref{lst:foo-inferred}.  Note
+that until now, the operations involved were purely syntactic in nature, and could be perfomed by
+solely taking into account the code of the function \jlinl{foo}.  As soon as \jlinl{foo} is called
+on a concrete type, though, the most specific method fitting to the argument types will be selected,
+and type inference on its body be started.  If we go on and call \jlinl{foo([1.0])}, with
+\jlinl{Vector\{Int\}} as the sole argument type, the following will be inferred~-- the result of our
+example as the annotations in the same listing.
+\begin{lstfloat}
+\begin{lstlisting}[style=lstfloat]
+1 ─ %1  = eltype(x)::Compiler.Const(Float64, false)
 │         (y = zero(%1))
 │   %3  = eachindex(x)::OneTo{Int64}
 │         (@_4 = iterate(%3))
 │   %5  = (@_4 === nothing)::Bool
 │   %6  = not_int(%5)::Bool
 └──       goto §4 if not %6
-2 ┄ %8  = @_4::Tuple{Int64,Int64}::Tuple{Int64,Int64}
-│         (i = Core.getfield(%8, 1))
-│   %10 = Core.getfield(%8, 2)::Int64
+2 ┄ %8  = @_4::Tuple{Int64,Int64}
+│         (i = getfield(%8, 1))
+│   %10 = getfield(%8, 2)::Int64
 │   %11 = y::Float64
 │   %12 = getindex(x, i)::Float64
 │   %13 = sin(%12)::Float64
@@ -589,10 +567,14 @@ selected, and type inference on its body be started.  If we go on and call \jlin
 3 ─       goto §2
 4 ┄       return y
 \end{lstlisting}
+  \caption{Lowered code of the example function \texttt{foo} defined above, annotated with inferred
+    types (as through \protect\jlinl{@code_warntype}).\label{lst:foo-inferred}}
+\end{lstfloat}
 
+Bla bla \parencite{singer2018static}.
 
-% code_typed
-\begin{lstlisting}
+\begin{lstfloat}
+  \begin{lstlisting}[style=lstfloat]
 1 ── %1  = arraysize(x, 1)::Int64
 │    %2  = slt_int(%1, 0)::Bool
 │    %3  = ifelse(%2, 0, %1)::Int64
@@ -646,37 +628,42 @@ selected, and type inference on its body be started.  If we go on and call \jlin
 22 ┄ %48 = φ (§20 => %18, §4 => 0.0)::Float64
 └───       return %48
 \end{lstlisting}
+    \caption{Typed and optimized code in SSA form.}
+\end{lstfloat}
 
-\begin{lstlisting}
-1: (%1, %2)
-  %3 = eltype(%2)
-  %4 = zero(%3)
-  %5 = eachindex(%2)
-  %6 = iterate(%5)
-  %7 = %6 === nothing
-  %8 = not_int(%7)
-  br 3 (%4) unless %8
-  br 2 (%6, %4)
-2: (%9, %10)
-  %11 = Core.getfield(%9, 1)
-  %12 = Core.getfield(%9, 2)
-  %13 = getindex(%2, %11)
-  %14 = sin(%13)
-  %15 = %10 + %14
-  %16 = repr(%15)
-  %17 = println("y += sin(x[i]) = ", %16)
-  %18 = iterate(%5, %12)
-  %19 = %18 === nothing
-  %20 = not_int(%19)
-  br 3 (%15) unless %20
-  br 2 (%18, %15)
-3: (%21)
-  return %21
-\end{lstlisting}
+% \begin{lstfloat}
+%   % \begin{lstlisting}[style=lstfloat]
+% 1: (%1, %2)
+%   %3 = eltype(%2)
+%   %4 = zero(%3)
+%   %5 = eachindex(%2)
+%   %6 = iterate(%5)
+%   %7 = %6 === nothing
+%   %8 = not_int(%7)
+%   br 3 (%4) unless %8
+%   br 2 (%6, %4)
+% 2: (%9, %10)
+%   %11 = getfield(%9, 1)
+%   %12 = getfield(%9, 2)
+%   %13 = getindex(%2, %11)
+%   %14 = sin(%13)
+%   %15 = %10 + %14
+%   %16 = repr(%15)
+%   %17 = println(
+%             "y += sin(x[i]) = ", %16
+%         )
+%   %18 = iterate(%5, %12)
+%   %19 = %18 === nothing
+%   %20 = not_int(%19)
+%   br 3 (%15) unless %20
+%   br 2 (%18, %15)
+% 3: (%21)
+%   return %21
+% \end{lstlisting}
+%   % \end{lstfloat}
 
 
 
-\textcite{singer2018static}
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
