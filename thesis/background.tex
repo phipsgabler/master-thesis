@@ -264,9 +264,9 @@ that can be \emph{forward sampled} from by simply running the program top to bot
 (pseudo-) random values.  But at the same time, it also represents a conditional distribution, in
 form on the unnormalized conditional density, which together with an inference algorithm can also be
 \emph{backward sampled} from.  (Other terms, such as \enquote{evaluation} and \enquote{querying},
-are used as well.)  Consider the model~\eqref{eq:normal-mixture-1} from above: its mathematical
-description might be translated into a program in \turingjl{} syntax
-\parencite{ge2018turing,tarek2020dynamicppl}\todo{more prominent turing introduction} as written in
+are used as well.)  Consider the model~\eqref{eq:normal-mixture-1} from above: to perform inference
+on it in \turingjl{} \parencite{ge2018turing}, the probabilistic programming language used in this
+thesis, its mathematical description might be translated into the Julia program given in
 listing~\ref{lst:normal}.
 % \begin{codelisting}[t]
 \begin{lstlisting}[%
@@ -295,7 +295,7 @@ listing~\ref{lst:normal}.
 end
 \end{lstlisting}
 \todo{Fix floated listings layout}
-We can then sample from the model in several ways:
+We can then sample from the model in several ways using Julia:
 \begin{lstlisting}
 julia> m = normal_mixture(x_observations, K, m, s, σ);
 julia> forward = sample(m, Prior(), 10);
@@ -305,8 +305,8 @@ The value of \jlinl{forward} will be an dataframe-like object containing 10 valu
 sampled from the forward (i.e., joint) distribution, matching the size of \jlinl{x_observations}.
 Similarly, \jlinl{chain} will contain a length 1000 sample from a Markov chain targetting the
 posterior, conditially on \jlinl{x_observations}, created using the MH algorithm.  If we were to
-write out these two functionalities manually, in idiomatic Julia, we would end up with at least the
-following two functions:
+write out code for these two functionalities manually, in idiomatic Julia, we would end up with at
+least two separate functions needed for the sampler:
 \begin{lstlisting}
 function normal_mixture_sampler(N, K, m, s, σ)
     μ = rand(Normal(m, s), K)
@@ -324,12 +324,14 @@ function normal_mixture_logpdf(μ, z, x, K, m, s, σ)
     return ℓ
 end
 \end{lstlisting}
-And still, with these, we would lack much of the flexibility that models written in \dppljl{} form:
-no general interface for sampling algorithms to automatically detect all latent and observed
-variables; no possility for other, nonstandard execution forms as are needed for Variational
-Inference or gradient computation for HMC; no automatic dataframe construction for chains.  All
+And still, with these, we would lack much of the flexibility that models written in \turingjl: no
+general interface for sampling algorithms to automatically detect all latent and observed variables;
+no possility for other, nonstandard execution forms as are needed for Variational Inference or
+gradient computation for HMC; no automatic name extraction and dataframe building for chains.  All
 these points highlight the advantages of dedicated probabilistic programming languages (PPLs) over
-manual likelihood functions.
+hand-written model code.  (Additionally, there is of course a benefit of reducing errors introduced
+by the sampling function not matching the likelihood function, or errors involving
+log-probabilities.)
 
 \newthought{Many PPLs are implemented} as external domain-specific languages (DSLs), like Stan
 \parencite{carpenter2017stan}, JAGS \parencite{plummer2003jags}, and BUGS
@@ -352,7 +354,7 @@ possible, while allowing to use the host language to:
 \item write models using imperative constructs, such as loops, or mutable intermediate computations
   for efficiency,
 \item optimize details of th execution, e.g. for memoization, likelihood scaling, or preliminary
-  termination
+  termination,
 \item use distributions over complex custom data structures, e.g. trees,
 \item perform inference involving complex transformations from other domains, for which
   implementations already exist, e.g. neural networks or differential equation solvers , or
@@ -408,12 +410,13 @@ function normal_mixture(x, K, m, s, σ)
 end
 \end{lstlisting}
 
-\newthought{Models in \turingjl{}} work by transforming the model code, which is syntactically a
-valid Julia function definition, through the macro \jlinl{@model}.\todo{cite DPPL paper} The result
-is new function which produces instances of a structure of type \jlinl{Model}, that in turn will
-contain the observations, some metadata, and a nested function with the slightly changed original
-model code. In the concrete case of the model in listing~\ref{lst:normal}, the resulting code would
-be approximately equal to the code in listing~\ref{lst:normal-expanded}.  The purpose of this is the
+\newthought{Models in \turingjl{}} are written in \dppljl{} syntax \parencite{tarek2020dynamicppl},
+which transforms valid Julia function definitions into a reusable representation (\jlinl{@model} is
+a Julia macro; see section~\ref{sec:comp-metapr-julia} for more explanation).  The result is a new
+function which produces instances of a structure of type \jlinl{Model}, which in turn will contain
+the provided data, some metadata, and a nested function with the slightly changed original model
+code. In the concrete case of the model in listing~\ref{lst:normal}, the resulting code would be
+approximately equal to the code in listing~\ref{lst:normal-expanded}.  The purpose of this is the
 following: the outer function, the \enquote{generator}, constructs an instance of the model for
 given parameters~-- usually done once per inference problem, to fix the observations and
 hyperparameters.  Subsequently, the \jlinl{sample} function can be applied to this instance with
@@ -422,25 +425,28 @@ of the instance to run the model with chosen \jlinl{sampler} and \jlinl{context}
 passed to the \enquote{tilde functions}, to which the statements of the form \jlinl{expr ~ D} are
 converted.
 
-Inside the \enquote{tilde functions}, the real stochastic work happens.\todo{observe vs assume}
-Depending on the \jlinl{sampler} and the \jlinl{context}, values may be generated and stored in the
-\jlinl{varinfo} object, as happens for most \enquote{real} samplers.  In this case, one call to the
-\jlinl{evaluator} corresponds to one (Gibbs) sampling step.  In other situations, model evaluation
-serves the purpose of density evaluation, in which no new values need to be produced; this use case
-is needed for probability queries, or density-based inference methods (which might additionally use
-automatic differentiation on the density evaluation procedure).  All shared information for external
-usage is thereby conventionally stored in the \jlinl{varinfo} object, which resembles a dictionary
-from variable names\footnote{These \jlinl{VarName} objects, constructed by the macro
-  \jlinl{@varname}, simply represent an indexed variable by a symbol and an index tuple.} to
-values (internal sampler state can also be stored in the \jlinl{sampler} object).  Through the
+A special distinction is made for the tilde functions of variables that are based on the model's
+arguments. \dppljl{} distinguishes between \emph{assumptions}, i.e., latent variables that should be
+recovered through posterior inference, and \emph{observations}, that need to be provided when
+instantiating the model and are conditioned upon.  The latter by default will only contribute to the
+likelihood, instead of being sampled.  But in certain cases, such as in probability evaluation or
+when using the complete model in a generative way, this behaviour can be different.  For this
+purpose, the tilde functions for the variables \jlinl{x[i]} in listing~\ref{lst:normal-expanded} are
+differentiated in a conditional statement.
+
+Inside the tilde functions, the real stochastic work happens.  Depending on the \jlinl{sampler} and
+the \jlinl{context}, values may be generated and stored in the \jlinl{varinfo} object, and the joint
+log-likelihood incremented, as happens for most MCMC samplers.  In this case, one call to the
+\jlinl{evaluator} corresponds to one sampling step.  In other situations, model evaluation serves
+the purpose of density evaluation, in which no new values need to be produced; this use case is
+needed for probability queries, or density-based algorithms (which might additionally use automatic
+differentiation on the density evaluation procedure).  All shared information for external usage is
+thereby conventionally stored in the \jlinl{varinfo} object, which resembles a dictionary from
+variable names\footnote{These \jlinl{VarName} objects, constructed by the macro \jlinl{@varname},
+  simply represent an indexed variable through a symbol and a tuple of integers.}  to values
+(internal sampler state can also be stored in the \jlinl{sampler} object).  Through the
 \jlinl{sample} interface, the resulting values are then stored in a \jlinl{Chains} object, a data
 frame containing a value for each variable at each sampling step.
-
-A special distinction is made for variables that are contained in the model arguments.  These by
-default serve as observed variables, and will only contribute to the likelihood, instead of being
-sampled.  But in certain cases, such as in probability evaluation or when using the complete model
-in a generative way, this behaviour can be different.  For this purpose, the variables \jlinl{x[i]}
-in the example are wrapped in a conditional statement.
 
 From the point of view of a sampling algorithm, all that it sees is a sequence of tilde statements,
 consisting of a value, a variable name, and a distribution.  Turing, crucially, does not have a
@@ -448,16 +454,17 @@ representation of model structure.  This is sufficient for many kinds of inferen
 it already implements~-- Metropolis-Hastings, several particle methods, HMC and NUTS, and
 within-Gibbs combinations of these~-- but does not allow more intelligent usage of the available
 information.  For example, to use a true, conditional, Gibbs sampler, the user has to calculate the
-conditionals themselves.  Optimizations such as partial reevaluation of a model to save
-calculations, automatic conjugacy detection, or model transformations such as Rao-Blackwellization
-cannot be performed in this representation.\todo{cite autoconj etc.}
+conditionals themselves.  Structure-based optimizations such as partial specializtion of a model to
+save calculations, automatic conjugacy detection \parencite{hoffman2018autoconj}, or model
+transformations such as Rao-Blackwellization \parencite{murray2017delayed} cannot be performed in
+this representation.
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Compilation and Metaprogramming in Julia}
 \label{sec:comp-metapr-julia}
 
-Julia \parencite{bezanson2017julia} is a programming language with a dynamic, strong type system
+Julia \parencite{bezanson2017julia} is a programming language with a strong, dynamic type system
 with nominal, parametric subtyping and elaborate multiple dispatch.  It uses LLVM
 \parencite{llvmproject2019llvm} for JIT-compilation and while it is dynamically typed, a combination
 of method specialization and type inference allows it to produce very optimized, fast machine code
@@ -465,12 +472,12 @@ of method specialization and type inference allows it to produce very optimized,
 to Matlab, Python, or Ruby, but contrary to them, it is its own compiler, not primarily the reliance
 on third-party numerical libraries (e.g., BLAS and LAPACK), that is enabling C-like speed.
 
-On top of that, the language is built on a very different, open compilation model.  Underlying the
-surface syntax is an abstract syntax tree (AST), that is used internally to the compiler, but also
-exposed to the programmer through macros, which allow to transform pieces of code at compile time.
-These macros resemble proper hygienic, LISP-style code transformations, not simple
-text-substitutions as C preprocessor macros.  As an example, look at the following function that
-sums up the sines of a list of numbers:
+On top of that, the language is built on a very open compilation model.  Underlying the surface
+syntax is an abstract syntax tree (AST), that is used internally to the compiler, but also exposed
+to the programmer through macros, which allow to transform pieces of code at compile time.  These
+macros resemble proper hygienic, LISP-style code transformations, not simple text-substitutions as C
+preprocessor macros.  As an example, look at the following function that sums up the sines of a list
+of numbers:
 \begin{lstlisting}
 function foo(x)
     y = zero(eltype(x))
@@ -519,9 +526,9 @@ while !(iter_result === nothing)
     iter_result = iterate(iterable, state)
 end
 \end{lstlisting}
-After that, all remaining control flow statements (e.g., while loops and conditionals) are converted
-into a sequence of labelled code blocks with (possibly conditional) jumps between them. Our example
-is therefore lowered into four blocks as follows:
+Consequently, all remaining control flow statements (e.g., while loops and conditionals) are
+converted into a sequence of labelled code blocks with (possibly conditional) jumps between
+them. Our example is therefore lowered into four blocks as follows:
 \begin{lstlisting}
 1 ─ %1  = eltype(x)
 │         y = zero(%1)
@@ -553,7 +560,7 @@ Note that until now, the operations involved were purely syntactic in nature, an
 by solely taking into account the code of the function \jlinl{foo}.  As soon as \jlinl{foo} is
 called on a concrete type, though, the most specific method fitting to the argument types will be
 selected, and type inference on its body be started.  If we go on and call \jlinl{foo([1.0])}, with
-\jlinl{Vector{Int}} as the sole argument type, the following will be inferred:
+\jlinl{Vector\{Int\}} as the sole argument type, the following will be inferred:
 % code_warntype
 \begin{lstlisting}
 1 ─ %1  = eltype(x)::Core.Compiler.Const(Float64, false)
