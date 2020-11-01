@@ -501,30 +501,40 @@ function foo(x)
     return y
 end
 \end{lstlisting}
-The macro invocation of \jlinl{@show} will be treated by the compiler, during parsing, as a function
-call receiving as input the following data structure, representing \jlinl{y += sin(x[i])} in
-S-expression-like form:
+The invocation of the standard libray macro \jlinl{@show} will be treated by the compiler, during
+parsing, as a function call receiving as input the following data structure, representing \jlinl{y
+  += sin(x[i])} in S-expression-like form:
 \begin{lstlisting}
-Expr(:+=, :y, Expr(:call, :sin, Expr(:ref, :x, :i)))
+Expr(:(+=), :y, Expr(:call, :sin, Expr(:ref, :x, :i)))
 \end{lstlisting}
 In this particular case, the nested structure is not taken advantage of or transformed, but simply
-converted to a string used to print the value of the expression, labelled by its form in the code.
-It is then spliced back into the AST and compiled further as
+converted to a string used to print the value of the expression, labelled by its form in the code:
+\begin{lstlisting}
+macro show(ex)
+    blk = Expr(:block)
+    unquoted = sprint(Base.show_unquoted, ex) * " = "
+    assignment = Expr(:call, :repr, Expr(:(=), :value, esc(ex)))
+    push!(blk.args, Expr(:call, :println, unquoted, assignment))
+    push!(blk.args, :value)
+    return blk
+end
+\end{lstlisting}
+The result is then spliced back into the AST, which is compiled further as if it were written as
 \begin{lstlisting}
 function foo(x)
     y = zero(eltype(x))
     for i = eachindex(x)
         begin
-            println(
-                "y += sin(x[i]) = ",
-                repr(var"#24#value" = (y += sin(x[i])))
-            )
-            var"#24#value"
+            println("y += sin(x[i]) = ", repr(var"#1#value" = (y += sin(x[i]))))
+            var"#1#value"
         end
     end
     return y
 end
 \end{lstlisting}
+(Note the automatic conversion of the symbol \jlinl{:value} to a generated name \jlinl{#1#value}, in
+order to not possibly shadow any variables from the calling scope.)
+
 After macro expansion, the code of the function is \emph{lowered} into an intermediate
 representation consisting of only function calls and branches.  This comprises of sevaral
 transformations: for one, certain syntactic constructs are \enquote{desugared} into primitive
@@ -540,50 +550,66 @@ while !(iter_result === nothing)
     iter_result = iterate(iterable, state)
 end
 \end{lstlisting}
-Consequently, all remaining control flow statements (e.g., while loops and conditionals) are
-converted into a sequence of labelled code blocks with (possibly conditional) jumps between
-them. Our example is therefore lowered into four blocks as in listing~\ref{lst:foo-inferred}.  Note
-that until now, the operations involved were purely syntactic in nature, and could be perfomed by
-solely taking into account the code of the function \jlinl{foo}.  As soon as \jlinl{foo} is called
-on a concrete type, though, the most specific method fitting to the argument types will be selected,
-and type inference on its body be started.  If we go on and call \jlinl{foo([1.0])}, with
-\jlinl{Vector\{Int\}} as the sole argument type, the following will be inferred~-- the result of our
-example as the annotations in the same listing.
-\begin{lstfloat}
+
+\begin{lstfloat}[t]
 \begin{lstlisting}[style=lstfloat]
-1 ─ %1  = eltype(x)::Compiler.Const(Float64, false)
-│         (y = zero(%1))
-│   %3  = eachindex(x)::OneTo{Int64}
-│         (@_4 = iterate(%3))
-│   %5  = (@_4 === nothing)::Bool
-│   %6  = not_int(%5)::Bool
-└──       goto §4 if not %6
-2 ┄ %8  = @_4::Tuple{Int64,Int64}
-│         (i = getfield(%8, 1))
-│   %10 = getfield(%8, 2)::Int64
-│   %11 = y::Float64
-│   %12 = getindex(x, i)::Float64
-│   %13 = sin(%12)::Float64
-│   %14 = (%11 + %13)::Float64
-│         (y = %14)
-│         (value = %14)
-│   %17 = repr(%14)::String
-│         println("y += sin(x[i]) = ", %17)
-│         value
-│         (@_4 = iterate(%3, %10))
-│   %21 = (@_4 === nothing)::Bool
-│   %22 = not_int(%21)::Bool
-└──       goto §4 if not %22
-3 ─       goto §2
-4 ┄       return y
+1: (%1::Core.Compiler.Const(foo, false), %2::Array{Float64,1})
+  %3 = eltype(%2)::Compiler.Const(Float64, false)
+  %4 = zero(%3)::Float64
+  %5 = eachindex(%2)::Base.OneTo{Int64}
+  %6 = iterate(%5):Union{Nothing, Tuple{Int64,Int64}}
+  %7 = (%6 === nothing)::Bool
+  %8 = not_int(%7)::Bool
+  br 3 (%4) unless %8
+  br 2 (%6, %4)
+2: (%9, %10)
+  %11 = getfield(%9, 1)::Int64
+  %12 = getfield(%9, 2)::Int64
+  %13 = getindex(%2, %11)::Float64
+  %14 = sin(%13)::Float64
+  %15 = (%10 + %14)::Float64
+  %16 = repr(%15)::String
+  %17 = println("y += sin(x[i]) = ", %16)
+  %18 = iterate(%5, %12)::Union{Nothing, Tuple{Int64,Int64}}
+  %19 = (%18 === nothing)::Bool
+  %20 = not_int(%19)::Bool
+  br 3 (%15) unless %20
+  br 2 (%18, %15)
+3: (%21)
+  return %21
 \end{lstlisting}
-  \caption{Lowered code of the example function \texttt{foo} defined above, annotated with inferred
-    types (as through \protect\jlinl{@code_warntype}).\label{lst:foo-inferred}}
+  \caption{SSA-form of the lowered form of the method \protect\jlinl{foo(::Vector\{Int\})} as defined
+    defined above, annotated with inferred types (as through
+    \protect\jlinl{\@code_warntype}).\label{lst:foo-inferred}}
 \end{lstfloat}
 
-Bla bla \parencite{singer2018static}.
+Consequently, all remaining control flow statements (e.g., while loops and conditionals) are
+converted into \emph{single static assignment (SSA) form} \parencite{singer2018static}, a sequence
+of labelled code blocks with (possibly conditional) jumps between them.  The characteristic property
+of this form of representation is that all nested expressions are split apart, so that only simple,
+unnested calls remain, and any subsequent assignments to variables are linearized to a series of
+definitions, with newly introduced names of the form \jlinl{\%i}.  To still be able to tell apart
+values of variables that could have been assigned in multiple parent blocks, each block can have
+several argument variables, to which variables can be assigned when branching. (These are
+functionally equivalent to the \(\phi\)-functions in traditional treatments of SSA-form.)
 
-\begin{lstfloat}
+Our example is therefore lowered into four blocks as in listing~\ref{lst:foo-inferred}.  Note that
+until now, the operations involved were purely syntactic in nature, and could be perfomed by solely
+taking into account the code of the function \jlinl{foo}.  As soon as \jlinl{foo} is called on a
+concrete type, though, the most specific method fitting to the argument types will be selected, and
+type inference on its body be applied.  If we go on and call \jlinl{foo([1.0])}, with
+\jlinl{Vector\{Int\}} as the sole argument type, the types as annotated in the same listing will be
+inferred.
+
+The last step within Julia consists of inlining and optimizing the typed intermediate code,
+resulting in the form shown in listing~\ref{lst:foo-typed}.  There, several called methods have been
+inlined, and concrete argument types to invoke been inferred.  This is in true, traditional SSA
+form, with all variable slots eliminated, and block arguments converted to \(\phi\)-functions.
+Finally, this representation will be translated and sent to LLVM for compilation, where further
+optimization can happen, and machine code will be generated and executed, as well as stored for
+later usage as part of the just-in-time compilation mechanism.
+
+\begin{lstfloat}[p]
   \begin{lstlisting}[style=lstfloat]
 1 ── %1  = arraysize(x, 1)::Int64
 │    %2  = slt_int(%1, 0)::Bool
@@ -638,39 +664,11 @@ Bla bla \parencite{singer2018static}.
 22 ┄ %48 = φ (§20 => %18, §4 => 0.0)::Float64
 └───       return %48
 \end{lstlisting}
-    \caption{Typed and optimized code in SSA form.}
+  \caption{Typed and optimized code of the call \protect\jlinl{foo([1.0])} in SSA form, as obtained
+    through \protect\jlinl{@code_typed}.\label{lst:foo-typed}}
 \end{lstfloat}
 
-% \begin{lstfloat}
-%   % \begin{lstlisting}[style=lstfloat]
-% 1: (%1, %2)
-%   %3 = eltype(%2)
-%   %4 = zero(%3)
-%   %5 = eachindex(%2)
-%   %6 = iterate(%5)
-%   %7 = %6 === nothing
-%   %8 = not_int(%7)
-%   br 3 (%4) unless %8
-%   br 2 (%6, %4)
-% 2: (%9, %10)
-%   %11 = getfield(%9, 1)
-%   %12 = getfield(%9, 2)
-%   %13 = getindex(%2, %11)
-%   %14 = sin(%13)
-%   %15 = %10 + %14
-%   %16 = repr(%15)
-%   %17 = println(
-%             "y += sin(x[i]) = ", %16
-%         )
-%   %18 = iterate(%5, %12)
-%   %19 = %18 === nothing
-%   %20 = not_int(%19)
-%   br 3 (%15) unless %20
-%   br 2 (%18, %15)
-% 3: (%21)
-%   return %21
-% \end{lstlisting}
-%   % \end{lstfloat}
+
 
 
 
