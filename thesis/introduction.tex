@@ -2,8 +2,8 @@
 \label{cha:introduction}
 
 This chapter gives an overview over the scope of the thesis and existing approaches in the
-literature.  A preliminary version of this work has already been presented in
-\textcite{gabler2019graph}, which forms the basis of the introduction.
+literature.  It is based on \textcite{gabler2019graph}, which presents a preliminary version of this
+work.
 
 \newthought{Many methods} in the field of machine learning work on computation graphs of programs
 that represent mathematical expressions.  One example are forms of automatic differentiation (AD)
@@ -75,11 +75,12 @@ intermediate representation used by the compiler of the Julia programming langua
 be used to dynamically track computation graphs of any Julia program, including machine learning
 models and probabilistic programming systems, without having to explicitely declare graph
 structures. The transformation is implemented as a custom part of the compilation process.  Its
-result is passed on to the compiler, where it can be optimised further. At run time, both data and
+result is passed back to the compiler, where it can be optimised further. At run time, both data and
 control path are tracked alongside the original calculations, in the form of a nested data
 structure.  This data structure contains all functions called during execution, enriched by recorded
-control flow decisions and meta information that can be used to analyse the execution. Thus, the
-system combines advantages of a source transformation with a tape-based runtime approach.
+control flow decisions and possibly meta-information that can be used to analyse the
+execution. Thus, the system combines advantages of a source transformation with a tape-based runtime
+approach.
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -98,10 +99,10 @@ many library-based (or \enquote{operator overloading}) systems that were driven 
 learning \parencite{abadi2015tensorflow,paszke2017automatic,neubig2017dynet,tokui2015chainer},
 compiler-based approaches have regained popularity lately.  There are ongoing efforts to add
 built-in automatic differentiation to the Swift programming language in Swift for TensorFlow
-\parencite{swift2019}, and work in Julia for Zygote \parencite{innes2018don} has started to apply
-source transformation to the intermediate representation of the compiler, which enables
-differentiating through complex control flow, custom data types, and nested functions.  A similar
-approach to Zygote is taken in Python with Tangent \parencite{vanmerrienboer2018tangent}.
+\parencite{tensorflowdevelopers2018swift}, and work in Julia for Zygote \parencite{innes2018don} has
+started to apply source transformation to the intermediate representation of the compiler, which
+enables differentiating through complex control flow, custom data types, and nested functions.  A
+similar approach to Zygote is taken in Python with Tangent \parencite{vanmerrienboer2018tangent}.
 
 Generalizations of the kinds of analyses and transformations found in these systems can be found
 under multiple terms in the compiler literature: data- and control-flow analysis, information
@@ -116,18 +117,23 @@ detection of program parts that need not to be reevaluation after input changes
 
 Many implementations of these methods do not use the original form of the program, but a
 syntactically simplified lowered form.  Such forms can be dependency graphs as used in compiler
-theory, or the intermediate languages used by actual compiler implementations.  Recently, special
-intermediate language for machine learning applications have been introduced.  One of them is MLIR
-(\enquote{machine learning intermediate language}, \textcite{lattner2020mlir}) with the purpose of
-forming a reusable mid-layer between programming languages and runtimes, featuring exchangeability
-between different machine learning frameworks and and \enquote{accelerators} (pieces of hardware),
-while taking advantage of modern compiler technology similar to LLVM
-\parencite{llvmproject2019llvm}.  A similar role is played by Swift's intermediate representation in
-the Swift for TensorFlow project.  XLA (\enquote{accelerated linear algebra}, \textcite{xla2020})
-plays a similar role for expression-graph based machine learning systems, compiling those graphs
-directly to optimized code; this system forms the basis of JAX \parencite{bradbury2018jax}, which
-allows to JIT-compile numerical Python functions, that would otherwise be slow, to efficient
-platform code.\todo{concolic execution?}
+theory, or the intermediate languages used by actual compiler implementations.  These can take
+portable, language independent forms as in LLVM \parencite{llvmproject2019llvm}, or be special to a
+particular compiler implementation, as in Julia \parencite{bezanson2017julia} or Swift
+\parencite{apple2020swifta}.  As these two languages illustrate, there are often even multiple
+layers of intermediate representations used in the same system.
+
+Recently, special intermediate representations for machine learning applications have been
+introduced.  One of them is MLIR (\enquote{machine learning intermediate representation},
+\textcite{lattner2020mlir}), with the purpose of forming a reusable mid-layer between programming
+languages and runtimes, featuring exchangeability between different machine learning frameworks and
+and \enquote{accelerators} (pieces of hardware), while taking advantage of modern compiler
+technology similar to LLVM.  A similar role is played by Swift's intermediate representation, SIL,
+in the Swift for TensorFlow project.  XLA (\enquote{accelerated linear algebra},
+\textcite{tensorflowdevelopers2020xla}) plays a similar role for expression-graph based machine
+learning systems, compiling those graphs directly to optimized code; this system forms the basis of
+JAX \parencite{bradbury2018jax}, which allows to JIT-compile numerical Python functions, that would
+otherwise be slow, to efficient platform code.
 
 As for the trade-off between transformation-based and library-based implementations, several hybrid
 graph tracking approaches between source transformation and graph tracking exist.  Among AD systems,
@@ -143,7 +149,6 @@ operations.  The \enquote{dynamicity} problem can be approached in other ways as
 \parencite{goodman2012church} and Venture \parencite{mansinghka2014venture} to produce what in the
 latter is called \enquote{probabilistic execution traces}: multiple different traces are dynamically
 stored as alternative paralles paths in the execution trace, with possible interconnections.
-\todo{PPL frameworks: stan, bugs/jags}
 
 %%% Local Variables: 
 %%% TeX-master: "main"

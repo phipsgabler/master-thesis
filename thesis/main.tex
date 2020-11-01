@@ -106,7 +106,6 @@
 % listing floats
 \newfloat[chapter]{lstfloat}{lolst}{Listing}
 \newsubfloat{lstfloat}
-\makeatother
 \lstdefinestyle{lstfloat}{%
   aboveskip=\smallskipamount,
   belowskip=\smallskipamount,
@@ -118,11 +117,11 @@
 \newcommand{\algorithmname}{Algorithm}
 \newcommand{\listalgorithmname}{List of Algorithms}
 \newlistof{listofalgorithms}{loa}{\listalgorithmname}
-\newfloat{algorithm}{loa}{\algorithmname}
+\newfloat[chapter]{algorithm}{loa}{\algorithmname}
 \newfixedcaption{\falgcaption}{algorithm}
 \newlistentry{algorithm}{loa}{0}
 
-\newenvironment{myalgorithmic}{\begin{enumerate}\sffamily}{\end{enumerate}}
+\newenvironment{myalgorithmic}{\hrule\begin{enumerate}\sffamily}{\end{enumerate}\hrule}
 
 % \usepackage{float}
 % \floatstyle{ruled}
