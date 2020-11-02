@@ -121,9 +121,9 @@ define \(\kth{Y}\) via a (time-homogeneous) Markov chain:
     % &\quad = k(y \given \kth{y}) \dif\mu(y)
   \end{aligned}
 \end{equation}
-for all \(k \ge 1\).  By constructing the \emph{transition kernel}, \(K\), in the right way, the
-resulting chain is ergodic with the target density \(\pi\) as the unique stationary distribution,
-i.e., for all measurable sets \(A\),
+for all \(k \ge 1\).  By constructing the parametrize measure \(K\), the \emph{transition kernel},
+in the right way, the resulting chain is ergodic with the target density \(\pi\) as the unique
+stationary distribution, i.e., for all measurable sets \(A\),
 \begin{equation}
   \label{eq:stationarity}
   \int \pi(\theta) K(A \given \theta) \dif\mu(\theta) = \int_A \pi(\theta) \dif\mu(\theta) =
@@ -535,6 +535,39 @@ end
 (Note the automatic conversion of the symbol \jlinl{:value} to a generated name \jlinl{#1#value}, in
 order to not possibly shadow any variables from the calling scope.)
 
+
+\begin{lstfloat}[t]
+\begin{lstlisting}[style=lstfloat]
+1: (%1::Core.Compiler.Const(foo, false), %2::Array{Float64,1})
+  %3 = eltype(%2)::Compiler.Const(Float64, false)
+  %4 = zero(%3)::Float64
+  %5 = eachindex(%2)::Base.OneTo{Int64}
+  %6 = iterate(%5):Union{Nothing, Tuple{Int64,Int64}}
+  %7 = (%6 === nothing)::Bool
+  %8 = not_int(%7)::Bool
+  br §3 (%4) unless %8
+  br §2 (%6, %4)
+2: (%9, %10)
+  %11 = getfield(%9, 1)::Int64
+  %12 = getfield(%9, 2)::Int64
+  %13 = getindex(%2, %11)::Float64
+  %14 = sin(%13)::Float64
+  %15 = (%10 + %14)::Float64
+  %16 = repr(%15)::String
+  %17 = println("y += sin(x[i]) = ", %16)
+  %18 = iterate(%5, %12)::Union{Nothing, Tuple{Int64,Int64}}
+  %19 = (%18 === nothing)::Bool
+  %20 = not_int(%19)::Bool
+  br §3 (%15) unless %20
+  br §2 (%18, %15)
+3: (%21)
+  return %21
+\end{lstlisting}
+  \caption{SSA-form of the lowered form of the method \protect\jlinl{foo(::Vector\{Int\})} as defined
+    defined above, annotated with inferred types (as through
+    \protect\jlinl{\@code_warntype}).\label{lst:foo-inferred}}
+\end{lstfloat}
+
 After macro expansion, the code of the function is \emph{lowered} into an intermediate
 representation consisting of only function calls and branches.  This comprises of sevaral
 transformations: for one, certain syntactic constructs are \enquote{desugared} into primitive
@@ -550,64 +583,54 @@ while !(iter_result === nothing)
     iter_result = iterate(iterable, state)
 end
 \end{lstlisting}
+Consequently, all nested expressions are split apart, so that only simple, unnested calls remain,
+and any subsequent assignments to variables are linearized to a series of definitions, with newly
+introduced names of the form \jlinl{\%i}.  The remaining control flow statements (e.g., while loops
+and conditionals) are a represented through sequence of labelled code blocks with (possibly
+conditional) jumps between them.  The sequence of assignments is further processed into \emph{single
+  static assignment (SSA) form} \parencite{singer2018static}, the characteristic property of which
+is that every variable is assigned exactly once, thus giving it a unique, position-independent name
+to each intermediate value.  The result of the translation of our example into into three SSA blocks
+can be found in listing~\ref{lst:foo-inferred}.
 
-\begin{lstfloat}[t]
-\begin{lstlisting}[style=lstfloat]
-1: (%1::Core.Compiler.Const(foo, false), %2::Array{Float64,1})
-  %3 = eltype(%2)::Compiler.Const(Float64, false)
-  %4 = zero(%3)::Float64
-  %5 = eachindex(%2)::Base.OneTo{Int64}
-  %6 = iterate(%5):Union{Nothing, Tuple{Int64,Int64}}
-  %7 = (%6 === nothing)::Bool
-  %8 = not_int(%7)::Bool
-  br 3 (%4) unless %8
-  br 2 (%6, %4)
-2: (%9, %10)
-  %11 = getfield(%9, 1)::Int64
-  %12 = getfield(%9, 2)::Int64
-  %13 = getindex(%2, %11)::Float64
-  %14 = sin(%13)::Float64
-  %15 = (%10 + %14)::Float64
-  %16 = repr(%15)::String
-  %17 = println("y += sin(x[i]) = ", %16)
-  %18 = iterate(%5, %12)::Union{Nothing, Tuple{Int64,Int64}}
-  %19 = (%18 === nothing)::Bool
-  %20 = not_int(%19)::Bool
-  br 3 (%15) unless %20
-  br 2 (%18, %15)
-3: (%21)
-  return %21
+There is one complication with the SSA conversion: we need to be able to distinguish between
+assignments of variables arising from \enquote{merged} control flow.  Consider the assignment of
+\jlinl{y} in the following code example:
+\begin{lstlisting}
+x = f()
+if !g()
+    y = x - 1
+else
+    y = x + 1
+end
+h(y)
 \end{lstlisting}
-  \caption{SSA-form of the lowered form of the method \protect\jlinl{foo(::Vector\{Int\})} as defined
-    defined above, annotated with inferred types (as through
-    \protect\jlinl{\@code_warntype}).\label{lst:foo-inferred}}
-\end{lstfloat}
+In the variant of SSA form used in this text and most of Julia, values of variables that are
+assigned in multiple parent blocks are passed as \emph{block arguments}, as in
+figure~\ref{fig:ssa-phi} on the right, and subsequently in this work.  The traditional, functionally
+equivalent alternative is to introduce \emph{\(\phi\)-functions}, which are defined to distinguish
+between several values depending on the control path taken before.  This form is shown in the same
+figure on the left.
 
-Consequently, all remaining control flow statements (e.g., while loops and conditionals) are
-converted into \emph{single static assignment (SSA) form} \parencite{singer2018static}, a sequence
-of labelled code blocks with (possibly conditional) jumps between them.  The characteristic property
-of this form of representation is that all nested expressions are split apart, so that only simple,
-unnested calls remain, and any subsequent assignments to variables are linearized to a series of
-definitions, with newly introduced names of the form \jlinl{\%i}.  To still be able to tell apart
-values of variables that could have been assigned in multiple parent blocks, each block can have
-several argument variables, to which variables can be assigned when branching. (These are
-functionally equivalent to the \(\phi\)-functions in traditional treatments of SSA-form.)
+\begin{figure}[t]
+  \centering
+  \hfill
+  \subbottom{\includegraphics[width=0.4\textwidth]{figures/ssa-phi}}
+  \hfill
+  \subbottom{\includegraphics[width=0.4\textwidth]{figures/ssa-args}}
+  \hfill\null
+  \caption{Correspondence between SSA representations using \(\phi\)-functions and block arguments.
+    The SSA variables \protect\jlinl{\%3} and \protect\jlinl{\%4} correspond to the values of
+    \protect\jlinl{y} in the two branches, which are merged in \protect\jlinl{\%5}.}
+  \label{fig:ssa-phi}
+\end{figure}
 
-Our example is therefore lowered into four blocks as in listing~\ref{lst:foo-inferred}.  Note that
-until now, the operations involved were purely syntactic in nature, and could be perfomed by solely
-taking into account the code of the function \jlinl{foo}.  As soon as \jlinl{foo} is called on a
-concrete type, though, the most specific method fitting to the argument types will be selected, and
-type inference on its body be applied.  If we go on and call \jlinl{foo([1.0])}, with
+Note that until now, the operations involved were purely syntactic in nature, and could be perfomed
+by solely taking into account the code of the function \jlinl{foo}.  As soon as \jlinl{foo} is
+called on a concrete type, though, the most specific method fitting to the argument types will be
+selected, and type inference on its body be applied.  If we go on and call \jlinl{foo([1.0])}, with
 \jlinl{Vector\{Int\}} as the sole argument type, the types as annotated in the same listing will be
 inferred.
-
-The last step within Julia consists of inlining and optimizing the typed intermediate code,
-resulting in the form shown in listing~\ref{lst:foo-typed}.  There, several called methods have been
-inlined, and concrete argument types to invoke been inferred.  This is in true, traditional SSA
-form, with all variable slots eliminated, and block arguments converted to \(\phi\)-functions.
-Finally, this representation will be translated and sent to LLVM for compilation, where further
-optimization can happen, and machine code will be generated and executed, as well as stored for
-later usage as part of the just-in-time compilation mechanism.
 
 \begin{lstfloat}[p]
   \begin{lstlisting}[style=lstfloat]
@@ -668,10 +691,13 @@ later usage as part of the just-in-time compilation mechanism.
     through \protect\jlinl{@code_typed}.\label{lst:foo-typed}}
 \end{lstfloat}
 
-
-
-
-
+The last step of compilation within Julia consists of inlining and optimizing the typed intermediate
+code, resulting in the form shown in listing~\ref{lst:foo-typed}.  There, several called methods
+have been inlined, and concrete argument types to invoke been inferred.  This is in true,
+traditional SSA form, with all variable slots eliminated, and block arguments converted to
+\(\phi\)-functions.  Finally, this representation will be translated and sent to LLVM for
+compilation, where further optimization can happen, and machine code will be generated and executed,
+as well as stored for later usage as part of the just-in-time compilation mechanism.
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
