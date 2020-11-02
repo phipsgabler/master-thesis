@@ -1,9 +1,158 @@
 \chapter{Implementation of Dynamic Graph Tracking in Julia}
 \label{cha:impl-dynam-graph}
 
+As we have seen, there is a trade-off between source-transformation methods and library-based
+approaches for tracking computation graphs.  Since the ultimate goal of this work was to target
+dynamic probabilistic models written in \turingjl{}, properties of both were derired.  Inspired the
+the work of \textcite{innes2018don}, it seemed most promising to start with a source-transformation
+based approach implemented over the intermediate representation, especially from a usability point
+of view.  However, the dynamicity of the trace structure of general probabilistic programs needes to
+be preserved.  Hence, I developed an idea for a hybrid version: through an IR transformation, the
+original code of a function to be tracked should be exteded by additional statements to record a
+trace of the executed statements and control flow operations at runtime.  The algorithm and data
+structure on which this implementation is based have already been shortly described in
+\textcite{gabler2019graph}, and will be more extensively explained below.
 
-\section{Automatic Graph Tracking and Extended Wengert Lists}
+
+\section{Extended Wengert Lists}
+\label{sec:exteded-wengert-lists}
+
+We have seen above, in section~\ref{sec:comp-metapr-julia}, how generated functions allow inspection
+and transformation of the intermediate representation passed-in functions.  This technique can be
+applied to recursively traverse the implementation of a given function, annotating each operation
+with necessay tracking statements, and changing the inputs and outputs accordingly to extract this
+information from outside.  To ensure sufficient generality, we requite the following properties of
+the tracking system:
+\begin{enumerate}
+\item Literal capture expressions and branches in an analyzable, graphical form.
+\item Preservation of the relation of each part of the structure to the corresponding original IR.
+\item Proper nesting of this information for nested function calls, making relations between
+  arguments and function inputs recoverable.
+\item Correct handling of constants and primitive functions in the IR.
+\item Extensibility of the tracking functions, to allow multiple possible ways to analyze code
+  (e.g., by different definitions of what should be recorded).
+\item A way to add custom metadata to the recorded structure turing tracking.
+\end{enumerate}
+This kind of operation will be similar to the (explicit) construction of Wengert lists in
+backwards-mode AD; but contrary to there, the nested call structure and control flow shall be
+preserved as well.  Hence, we call this structure \emph{extended Wengert list}.
+
+
+
+% Figure 1 illustrates the extended Wengert list for one run of a short stochastic function
+% geom (for readability, it is expanded to only three levels). The geom function draws a sample
+% from the geometric distribution with parameter beta, starting to count at value n. On
+% the left, we have its IR in textual form, consisting of two blocks. The central part is the
+% graph of nested nodes. There, values and jumps from the top-level call are recorded in their
+% encountered order, as nodes with “tape references” @1 to @9. SSA variables (%i) occurring in
+% expressions of SSA definitions are also replaced in the nodes by the respective tape references.
+% Each node is linked to the original IR statement it records, as indicated by the red arrows.
+% In the highlighted part, we see the node corresponding to the statement %7 = geom(%6,
+% %3). It is recorded at reference @8 with expression geom(@7, @3) and value 3. The values of
+% the arguments of this call can be inspected by following the respective references, indicated
+% by the solid blue arrows to nodes @7 and @3. Since geom is not a primitive function, the
+% node holds tape of child nodes as well. In this case, it is equivalent to the top level, due to
+% the recursivity of geom. We can see the three arguments @1, @2, and @3, corresponding to
+% the block arguments %1, %2, and %3, with the value of @2 being now 2 instead of 1. Further
+% we can see function calls of rand and < as well as a conditional jump, corresponding to the
+% branch the original IR, followed by calls of + and geom. Going back the tape references from
+% the result value @9, the data path of the trace, recreated on the lower right, can be extracted.
+% Note that the data path can be used for reverse-mode AD, and only these nodes would be
+% recorded in a conventional Wengert list. In our system, however, we also record the nodes
+% on the control path, consisting of @6 and the nodes it depends on.
+
+
+\section{Automatic Graph Tracking}
 \label{sec:autom-graph-track}
+
+% as nodes on an extended Wengert list, together with relevant
+% metadata. The resulting IR consists of about three to five times as many statements as the
+% original. Note that the transformation, due to JIT compilation, is done at most once per
+% method and then stored as compiled code. However, the tracking happens at every execution
+% during runtime.
+% Recording an extended Wengert list requires to record all block arguments, SSA definitions,
+% and taken branches, with their actual values and metadata. This is achieved by extending the
+% IR with new statements creating nodes and recording them on a helper data structure. Care
+% needs to be taken to properly record function calls, since we need to ensure that non-primitive
+% functions are recursively tracked. As a special case, all return branches are converted to
+% unconditional jumps to one new block at the end, which contains a single unified return
+% statement. This way, they can be treated in the same way as other branches. Please see the
+% appendix for a pseudo-code specification of the IR transformation in Algorithm 1, and the
+% transformed code for the geom function in Figure 3.
+
+\begin{algorithm}[p]
+  \hrule\footnotesize
+  \smallskip
+  This transformation happens inside a generated function called by \jlinl{trackcall}, which
+  assembles the resulting value and IR into a new node with the correct metadata.
+  \par\vspace{\baselineskip}
+  Missing from the description are the recording of metadata, the exact constructions of nodes, and
+  the mechanisms to correctly rename SSA variables during the transformation and tape references at
+  runtime.
+  \begin{algorithmic}
+    \Function{trackcall}{\textident{ir}}
+    \State Initialize \jlinl{new_ir} \Comment create empty IR object
+    \For{\jlinl{old_block} in \jlinl{blocks(ir)}}
+    \State Add an empty block \jlinl{new_block} to \jlinl{new_ir}
+    % 
+    \If{\jlinl(arg) is the first block}
+    \State Add variable \jlinl{\%recorder} to \jlinl{new_block}
+    \EndIf
+    %
+    \For{\jlinl{arg} in \jlinl{arguments(old_block)}}
+    \State Add \jlinl{arg} to \jlinl{new_block}
+    \EndFor
+    %
+    \If{there exist branches to \jlinl{old_block}}
+    \State Add argument \jlinl{\%branch_node} to \jlinl{new_block}
+    \State Add statement to \jlinl{new_block}, recording \jlinl{\%branch_node} in \jlinl{\%recorder}
+    \EndIf
+    %
+    \For{\jlinl{arg} in \jlinl{arguments(old_block)}}
+    \State Add statement \jlinl{\%node} to \jlinl{new_block}, creating a node for \jlinl{arg}
+    \State Add statement to \jlinl{new_block}, recording \jlinl{\%branch_node} in \jlinl{\%recorder}
+    \EndFor
+    %
+    \For{\jlinl{stmt} in \jlinl{statements(old_block)}}
+    \If{\jlinl{stmt} is a normal call}
+    \State Add statement \jlinl{\%call_node} to \jlinl{new_block}, calling \jlinl{trackcall} on \jlinl{stmt}
+    \State Add statement to \jlinl{new_block}, recording \jlinl{\%call_node} in \jlinl{\%recorder}
+    \ElsIf{\jlinl{stmt} is a \enquote{special} call or constant}
+    \State Add statement \jlinl{\%node} to \jlinl{new_block}, creating a node for \jlinl{stmt}
+    \State Add statement to \jlinl{new_block}, recording \jlinl{\%node} in \jlinl{\%recorder}
+    \EndIf
+    \EndFor
+    %
+    \For{\jlinl{branch} in \jlinl{branches(old_block)}}
+    \If{\jlinl{branch} is a return branch}
+    \LineComment{Substitute return by a branch to the \enquote{return block}}
+    \State Add statement \jlinl{\%return_node} to \jlinl{new_block}, creating a return node
+    corresponding to \jlinl{branch}
+    \State Add branch to \jlinl{new_block}, targeting the return block, copying \jlinl{branch}'s
+    argument, with \jlinl{\%return_node} as extra argument
+    \Else
+    \State Add statement \jlinl{\%branch_node} to \jlinl{new_block}, creating a node for \jlinl{branch}
+    \State Add branch to \jlinl{new_block}, copying \jlinl{branch}, with \jlinl{\%branch_node} as
+    extra argument
+    \EndIf
+    \EndFor
+    \EndFor
+    %
+    \Statex
+    \LineComment{Set up \enquote{return block}}
+    \State Add block \jlinl{return_block} to \jlinl{new_ir}
+    \State Add arguments \jlinl{\%return_value}, \jlinl{\%return_node} to \jlinl{return_block}
+    \State Add statement to \jlinl{return_block}, recording \jlinl{\%return_node} in
+    \jlinl{\%recorder}
+    \State Add statement \jlinl{\%result} to \jlinl{return_block}, creating a tuple of
+    \jlinl{\%return_value} and \jlinl{recorder}
+    \State Add return to \jlinl{return_block}, returning \jlinl{\%result}
+    \EndFunction
+  \end{algorithmic}
+  \smallskip
+  \hrule
+  \caption{IR transformation to record an extended Wengert list (simplified) \label{alg:ir-transform}}
+\end{algorithm}
 
 \section{Evaluation}
 \label{sec:irtracker-eval}

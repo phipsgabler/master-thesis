@@ -147,16 +147,35 @@ Gaussian proposals, over Reversible Jump MCMC for varying dimensions
 \parencite{green1995reversible}, to gradient-informed methods like Metropolis Adjusted Langevin and
 Hamiltonian Monte Carlo (HMC) \parencite{betancourt2018conceptual,girolami2011riemann}.
 
+% \begin{algorithm}[t]
+%   \sffamily
+%   \hrule
+%   \begin{enumerate}
+%     \firmlist
+%   \item Start from an arbitrary \(\kth[1]{Y} = \kth[1]{y}\) with \(\pi(\kth{y}) > 0\).
+%   \item For each \(k \ge 1\):
+%     \begin{enumerate}
+%       \firmlist
+%     \item Sample a proposal \(\kth[k]{\hat{Y}} \from q(\kth[k-1]{Y}, \cdot)\).
+%     \item With probability \(\alpha(\kth[k]{\hat{Y}}, \kth[k-1]{Y})\), set
+%       \(\kth[k]{Y} = \kth[k]{\hat{Y}}\); else, keep \(\kth[k]{Y} = \kth[k-1]{Y}\).
+%     \end{enumerate}
+%   \end{enumerate}
+%   \hrule
+%   \caption{General scheme for the Metropolis-Hastings algorithm.\label{alg:mh}}
+% \end{algorithm}
+
 \begin{algorithm}[t]
-  \begin{myalgorithmic}
-  \item Start from an arbitrary \(\kth[1]{Y} = \kth[1]{y}\) with \(\pi(\kth{y}) > 0\).
-  \item For each \(k \ge 1\):
-    \begin{enumerate}
-    \item Sample a proposal \(\kth[k]{\hat{Y}} \from q(\kth[k-1]{Y}, \cdot)\).
-    \item With probability \(\alpha(\kth[k]{\hat{Y}}, \kth[k-1]{Y})\), set
-      \(\kth[k]{Y} = \kth[k]{\hat{Y}}\); else, keep \(\kth[k]{Y} = \kth[k-1]{Y}\).
-    \end{enumerate}
-  \end{myalgorithmic}
+  \hrule
+  \begin{algorithmic}
+    \State Start from an arbitrary \(\kth[1]{Y} = \kth[1]{y}\) with \(\pi(\kth{y}) > 0\)
+    \For{\(k \ge 1\)}
+    \State Sample a proposal \(\kth[k]{\hat{Y}} \from q(\kth[k-1]{Y}, \cdot)\)
+    \State With probability \(\alpha(\kth[k]{\hat{Y}}, \kth[k-1]{Y})\), set
+    \(\kth[k]{Y} = \kth[k]{\hat{Y}}\); else, keep \(\kth[k]{Y} = \kth[k-1]{Y}\).
+    \EndFor
+  \end{algorithmic}
+  \hrule
   \caption{General scheme for the Metropolis-Hastings algorithm.\label{alg:mh}}
 \end{algorithm}
 
@@ -699,13 +718,19 @@ traditional SSA form, with all variable slots eliminated, and block arguments co
 compilation, where further optimization can happen, and machine code will be generated and executed,
 as well as stored for later usage as part of the just-in-time compilation mechanism.
 
+% To track dynamic computation graphs, we perform a transformation of the IR implemented as a
+% so-called generated function, which is Julia’s mechanism for staged programming (Rompf and Odersky,
+% 2010; Bolewski, 2015). Such generated functions, instead of being directly translated into machine
+% code, emit new IR to the compiler, which is then compiled
+
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Computation Graphs and Automatic Differentiation}
-\label{sec:graph-track-autom}
+\label{sec:cg-ad}
 
 % 1. AD in general
 % 2. Zygote principles
+
 
 
 
