@@ -1,69 +1,105 @@
 \chapter{Implementation of Dynamic Graph Tracking in Julia}
 \label{cha:impl-dynam-graph}
 
-As we have seen, there is a trade-off between source-transformation methods and library-based
-approaches for tracking computation graphs.  Since the ultimate goal of this work was to target
-dynamic probabilistic models written in \turingjl{}, properties of both were derired.  Inspired the
-the work of \textcite{innes2018don}, it seemed most promising to start with a source-transformation
-based approach implemented over the intermediate representation, especially from a usability point
-of view.  However, the dynamicity of the trace structure of general probabilistic programs needes to
-be preserved.  Hence, I developed an idea for a hybrid version: through an IR transformation, the
+It has been mentioned above that there is a trade-off between source-transformation methods and
+library-based approaches for tracking computation graphs.  Since the ultimate goal of this work was
+to analyze dynamic probabilistic models written in \turingjl{}, properties of both were derired.
+Inspired the the work of \textcite{innes2018don}, it seemed most promising to start from a
+source-transformation based approach implemented over the intermediate representation, especially
+from a usability point of view.  The advantages of using IR over the surface AST are the same: there
+is less overhead from handling multiple syntactic forms, and naming is already referentially
+transparent.  Additionally, there are existing Julia packages to simplify handling the IR data
+structures and set up the transformations.
+
+However, the dynamicity of the trace structure of general probabilistic programs needs to be
+preserved and exposed to the user, for each function evaluation~-- which is different from the AD
+usage, where the adjoint function is already the ultimate goal, and does not change with the
+arguments.  Hence, I developed a method for a hybrid version: through an IR transformation, the
 original code of a function to be tracked should be exteded by additional statements to record a
 trace of the executed statements and control flow operations at runtime.  The algorithm and data
-structure on which this implementation is based have already been shortly described in
-\textcite{gabler2019graph}, and will be more extensively explained below.
+structure on which this approach is based have already been shortly described in
+\textcite{gabler2019graph}, and will be more extensively explained below.  An open source
+implementation is available
+online\footnote{\protect\url{https://github.com/TuringLang/IRTracker.jl}}.
 
-
-\section{Extended Wengert Lists}
-\label{sec:exteded-wengert-lists}
-
-We have seen above, in section~\ref{sec:comp-metapr-julia}, how generated functions allow inspection
-and transformation of the intermediate representation passed-in functions.  This technique can be
-applied to recursively traverse the implementation of a given function, annotating each operation
-with necessay tracking statements, and changing the inputs and outputs accordingly to extract this
-information from outside.  To ensure sufficient generality, we requite the following properties of
-the tracking system:
+As we have seen above, in section~\ref{sec:comp-metapr-julia}, generated functions allow the
+inspection and transformation of the intermediate representation passed-in functions.  This
+technique can be applied to recursively traverse the implementation of a given function, annotating
+each operation with necessay tracking statements, and changing the inputs and outputs accordingly to
+extract this information from outside.  To ensure sufficient generality, we requite the following
+properties of the tracking system:
 \begin{enumerate}
-\item Literal capture expressions and branches in an analyzable, graphical form.
+  \firmlist
+\item Storage of all intermediate values during execution.
+\item Symbolic capture expressions and branches in an analyzable, graphical form.
 \item Preservation of the relation of each part of the structure to the corresponding original IR.
 \item Proper nesting of this information for nested function calls, making relations between
   arguments and function inputs recoverable.
 \item Correct handling of constants and primitive functions in the IR.
 \item Extensibility of the tracking functions, to allow multiple possible ways to analyze code
   (e.g., by different definitions of what should be recorded).
-\item A way to add custom metadata to the recorded structure turing tracking.
+\item A way to add custom metadata to the recorded structure during tracking.
 \end{enumerate}
 This kind of operation will be similar to the (explicit) construction of Wengert lists in
-backwards-mode AD; but contrary to there, the nested call structure and control flow shall be
-preserved as well.  Hence, we call this structure \emph{extended Wengert list}.
+backwards-mode AD (see section~\ref{sec:cg-ad}); but contrary to there, the nested call structure
+and control flow shall be preserved as well.  Hence, we call this structure \emph{extended Wengert
+  list}.  
 
+\section{Extended Wengert Lists}
+\label{sec:exteded-wengert-lists}
 
+The extended Wengert list structure is implemented in Julia through an abstract supertype with
+several concrete subtypes for the different kinds of nodes.  Additionally, there are special types
+for the tape- and block references, and an expression type mimicking the built-in \jlinl{Expr}, but
+adding more semantic distinctions (such as between references and constants, and between primitive
+and non-primitive function calls).  On top of this, an API to query the graph structure is provided,
+allowing, for example, to find all children or parents of a tape refererence up to a certain depth,
+or extract data from nodes, such as referenced variables, arguments, or metadata.
 
-% Figure 1 illustrates the extended Wengert list for one run of a short stochastic function
-% geom (for readability, it is expanded to only three levels). The geom function draws a sample
-% from the geometric distribution with parameter beta, starting to count at value n. On
-% the left, we have its IR in textual form, consisting of two blocks. The central part is the
-% graph of nested nodes. There, values and jumps from the top-level call are recorded in their
-% encountered order, as nodes with “tape references” @1 to @9. SSA variables (%i) occurring in
-% expressions of SSA definitions are also replaced in the nodes by the respective tape references.
-% Each node is linked to the original IR statement it records, as indicated by the red arrows.
-% In the highlighted part, we see the node corresponding to the statement %7 = geom(%6,
-% %3). It is recorded at reference @8 with expression geom(@7, @3) and value 3. The values of
-% the arguments of this call can be inspected by following the respective references, indicated
-% by the solid blue arrows to nodes @7 and @3. Since geom is not a primitive function, the
-% node holds tape of child nodes as well. In this case, it is equivalent to the top level, due to
-% the recursivity of geom. We can see the three arguments @1, @2, and @3, corresponding to
-% the block arguments %1, %2, and %3, with the value of @2 being now 2 instead of 1. Further
-% we can see function calls of rand and < as well as a conditional jump, corresponding to the
-% branch the original IR, followed by calls of + and geom. Going back the tape references from
-% the result value @9, the data path of the trace, recreated on the lower right, can be extracted.
-% Note that the data path can be used for reverse-mode AD, and only these nodes would be
-% recorded in a conventional Wengert list. In our system, however, we also record the nodes
-% on the control path, consisting of @6 and the nodes it depends on.
+\begin{figure}[t]
+  \centering
+  \includegraphics[width=\textwidth]{figures/wengert-list}
+  \caption{Extended Wengert list for one run of the stochastic function geom (only three levels
+    shown). The central box is the tracked graph of the call \protect\jlinl{geom(1, 0.6)}. The other
+    boxes show the original IR of the called non-primitive functions, to which the nodes are
+    linked.  Angle brackets indictate constant values.}
+  \label{fig:ext-wengert-list}
+\end{figure}
+
+Figure~\ref{fig:ext-wengert-list} illustrates the resulting extended Wengert list for one run of a
+short stochastic function \jlinl{geom}:
+\begin{lstlisting}
+geom(n, beta) = rand() < beta ? n : geom(n + 1, beta)
+\end{lstlisting}
+(for readability, recorded to only three levels of nesting).  The function draws a sample from the
+geometric distribution with parameter \jlinl{beta}, starting to count at value \jlinl{n}. On the
+left, we have its IR in textual form, consisting of two blocks. The central part is the graph of
+nested nodes. There, values and jumps from the top-level call are recorded in their encountered
+order, as nodes with \enquote{tape references} \jlinl{@1} to \jlinl{@9}. SSA variables (\jlinl{\%i})
+occurring in expressions of SSA definitions are also replaced in the nodes by the respective tape
+references.  Each node is linked to the original IR statement it records, as indicated by the red
+arrows.
+
+In the lower middle part, we see the node corresponding to the statement \jlinl{\%7 = geom(\%6,
+  \%3)}.  It is recorded at reference \jlinl{@8} with expression \jlinl{geom(@7, @3)} and value
+\jlinl{4} (the notation \jlinl{⟨geom⟩(@7, @3, ()...)} indicates that \jlinl{geom} is a constant, and
+no variadic arguments are passed). The values of the arguments of this call can be inspected by
+looking up the respective references.  Since \jlinl{geom} is not a primitive function, the node
+holds tape of child nodes as well.  In this case, it is equivalent to the top level, due to the
+recursivity of \jlinl{geom}. We can see the three arguments \jlinl{@1}, \jlinl{@2}, and \jlinl{@3},
+corresponding to the block arguments \jlinl{\%1}, \jlinl{\%2}, and \jlinl{\%3}, with the value of
+\jlinl{@2} being now \jlinl{2} instead of \jlinl{1}.  Further we can see function calls of
+\jlinl{rand} and \jlinl{<} as well as a conditional jump, corresponding to the branch the original
+IR, followed by calls of \jlinl{+} and \jlinl{geom}. Following back the tape references from the
+result value \jlinl{@9}, the data path of the trace can be extracted.  It can be used for
+reverse-mode AD, and only these nodes would be recorded in a conventional Wengert list.  In our
+system, however, we also record the nodes on the control path, consisting of \jlinl{@6} and the
+nodes it depends on.
 
 
 \section{Automatic Graph Tracking}
 \label{sec:autom-graph-track}
+
 
 % as nodes on an extended Wengert list, together with relevant
 % metadata. The resulting IR consists of about three to five times as many statements as the
@@ -153,6 +189,60 @@ preserved as well.  Hence, we call this structure \emph{extended Wengert list}.
   \hrule
   \caption{IR transformation to record an extended Wengert list (simplified) \label{alg:ir-transform}}
 \end{algorithm}
+
+\begin{lstfloat}[p]
+\begin{lstlisting}[style=lstfloat]
+1: (%4, %5, %1, %2, %3)
+  %6 = saveir!(%5, <original IR>)
+  %7 = TapeConstant(%1)
+  %8 = trackedargument(%5, %7, nothing, 1, $(QuoteNode(§1:%1)))
+  %9 = record!(%5, %8)
+  %10 = TapeConstant(%2)
+  %11 = trackedargument(%5, %10, nothing, 2, $(QuoteNode(§1:%2)))
+  %12 = record!(%5, %11)
+  %13 = TapeConstant(%3)
+  %14 = trackedargument(%5, %13, nothing, 2, $(QuoteNode(§1:%3)))
+  %15 = record!(%5, %14)
+  %16 = TapeConstant(Main.rand)
+  %17 = Base.tuple()
+  %18 = trackedcall(%5, %16, %17, $(QuoteNode(§1:%4)))
+  %19 = record!(%5, %18)
+  %20 = TapeConstant(Main.:<)
+  %21 = trackedvariable(%5, $(QuoteNode(%4)), %19)
+  %22 = trackedvariable(%5, $(QuoteNode(%3)), %3)
+  %23 = Base.tuple(%21, %22)
+  %24 = trackedcall(%5, %20, %23, $(QuoteNode(§1:%5)))
+  %25 = record!(%5, %24)
+  %26 = Base.tuple()
+  %27 = trackedvariable(%5, $(QuoteNode(%5)), %25)
+  %28 = trackedjump(%5, 2, %26, %27, $(QuoteNode(§1:&1)))
+  %29 = trackedvariable(%5, $(QuoteNode(%2)), %2)
+  %30 = trackedreturn(%5, %29, $(QuoteNode(§1:&2)))
+  br 2 (%28) unless %25
+  br 3 (%2, %30)
+2: (%31)
+  %32 = record!(%5, %31)
+  %33 = TapeConstant(Main.:+)
+  %34 = trackedvariable(%5, $(QuoteNode(%2)), %2)
+  %35 = Base.tuple(%34, $(QuoteNode(⟨1⟩)))
+  %36 = trackedcall(%5, %33, %35, $(QuoteNode(§2:%6)))
+  %37 = record!(%5, %36)
+  %38 = TapeConstant(Main.geom)
+  %39 = trackedvariable(%5, $(QuoteNode(%6)), %37)
+  %40 = trackedvariable(%5, $(QuoteNode(%3)), %3)
+  %41 = Base.tuple(%39, %40)
+  %42 = trackedcall(%5, %38, %41, $(QuoteNode(§2:%7)))
+  %43 = record!(%5, %42)
+  %44 = trackedvariable(%5, $(QuoteNode(%7)), %43)
+  %45 = trackedreturn(%5, %44, $(QuoteNode(§2:&1)))
+  br 3 (%43, %45)
+3: (%46, %47)
+  %48 = record!(%5, %47)
+  return %46
+\end{lstlisting}
+  \caption{Tracked code of the method \protect\jlinl{geom(::Int, ::Float64)}.\label{lst:geom-tracked}}
+\end{lstfloat}
+
 
 \section{Evaluation}
 \label{sec:irtracker-eval}
