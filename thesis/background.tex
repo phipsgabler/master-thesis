@@ -172,7 +172,7 @@ Hamiltonian Monte Carlo (HMC) \parencite{betancourt2018conceptual,girolami2011ri
     \For{\(k \ge 1\)}
     \State Sample a proposal \(\kth[k]{\hat{Y}} \from q(\kth[k-1]{Y}, \cdot)\)
     \State With probability \(\alpha(\kth[k]{\hat{Y}}, \kth[k-1]{Y})\), set
-    \(\kth[k]{Y} = \kth[k]{\hat{Y}}\); else, keep \(\kth[k]{Y} = \kth[k-1]{Y}\).
+    \(\kth[k]{Y} = \kth[k]{\hat{Y}}\); else, keep \(\kth[k]{Y} = \kth[k-1]{Y}\)
     \EndFor
   \end{algorithmic}
   \hrule
@@ -437,8 +437,8 @@ function normal_mixture(x, K, m, s, σ)
 end
 \end{lstlisting}
   \caption{Slightly simplified macro-expanded code of the model in listing~\ref{lst:normal}.  The
-    inner code is put into an \protect\jlinl{evaluator} closure, and very tilde statement is
-    replaced by a \protect\jlinl{tilde_} function, to which additional data and state information
+    inner code is put into an \protect\jlinl{evaluator} closure, and every tilde statement is
+    replaced by a \protect\jlinl{tilde_*} function, to which additional data and state information
     are passed.\label{lst:normal-expanded}}
 \end{lstfloat}
 \setlength{\parskip}{0pt}
@@ -638,9 +638,10 @@ figure on the left.
   \hfill
   \subbottom{\includegraphics[width=0.4\textwidth]{figures/ssa-args}}
   \hfill\null
-  \caption{Correspondence between SSA representations using \(\phi\)-functions and block arguments.
-    The SSA variables \protect\jlinl{\%3} and \protect\jlinl{\%4} correspond to the values of
-    \protect\jlinl{y} in the two branches, which are merged in \protect\jlinl{\%5}.}
+  \caption{Two control flow graphs of the same function, illustrating the correspondence between SSA
+    representations using \(\phi\)-functions and block arguments.  The SSA variables
+    \protect\jlinl{\%3} and \protect\jlinl{\%4} correspond to the values of \protect\jlinl{y} in the
+    two branches, which are merged in \protect\jlinl{\%5}.}
   \label{fig:ssa-phi}
 \end{figure}
 
@@ -707,7 +708,7 @@ inferred.
 └───       return %48
 \end{lstlisting}
   \caption{Typed and optimized code of the call \protect\jlinl{foo([1.0])} in SSA form, as obtained
-    through \protect\jlinl{@code_typed} (the extra lines are due to the formatting of
+    through \protect\jlinl{@code_typed} (the extra bars are due to the formatting of
     \protect\jlinl{CodeInfo}).\label{lst:foo-typed}}
 \end{lstfloat}
 
@@ -728,6 +729,15 @@ as well as stored for later usage as part of the just-in-time compilation mechan
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Computation Graphs and Automatic Differentiation}
 \label{sec:cg-ad}
+
+\begin{figure}[t]
+  \centering
+  \subbottom[Forward mode graph.]{\includegraphics[width=\textwidth]{figures/comp-graph}}
+  \bigskip
+  \subbottom[Backward graph.]{\includegraphics[width=\textwidth]{figures/comp-graph-backward}}
+  \caption{Text}
+  \label{fig:comp-graph}
+\end{figure}
 
 % 1. AD in general
 % 2. Zygote principles

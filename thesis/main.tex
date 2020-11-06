@@ -81,8 +81,8 @@
 
 \AtEveryBibitem{\clearlist{language}} % clears language
 \renewcommand*\bibnamedash{\rule[0.48ex]{3em}{0.14ex}\space}
-\renewcommand*{\multinamedelim}{;\space}
-\renewcommand*{\finalnamedelim}{;\space}
+\renewcommand*{\multinamedelim}{,\space}
+\renewcommand*{\finalnamedelim}{,\space}
 
 \addbibresource{refs.bib}
 
@@ -102,6 +102,7 @@
 % \renewcommand{\textfloatsep}{\baselineskip}
 
 \newsubfloat{figure}
+\subcaptionfont{\sffamily}
 
 \setFloatBlockFor{section} % like \usepackage[section]{placeins}, but from memoir
 
