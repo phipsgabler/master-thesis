@@ -502,15 +502,25 @@ with nominal, parametric subtyping and elaborate multiple dispatch.  It uses LLV
 \parencite{llvmproject2019llvm} for JIT-compilation and while it is dynamically typed, a combination
 of method specialization and type inference allows it to produce very optimized, fast machine code
 \parencite{bezanson2018julia}.  The language is syntactically designed to bear a certain resemblance
-to Matlab, Python, or Ruby, but contrary to them, it is its own compiler, not primarily the reliance
-on third-party numerical libraries (e.g., BLAS and LAPACK), that is enabling C-like speed.
+to Matlab, Python, or Ruby, but contrary to them, it is its own compiler, and not primarily the
+reliance on libraries calling foreign functions (e.g., Numpy), which is intrinsically enabling
+C-like speed.  Although Julia does rely on, e.g., BLAS and LAPACK for numerical algebra, there is
+nothing that fundamentally prevents implementing their functions: true array types, fast loops, and
+various optimiations are available, as opposed to languages like Python, which are fundamentally
+limited by to their dynamic interpretation.  This advantage carries over to domains outside of
+numeric computation, of course.
 
 On top of that, the language is built on a very open compilation model.  Underlying the surface
 syntax is an abstract syntax tree (AST), that is used internally to the compiler, but also exposed
 to the programmer through macros, which allow to transform pieces of code at compile time.  These
-macros resemble proper hygienic, LISP-style code transformations, not simple text-substitutions as C
-preprocessor macros.  As an example, look at the following function that sums up the \jlinl{sin}
-values of a list of numbers:
+macros resemble proper hygienic, LISP-style code transformations \parencite[cf.][]{hoyte2008let},
+not simple text-substitutions as C preprocessor macros.  As an example, look at the following
+method\footnote{The terminology of Julia uses \emph{function} for a callable object, which can have
+  multiple \emph{methods} for different combinations of argument types.  This is what allows
+  multiple dispatch: when a function is applied, the types of the arguments are determined, and the
+  most specific matching methods selected and called.  For example, the \protect\jlinl{+} function
+  has many methods for adding integers, floats, arrays, etc.}  that sums up the \jlinl{sin} values of a
+list of numbers:
 \begin{lstlisting}
 function foo(x)
     y = zero(eltype(x))
@@ -587,7 +597,7 @@ order to not possibly shadow any variables from the calling scope.)
     \protect\jlinl{\@code_warntype}).\label{lst:foo-inferred}}
 \end{lstfloat}
 
-After macro expansion, the code of the function is \emph{lowered} into an intermediate
+After macro expansion, the code of the method is \emph{lowered} into an intermediate
 representation consisting of only function calls and branches.  This comprises of sevaral
 transformations: for one, certain syntactic constructs are \enquote{desugared} into primitive
 function calls.  For example, array accesses, \jlinl{x[i]}, are replaced by calls to the library
@@ -605,16 +615,19 @@ end
 Consequently, all nested expressions are split apart, so that only simple, unnested calls remain,
 and any subsequent assignments to variables are linearized to a series of definitions, with newly
 introduced names of the form \jlinl{\%i}.  The remaining control flow statements (e.g., while loops
-and conditionals) are a represented through sequence of labelled code blocks with (possibly
+and conditionals) are a represented through sequence of labelled \emph{basic blocks}, with (possibly
 conditional) jumps between them.  The sequence of assignments is further processed into \emph{single
   static assignment (SSA) form} \parencite{singer2018static}, the characteristic property of which
 is that every variable is assigned exactly once, thus giving it a unique, position-independent name
-to each intermediate value.  The result of the translation of our example into into three SSA blocks
-can be found in listing~\ref{lst:foo-inferred}.
+to each intermediate value.  By introducing this immutability guarantee, the resulting code is, in a
+certain sense, referentially transparent, which facilitates data-flow analysis, and makes many
+transformations easier.  Accordingly, SSA form is widely used in intermediate forms of compiler
+systems, simplifying transformations and optimizations.  The result of the translation of our
+example into into three basic blocks can be found in listing~\ref{lst:foo-inferred}.
 
-There is one complication with the SSA conversion: we need to be able to distinguish between
-assignments of variables arising from \enquote{merged} control flow.  Consider the assignment of
-\jlinl{y} in the following code example:
+There is one noteable complication regarding conversion to SSA form: we need to be able to
+distinguish between assignments of variables arising from \enquote{joined} control flow.  Consider
+the assignment of \jlinl{y} in the following code example:
 \begin{lstlisting}
 x = f()
 if !g()
@@ -624,12 +637,15 @@ else
 end
 h(y)
 \end{lstlisting}
-In the variant of SSA form used in this text and most of Julia, values of variables that are
-assigned in multiple parent blocks are passed as \emph{block arguments}, as in
-figure~\ref{fig:ssa-phi} on the right, and subsequently in this work.  The traditional, functionally
-equivalent alternative is to introduce \emph{\(\phi\)-functions}, which are defined to distinguish
-between several values depending on the control path taken before.  This form is shown in the same
-figure on the left.
+Here, the value of \jlinl{h(y)} depends on two possible locations of \jlinl{y}~-- hence, we cannot
+simply rename every varaible in a naive way.  Instead, in the variant of SSA form used in this text
+and most of Julia, values of variables that are assigned in multiple parent blocks are passed on as
+\emph{block arguments}, as in figure~\ref{fig:ssa-phi} on the right, and subsequently in this work.
+This makes basic blocks resemble local function, in a way, and cleanly resolves the problem of joins
+just like functions handle variable inputs.  The traditional, functionally equivalent alternative is
+to introduce \emph{\(\phi\)-functions} \parencite{rosen1988global}, which are defined ad-hoc to
+distinguish between several values depending on the control path taken before.  This form is shown
+in the same figure on the left.
 
 \begin{figure}[t]
   \centering
@@ -647,10 +663,10 @@ figure on the left.
 
 Note that until now, the operations involved were purely syntactic in nature, and could be perfomed
 by solely taking into account the code of the function \jlinl{foo}.  As soon as \jlinl{foo} is
-called on a concrete type, though, the most specific method fitting to the argument types will be
-selected, and type inference on its body be applied.  If we go on and call \jlinl{foo([1.0])}, with
-\jlinl{Vector\{Int\}} as the sole argument type, the types as annotated in the same listing will be
-inferred.
+called on a concrete type during evaluation, though, the most specific method fitting to the
+argument types will be selected, and type inference on its body be applied.  If we go on and call
+\jlinl{foo([1.0])}, with \jlinl{Vector\{Int\}} as the sole argument type, the types as annotated in
+the same listing will be inferred.
 
 \begin{lstfloat}[p]
   \begin{lstlisting}[style=lstfloat]
@@ -715,20 +731,173 @@ inferred.
 The last step of compilation within Julia consists of inlining and optimizing the typed intermediate
 code, resulting in the form shown in listing~\ref{lst:foo-typed}.  There, several called methods
 have been inlined, and concrete argument types to invoke been inferred.  This is in true,
-traditional SSA form, with all variable slots eliminated, and block arguments converted to
-\(\phi\)-functions.  Finally, this representation will be translated and sent to LLVM for
+traditional SSA form, with all variable slots eliminated, and block arguments converted to the
+mentioned \(\phi\)-functions.  Finally, this representation will be translated and sent to LLVM for
 compilation, where further optimization can happen, and machine code will be generated and executed,
 as well as stored for later usage as part of the just-in-time compilation mechanism.
 
-% To track dynamic computation graphs, we perform a transformation of the IR implemented as a
-% so-called generated function, which is Julia’s mechanism for staged programming (Rompf and Odersky,
-% 2010; Bolewski, 2015). Such generated functions, instead of being directly translated into machine
-% code, emit new IR to the compiler, which is then compiled
+\newthought{A key principle} in Julia's compilation model is type specialization.  As we have seen,
+whenever a function call is evaluated, the types of the arguments are first determined, and then the
+most specific method selected.  This automatically gives the language dynamic semantics: an
+implementation could perform this operation simply at every call.  In practice, however, at this
+point multiple dispatch and JIT compilation combine into one of the main principles of optimization.
+Instead of evaluating the same code over and over again, methods are JIT-compiled the first time
+they are called.  The compiled code is then cached in the method table.  Method compilation does not
+happen recursively at once, though.  Only when the body of a compiled method is then executed with
+concrete arguments, the same process is performed again, for each invoked method.
 
+So, in a sense, JIT compilation can be seen as a function that returns compiled code, given a
+function and a tuple of types.  Similarly to macros, transform original code, given an expression,
+this process of generating compiled methods from types is customizable in Julia: via so-called
+\emph{generated functions}, there exists a process to dynamically generate code, given argument
+types~-- a form of stated programming \parencite{rompf2010lightweight,bolewski2015staged}. Such
+generated functions, when called, instead of being directly translated into machine code, emit new
+code to the compiler, which is then JIT-compiled.  For example, when we have two methods of a
+function \jlinl{f}:
+\begin{lstlisting}
+f(x::Int) = println("Int")
+f(x::String) = println("String")
+\end{lstlisting}
+we could replace them with the following generated function:
+\begin{lstlisting}
+@generated function f_generated(x)
+    if x == Int
+        return :(println("Int"))
+    elseif x == String
+        return :(println("String"))
+    else
+        error("Method error")
+    end
+end
+\end{lstlisting}
+Calling \jlinl{f_generated(1)} will then determine the argument type (\jlinl{Int}), and pass it to
+the function body of \jlinl{f_generated}.  There, the conditional will dispatch on the first branch,
+and the expression value \jlinl{:(println("Int"))} be returned.  This is now passed back to the
+compiler, which will lower the code and compile the method for \jlinl{Int} arguments, and store the
+result in the method table.  The stored code can then be executed~-- on the arguments that were used
+to determine the type tuple the generated function has been called with!  The next time
+\jlinl{f_generated} is executed, the function body is \emph{not} executed anymore, but the generated
+code of \jlinl{:(println("Int"))} directly looked up\footnote{Technically, the compiler is always
+  free to call the generating code multiple times~-- which is the reason generated functions should
+  never involve side effects or depend on external state.}.  Of course, simply replacing dispatch,
+as with this example, is not what generated functions are used in practise.  Must usages concern
+types with statically known shape arguments, such as tuples, named tuples, or array ranks.  They can
+also be used for type-level computation of values that become known only known at runtime, through
+singleton types such as \jlinl{Val}.
+
+The direct generation of code, given argument types, is however not the furthest we can go.  First,
+generated functions are not only allowed to return either \jlinl{Expr} objects~-- the internal
+representation of the surface AST~-- but also \jlinl{CodeInfo} objects, which are the lowered
+internal representation in (almost) SSA form.  This, on its own, would not be of much use most
+times, but there is a second, more interesting feature: it is possible to query the \jlinl{CodeInfo}
+of a method by reflection.  Combining these two, we now have all the tools to implement IR-level
+code transformations as follows:
+\begin{enumerate}
+  \firmlist
+\item Define a generated function, that takes as arguments another function and its arguments
+\item Within this function, obtain the IR of the passed function.
+\item Transform this IR however we like, changing the inner function calls to be called with the
+  same transformation
+\item Return the IR.  It will now get called with the same arguments.
+\end{enumerate}
+Importantly, unlike macros, such transformation can be performed \emph{recursively}: by applying the
+same transformation to the inner function calls.  Also, since they operate not during parsing, the
+function to be transformed needs not be known at compile time, and not be present literally in the
+code~-- the generated function can be called on every available callable object, at any time during
+runtime.  This makes it possible to transform even functions from other libraries.  One particular
+example of this is automatic differentiation, as shown in the next chapter: a call to
+\jlinl{gradient(f, x, y)} will obtain the code for \jlinl{f}, produce differentiated code, and call
+the result on \jlinl{x} and \jlinl{y}; naturally, differentiating \jlinl{f} involves recursively
+differentiating the other, unknown functions within it, too, and combining the results using the
+chain rule.
+
+This metaprogramming pattern is extremely powerful, and becoming more and more popular.  It allows
+to change evaluation semantics in more profound ways than multiple dispatch can: by rewriting the
+code of the called function, it is possible to change what \enquote{invoking a method} within its
+body means!  Through this, abstract interpretation patterns can be realized, by extending the
+existing data path with additional metadata (e.g., AD, or concolic execution), or non-standard
+execution be implemented (e.g., CPS transformations).  There exist already two Julia packages trying
+to simplify working with this kind of transformation: \juliapackage{Cassette.jl}, which provides
+overloadable function application by a so-called \enquote{overdubbing} mechanism; and
+\juliapackage{IRTools.jl}, which has a more user-friendly alternative to \jlinl{CodeInfo}, and a
+macro similar to \jlinl{@generated} that makes writing recursive functiona IR-transformation using
+this data structure easier.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Computation Graphs and Automatic Differentiation}
 \label{sec:cg-ad}
+
+This section may appear as an outlier from the original topic; in fact, the mathematics developed
+here are not even used later.  However, it is important to explain the interrelations between
+automatic differentiation, computation graphs, and IR transformations, to be able to understand how
+SSA-form representation is a natural structure for extracting and analyzing computation graphs, and
+how the necesary transformations arise in practise.\todo{WTF.  Differentiate again.}
+
+What is a derivative, really?  Instead of starting with a limit of tangents, more insight is
+provided by viewing it as a best-approximating linear operator.  One of the most generaly useful
+definitions is provided through the \emph{Fréchet derivative}.  A bounded linear operator
+\(A: V \to W\) the derivative of a function \(f: U \subseteq V \to W\) at \(x\), if
+\begin{equation}
+  \label{eq:frechet}
+  \lim_{\enVert{h}_V \to 0} \frac{\enVert{f(x + h) - f(x) - A(h)}_W}{\enVert{h}_V}
+\end{equation}
+In other words,
+\begin{equation}
+  f(x + h) = f(x) + A(h) + o\left(\enVert{h}\right).
+\end{equation}
+When such an \(A\) exists, it is unique, and we may call it \emph{the} derivative of \(f\) at \(x\),
+writing \(Df(x) = A\).  This essentially generalizes the notion of the \emph{total differential}.
+When the differential exists for all \(x\), we can use \(D\) as a well-defined higher-order function
+on its own, as in the following.
+
+(writing \(g = (x, y) \mapsto x - y\) instead of the infix subtraction operator) Chain rule:
+\(D(\phi \circ \psi)(x) = (D(\phi(x)) \circ D\psi(x))\)
+\begin{equation}
+  \begin{aligned}
+    Df(x, y)(\Delta) &= D(g \circ (\sin \otimes \operatorname{id}))(x, y)(\Delta) \\
+    &= (Dg(\sin \otimes \operatorname{id})(x, y) \circ (D\sin \otimes D\operatorname{id})(x, y))(\Delta) \\
+    &= (D\sin(x) - D \operatorname{id}(y))([\partial\sin(x)(\Delta_{1}), \Delta_{2}]) \\
+    &= \partial \sin(x) \Delta_{1} - 1 \Delta_{2} \\
+    &= \cos(x) \Delta_{1} - \Delta_{2}
+  \end{aligned}
+\end{equation}
+
+In particular, if \(f: U \subseteq \RR^N \to \RR\), as is the case for loss functions, the partial
+derivatives can be recovered by applying the Fréchet derivative to basis vectors \(e^i\):
+\begin{equation}
+  Df(x)({e}^i) = \partial_i f(x)
+\end{equation}
+To recover the gradient from this, however, requires to evaluate \(Df(x)\) at all the \(N\) basis
+functions.  In order to overcome this, we can rewrite the above equation as
+\begin{equation}
+  \begin{aligned}
+    \partial_i f(x) &= Df(x)({e}^i) \\
+    &= \langle 1, Df(x)({e}^i) \rangle \\
+    &= \langle D^{*}f(x)(1), {e}^i \rangle,
+  \end{aligned}
+\end{equation}
+where \(D^{*}f(x)\) is the \emph{adjoint operator}.
+
+When we want to recover the gradient from the Jacobian, we can either multiply it with all the basis
+vectors, or simply transpose it:
+\begin{equation}
+  \begin{aligned}
+    Df(x)(\mathrm{e}^i) &= \left\langle 1, \transpose{[\cos(x), -1]} {e}^i \right\rangle \\
+    &= \left\langle [\cos(x), -1], {e}^i \right\rangle
+  \end{aligned}
+\end{equation}
+
+(Note that the adjoint operator inverses the order of composition)
+\begin{equation}
+  \begin{aligned}
+    D^{*}f(x, y)(\delta) &= D^{*}(g \circ \sin \otimes \operatorname{id})(x, y)(\delta)\\
+    &= (D^{*}\sin \otimes D^{*} \operatorname{id} \circ D^{*}g)(x, y)(\delta) \\
+    &= ((D^{*}\sin(x) \otimes D^{*} \operatorname{id}(y)) \circ (\xi \mapsto [\xi, -\xi])) (\delta) \\
+    &= ((\partial \sin(x) \times \cdot) \otimes (1 \times \cdot))([\delta, -\delta])  \\
+    &= [\cos(x), -1] \cdot \delta
+  \end{aligned}
+\end{equation}
+
 
 \begin{figure}[t]
   \centering
@@ -739,10 +908,8 @@ as well as stored for later usage as part of the just-in-time compilation mechan
       y}, together with the derivative graphs in forward- and backward mode.}
   \label{fig:comp-graph}
 \end{figure}
-
 % 1. AD in general
 % 2. Zygote principles
-
 
 
 

@@ -195,7 +195,7 @@
 \newcommand{\from}{\sim}
 \newcommand{\iidfrom}{\stackrel{\text{iid}}{\sim}}
 \newcommand{\kldiv}[2]{\mathrm{D}_{\text{KL}}(#1 \parallel #2)}
-% \newcommand{\transp}[1]{#1^{\mathrm{T}}}
+\newcommand{\transpose}[1]{#1^{\mathrm{T}}}
 \newcommand{\inverse}[1]{#1^{-1}}
 \newcommand{\RR}{\mathbb{R}}
 \newcommand{\NN}{\mathbb{N}}
@@ -253,26 +253,28 @@
 % -------------------------------------------------------------------------------
 \title{\longtitle}
 
+\includeonly{background,automatic_graph_tracking}
+
 \begin{document}
 \chapterstyle{hangnum}
 \pagestyle{plain}
 \frontmatter
 
 \setcounter{page}{1} % titlingpage resets to 1 afterwards
-\input{title}
+\include{title}
 \setcounter{page}{3}
 
 \cleartorecto
-\input{declaration}
+\include{declaration}
 
 \cleartorecto
-\input{license}
+\include{license}
 
 
 %-------------------------------------------------------------------------------
 % ABSTRACT
 \cleartorecto
-\input{abstract}
+\include{abstract}
 
 
 %-------------------------------------------------------------------------------
@@ -285,9 +287,9 @@
 \tableofcontents*
 \endgroup
 
-% \input{acknowledgemnt.text}
+% \include{acknowledgemnt.text}
 
-\input{notation}
+\include{notation}
 
 % -------------------------------------------------------------------------------
 % CHAPTERS
@@ -303,14 +305,7 @@
 % -------------------------------------------------------------------------------
 % BIBLIOGRAPHY
 \cleartorecto
-\begingroup
-\microtypesetup{protrusion=false, expansion=false}
-\raggedright
-\phantomsection
-\addcontentsline{toc}{chapter}{Bibliography}
-\printbibliography[heading=memoir]
-\endgroup
-
+\include{biliography}
 
 % -------------------------------------------------------------------------------
 % APPENDIX
@@ -332,7 +327,7 @@
 % -------------------------------------------------------------------------------
 % COLOPHON
 \cleartoverso
-\input{colophon}
+\include{colophon}
 
 \end{document}
 
