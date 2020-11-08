@@ -202,14 +202,15 @@ proposals for a within-Gibbs sampler, leading to a cancelling acceptance rate of
 \(\alpha \equiv 1\).  This approach has the advantage of being very algorithmic, which makes it
 rather easy to apply, even by hand, to many models, and simply to express algorithmically.  Hence,
 the method is a popular starting point for general probabilistic programming systems, most
-prominently BUGS \parencite{lunn2000winbugs,lunn2009bugs} and JAGS \parencite{plummer2003jags}.
+prominently BUGS \parencite{lunn2000winbugs,lunn2009bugs} and JAGS
+\parencite{plummer2003jags,plummer2017jags}.
 
 In many real-world models, the factorization structure is quite sparse and results in small Markov
 blankets.  Algorithms to derive Gibbs samplers exploit this large independency between variables.
 In short, they \enquote{trim} the dependency graph of the model to the local Markov blankets of each
 target variable, and derive either a full conditional from it, where possible (for discrete or
 conjugate variables), or otherwise approximate it through appropriate local sampling (e.g., slice
-sampling).
+sampling) \parencite[see][]{plummer2003jags}.
 
 As an example, consider a simple Gaussian mixture model with equal weights, specified as follows:
 \begin{equation}
@@ -736,24 +737,26 @@ mentioned \(\phi\)-functions.  Finally, this representation will be translated a
 compilation, where further optimization can happen, and machine code will be generated and executed,
 as well as stored for later usage as part of the just-in-time compilation mechanism.
 
-\newthought{A key principle} in Julia's compilation model is type specialization.  As we have seen,
-whenever a function call is evaluated, the types of the arguments are first determined, and then the
-most specific method selected.  This automatically gives the language dynamic semantics: an
-implementation could perform this operation simply at every call.  In practice, however, at this
-point multiple dispatch and JIT compilation combine into one of the main principles of optimization.
-Instead of evaluating the same code over and over again, methods are JIT-compiled the first time
-they are called.  The compiled code is then cached in the method table.  Method compilation does not
-happen recursively at once, though.  Only when the body of a compiled method is then executed with
-concrete arguments, the same process is performed again, for each invoked method.
+\newthought{A key principle} in Julia's compilation model is type
+specialization\parencite{bezanson2018julia}.  As we have seen, whenever a function call is
+evaluated, the types of the arguments are first determined, and then the most specific method
+selected and called.  This automatically gives the language dynamic semantics: an implementation can
+perform evaluation at every call.  In practice, however, at this point multiple dispatch and JIT
+compilation combine into one of the main principles of optimization.  Instead of evaluating the same
+code over and over again, methods are JIT-compiled the first time they are called.  The compiled
+code is then cached in the method table.  Method compilation does not happen recursively at once,
+though.  Only when the body of a compiled method is then executed with concrete arguments, the same
+process is performed again, for each invoked method.
 
 So, in a sense, JIT compilation can be seen as a function that returns compiled code, given a
-function and a tuple of types.  Similarly to macros, transform original code, given an expression,
-this process of generating compiled methods from types is customizable in Julia: via so-called
-\emph{generated functions}, there exists a process to dynamically generate code, given argument
-types~-- a form of stated programming \parencite{rompf2010lightweight,bolewski2015staged}. Such
-generated functions, when called, instead of being directly translated into machine code, emit new
-code to the compiler, which is then JIT-compiled.  For example, when we have two methods of a
-function \jlinl{f}:
+function and a tuple of types.  Similar to macros, which transform original code, given an
+expression, this process of generating compiled methods from types is customizable in Julia: via
+so-called \emph{generated functions}, there exists a process to dynamically generate code, given
+argument types~-- a form of stated programming
+\parencite{rompf2010lightweight,bolewski2015staged}. Such generated functions, when called, are not
+directly translated into machine code: instead, they emit new code to the compiler, based on the
+types of their arguments.  The new code is then JIT-compiled.  For example, when we have two methods
+of a function \jlinl{f}:
 \begin{lstlisting}
 f(x::Int) = println("Int")
 f(x::String) = println("String")
@@ -770,58 +773,64 @@ we could replace them with the following generated function:
     end
 end
 \end{lstlisting}
-Calling \jlinl{f_generated(1)} will then determine the argument type (\jlinl{Int}), and pass it to
-the function body of \jlinl{f_generated}.  There, the conditional will dispatch on the first branch,
-and the expression value \jlinl{:(println("Int"))} be returned.  This is now passed back to the
+Calling \jlinl{f_generated(1)} will then determine the argument type (\jlinl{typeof(1) == Int}), and
+pass it to the function body of \jlinl{f_generated}.  There, the conditional will select the first
+branch, and the expression \jlinl{:(println("Int"))} be returned.  This is now passed back to the
 compiler, which will lower the code and compile the method for \jlinl{Int} arguments, and store the
 result in the method table.  The stored code can then be executed~-- on the arguments that were used
 to determine the type tuple the generated function has been called with!  The next time
 \jlinl{f_generated} is executed, the function body is \emph{not} executed anymore, but the generated
-code of \jlinl{:(println("Int"))} directly looked up\footnote{Technically, the compiler is always
-  free to call the generating code multiple times~-- which is the reason generated functions should
-  never involve side effects or depend on external state.}.  Of course, simply replacing dispatch,
-as with this example, is not what generated functions are used in practise.  Must usages concern
-types with statically known shape arguments, such as tuples, named tuples, or array ranks.  They can
-also be used for type-level computation of values that become known only known at runtime, through
-singleton types such as \jlinl{Val}.
+code of \jlinl{:(println("Int"))} directly looked up\footnote{A caveat: technically, the compiler is
+  always free to call the generating code multiple times, though~-- which is the reason generated
+  functions should never involve side effects or depend on external state.}.  Of course, simply
+replacing dispatch, as with this example, is not what generated functions are used for in practise.
+Most applications concern parametric types with statically known shape arguments, such as tuples,
+named tuples, or array ranks.  They can also be used for type-level computations on values that
+become known only known at runtime, through singleton types such as \jlinl{Val}.
 
-The direct generation of code, given argument types, is however not the furthest we can go.  First,
-generated functions are not only allowed to return either \jlinl{Expr} objects~-- the internal
-representation of the surface AST~-- but also \jlinl{CodeInfo} objects, which are the lowered
-internal representation in (almost) SSA form.  This, on its own, would not be of much use most
-times, but there is a second, more interesting feature: it is possible to query the \jlinl{CodeInfo}
-of a method by reflection.  Combining these two, we now have all the tools to implement IR-level
-code transformations as follows:
+The direct generation of code, given argument types, is however not the furthest we can go.  For
+onegenerated functions are not only allowed to return \jlinl{Expr} objects~-- the internal
+representation of the surface AST~-- but also \jlinl{CodeInfo} objects, which are the internal
+representation of lowered code in (almost) SSA form.  This, on its own, would not be of much use
+most times, but there is a second, more interesting feature: it is possible to query the
+\jlinl{CodeInfo} of a method by reflection, given a function and an argument type tuple.  Combining
+these two, we now have all the tools to implement IR-level code transformations as follows:
 \begin{enumerate}
   \firmlist
-\item Define a generated function, that takes as arguments another function and its arguments
-\item Within this function, obtain the IR of the passed function.
-\item Transform this IR however we like, changing the inner function calls to be called with the
-  same transformation
-\item Return the IR.  It will now get called with the same arguments.
+\item Define a generated function, taking as arguments another function and its arguments.
+\item Within this function, obtain the IR of the method of the passed-in function for the remaining
+  arguments.
+\item Transform this IR however necessary.
+\item Return the IR, which will now be compiled and called on the actual arguments.
 \end{enumerate}
-Importantly, unlike macros, such transformation can be performed \emph{recursively}: by applying the
-same transformation to the inner function calls.  Also, since they operate not during parsing, the
-function to be transformed needs not be known at compile time, and not be present literally in the
-code~-- the generated function can be called on every available callable object, at any time during
-runtime.  This makes it possible to transform even functions from other libraries.  One particular
-example of this is automatic differentiation, as shown in the next chapter: a call to
-\jlinl{gradient(f, x, y)} will obtain the code for \jlinl{f}, produce differentiated code, and call
-the result on \jlinl{x} and \jlinl{y}; naturally, differentiating \jlinl{f} involves recursively
-differentiating the other, unknown functions within it, too, and combining the results using the
-chain rule.
+Importantly, unlike macros, such transformation can be performed \emph{recursively}: by inserting
+the same generated function to the inner function calls in step 3.  Since the transformation
+operates not during parsing, the function to be transformed needs not be known beforehand, and not
+be present literally in the code~-- the generated function can be called on every available callable
+object, at any time during runtime.  This makes it possible to transform even functions from other
+libraries, internally calling yet other functions.  One particular example of this principle is
+source-to-source automatic differentiation, as shown in the next chapter: a call to a function
+\jlinl{gradient(f, x, y)} will obtain the IR of the method for \jlinl{f} on \jlinl{typeof(x)} and
+\jlinl{typeof(y)}, produce differentiated code, and call the result on \jlinl{x} and \jlinl{y}.
+Naturally, differentiating \jlinl{f} involves recursively differentiating the other, unknown
+functions within it, too (down to \enquote{primitive} functions, whose derivative is known), and
+combining the results using the chain rule.
 
 This metaprogramming pattern is extremely powerful, and becoming more and more popular.  It allows
 to change evaluation semantics in more profound ways than multiple dispatch can: by rewriting the
-code of the called function, it is possible to change what \enquote{invoking a method} within its
-body means!  Through this, abstract interpretation patterns can be realized, by extending the
-existing data path with additional metadata (e.g., AD, or concolic execution), or non-standard
-execution be implemented (e.g., CPS transformations).  There exist already two Julia packages trying
-to simplify working with this kind of transformation: \juliapackage{Cassette.jl}, which provides
-overloadable function application by a so-called \enquote{overdubbing} mechanism; and
-\juliapackage{IRTools.jl}, which has a more user-friendly alternative to \jlinl{CodeInfo}, and a
-macro similar to \jlinl{@generated} that makes writing recursive functiona IR-transformation using
-this data structure easier.
+code of the called function, it is possible to change what invoking a method within its body means.
+Through this, several abstract interpretation algorithms can be realized, by extending the existing
+data path with additional metadata (such as AD, or concolic execution), or non-standard execution be
+implemented (e.g., continuation-passing style transformations).  There exist already two Julia
+packages with the goal of simplify working with this kind of transformation:
+\juliapackage{Cassette.jl}\footnote{\protect\url{https://github.com/jrevels/Cassette.jl}}, which
+provides overloadable function application by a so-called \enquote{overdubbing} mechanism,
+abstracting out some common patterns; and
+\juliapackage{IRTools.jl}\footnote{\protect\url{https://github.com/FluxML/IRTools.jl}}, which has a
+more user-friendly alternative to \jlinl{CodeInfo}, and a macro similar to \jlinl{@generated} that
+makes writing recursive functiona IR-transformation using this data structure easier.  The latter is
+what the work of this thesis builds on.
+
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Computation Graphs and Automatic Differentiation}
@@ -831,58 +840,131 @@ This section may appear as an outlier from the original topic; in fact, the math
 here are not even used later.  However, it is important to explain the interrelations between
 automatic differentiation, computation graphs, and IR transformations, to be able to understand how
 SSA-form representation is a natural structure for extracting and analyzing computation graphs, and
-how the necesary transformations arise in practise.\todo{WTF.  Differentiate again.}
+how the necessary transformations arise in practise.  To appreciate how the form of the computation
+graphs interacts with the mathematics, some foundations need to be introduced first.
 
-What is a derivative, really?  Instead of starting with a limit of tangents, more insight is
-provided by viewing it as a best-approximating linear operator.  One of the most generaly useful
-definitions is provided through the \emph{Fréchet derivative}.  A bounded linear operator
-\(A: V \to W\) the derivative of a function \(f: U \subseteq V \to W\) at \(x\), if
+Many algorithms in machine learning and other domains can be expressed as an optimization problem
+over a multivatiate function with scalar output~-- typically a loss function over a parameter space,
+which measures how far a model prediction is form the true target values.  The optimal model is then
+just that one for which the parameters minimize the loss function.  When the loss function is
+(sub-)differentiable, there exist a variety of gradient-based optimization methods to find this
+optimum (or, in the non-convex case, at least a practically sufficient local minimum).
+
+While in some cases the loss function is simple enough to find the gradient by hand, in general, the
+model, and therefore the loss function, may be specified in terms of rather complicated programs,
+for which hand-writing derivatives is difficult to infeasible.  For this reason, computerized
+methods for differentiation have been developed.  These can be categorized into three classes:
+\begin{itemize}
+  \firmlist
+\item Finite differences
+\item Symbolic differentiation
+\item Automatic differentiation
+\end{itemize}
+In finite differences, the idea is to discretize the definition of derivatives, and numerically
+evaluate the function within an environment.  This is simple to implement, increases in complexity
+with the dimension of the involved spaced and can become numerically unstable in various ways.
+Symbolic differentiation works through representing the functions in question as symbolic algebraic
+objects, and applying the differentiation rules as one would manually.  This does not lose precision
+or introduce divergence, but can suffer from blow-up of the size of the generated expressions;
+additionally, it requires the functions to be expressed in a custom representation, different from
+normal functions or programs.
+
+\newthought{Automatic differentiation}, the third category, is perhaps unfortunately named.  The
+idea is to not start from functions as black-box or symbolic objects, but from programs, represented
+throught expression graphs.  Then the perturbation that makes up the value of the derivative at a
+point is propagated through the graph.
+% numerical - symbolic - ad ; footnote: ad = symbolic with sharing
+
+To understand how that works, let us start with the mathematics.  What is a derivative, really?
+When we talk about gradients, which is what we really need in a gradient algorithm, this is usually
+a rather informal term for \enquote{the vector of partial derivatives}, which then points into an
+ascent direction.
+
+Instead of starting with a limit of tangents, more insight is provided by viewing it as a
+best-approximating linear operator.  One of the most generaly useful definitions is provided through
+the \emph{Fréchet derivative} \parencite{bronstein1995taschenbuch}, essentially a generalization of
+the \emph{total differential}.  Let \(X\) and \(Y\) be normed spaces.  A function
+\(f: U \subseteq X \to Y\) is Fréchet differentiable at a point \(x \in U\) if there exists a
+bounded linear operator \(A: X \to Y\) such that
 \begin{equation}
   \label{eq:frechet}
-  \lim_{\enVert{h}_V \to 0} \frac{\enVert{f(x + h) - f(x) - A(h)}_W}{\enVert{h}_V}
+  \lim_{\enVert{h}_X \to 0} \frac{\enVert{f(x + h) - f(x) - A(h)}_Y}{\enVert{h}_X};
 \end{equation}
-In other words,
+or in other words,
 \begin{equation}
   f(x + h) = f(x) + A(h) + o\left(\enVert{h}\right).
 \end{equation}
 When such an \(A\) exists, it is unique, and we may call it \emph{the} derivative of \(f\) at \(x\),
-writing \(Df(x) = A\).  This essentially generalizes the notion of the \emph{total differential}.
-When the differential exists for all \(x\), we can use \(D\) as a well-defined higher-order function
-on its own, as in the following.
+writing \(\Dif f(x) = A\).  When the differential exists for all \(x\), we can use \(\Dif\) as a
+well-defined higher-order function on its own, as in the following.
 
-(writing \(g = (x, y) \mapsto x - y\) instead of the infix subtraction operator) Chain rule:
-\(D(\phi \circ \psi)(x) = (D(\phi(x)) \circ D\psi(x))\)
+The important fact here is that \(\Dif f(x)\) is still a function: a linear function approximating how
+\(f\) reacts to a perturbation, \(\Delta\), around \(x\).  This fact allows one to propagate differential
+values through composed functions, by the chain rule:
+\begin{equation}
+  \Dif(\phi \circ \psi)(x) = \Dif\phi(\psi(x)) \circ \Dif\psi(x)
+\end{equation}
+In the one-dimensional case, we simply have
+\begin{equation}
+  \Delta\Dif f(x) = \Delta \mapsto \partial_1 f(x) \; \Delta,
+\end{equation}
+so
 \begin{equation}
   \begin{aligned}
-    Df(x, y)(\Delta) &= D(g \circ (\sin \otimes \operatorname{id}))(x, y)(\Delta) \\
-    &= (Dg(\sin \otimes \operatorname{id})(x, y) \circ (D\sin \otimes D\operatorname{id})(x, y))(\Delta) \\
-    &= (D\sin(x) - D \operatorname{id}(y))([\partial\sin(x)(\Delta_{1}), \Delta_{2}]) \\
-    &= \partial \sin(x) \Delta_{1} - 1 \Delta_{2} \\
-    &= \cos(x) \Delta_{1} - \Delta_{2}
+    \Dif(\phi \circ \psi)(x)(\Delta) &=
+    \left( \Dif\phi(\psi(x)) \circ \Dif\psi(x) \right)(\Delta) \\
+    &= \Dif\phi(\psi(x))\left( \Dif\psi(x)(\Delta) \right) \\
+    &= \Dif\phi(\psi(x))\left( \partial_1 \psi(x) \Delta \right) \\
+    &= \partial_1\phi(\psi(x)) \; \partial_1 \psi(x) \Delta \\
+    &= \left( \partial_1\phi(\psi(x)) \; \partial_1 \psi(x) \right) \Delta,
+  \end{aligned}
+\end{equation}
+as we know it from calculus.  Here, the product in the resulting expression arises from the fact
+that we propagated through \(\partial_1 \psi(x) \Delta\) as the input value of \(\Dif\phi(\psi(x))\).
+
+If \(f: U \subseteq \RR^N \to \RR\), as is the case for loss functions of parametric models, the
+partial derivatives can be recovered individually by applying the Fréchet derivative to basis
+vectors \(e^i\):
+\begin{equation}
+  \Dif f(x)({e}^i) = \partial_i f(x)
+\end{equation}
+This corresponds to the fact that the partial derivatives are the sensitivities to perturbation in
+coordinate directions~-- a special case of directional derivatives (which can be recovered the same
+way by application of the differential to any vector with unit norm.)
+
+
+Consider the specific case of \(f(x, y) = sin(x) - y\).  Writing \(g = (x, y) \mapsto x - y\) instead
+of the infix subtraction operator (with a derivative of
+\(\Dif g(x)(\Delta_1, \Delta_2) = \Delta_1 - \Delta_2\)), we have:
+\begin{equation}
+  \begin{aligned}
+    \Dif f(x, y) &= \Dif(g \circ (\sin \otimes \ident))(x, y) \\
+    &= \Dif g\left( (\sin \otimes \ident)(x, y)) \circ \Dif(\sin \otimes \ident)(x, y)
+    \right) \\
+    &= \left( (\Delta_1, \Delta_2) \mapsto \Delta_1 - \Delta_2 \right) \circ \left( \Dif\sin(x)
+      \otimes \Dif \ident(y) \right) \\
+    &= (\Delta_1, \Delta_2) \mapsto \partial_1\sin(x) \, \Delta_1 - 1 \Delta_2 \\
+    &= (\Delta_1, \Delta_2) \mapsto \cos(x) \, \Delta_1 - \Delta_2.
   \end{aligned}
 \end{equation}
 
-In particular, if \(f: U \subseteq \RR^N \to \RR\), as is the case for loss functions, the partial
-derivatives can be recovered by applying the Fréchet derivative to basis vectors \(e^i\):
-\begin{equation}
-  Df(x)({e}^i) = \partial_i f(x)
-\end{equation}
-To recover the gradient from this, however, requires to evaluate \(Df(x)\) at all the \(N\) basis
-functions.  In order to overcome this, we can rewrite the above equation as
+
+\newthought{To construct} the full gradient from this, however, requires to evaluate \(\Dif f(x)\) at
+all the \(N\) basis functions.  In order to overcome this, we can rewrite the above equation as
 \begin{equation}
   \begin{aligned}
-    \partial_i f(x) &= Df(x)({e}^i) \\
-    &= \langle 1, Df(x)({e}^i) \rangle \\
-    &= \langle D^{*}f(x)(1), {e}^i \rangle,
+    \partial_i f(x) &= \Dif f(x)({e}^i) \\
+    &= \langle 1, \Dif f(x)({e}^i) \rangle \\
+    &= \langle \CoDif f(x)(1), {e}^i \rangle,
   \end{aligned}
 \end{equation}
-where \(D^{*}f(x)\) is the \emph{adjoint operator}.
+where \(\CoDif f(x)\) is the \emph{adjoint operator}.
 
 When we want to recover the gradient from the Jacobian, we can either multiply it with all the basis
 vectors, or simply transpose it:
 \begin{equation}
   \begin{aligned}
-    Df(x)(\mathrm{e}^i) &= \left\langle 1, \transpose{[\cos(x), -1]} {e}^i \right\rangle \\
+    \Dif f(x)(\mathrm{e}^i) &= \left\langle 1, \transpose{[\cos(x), -1]} {e}^i \right\rangle \\
     &= \left\langle [\cos(x), -1], {e}^i \right\rangle
   \end{aligned}
 \end{equation}
@@ -890,9 +972,9 @@ vectors, or simply transpose it:
 (Note that the adjoint operator inverses the order of composition)
 \begin{equation}
   \begin{aligned}
-    D^{*}f(x, y)(\delta) &= D^{*}(g \circ \sin \otimes \operatorname{id})(x, y)(\delta)\\
-    &= (D^{*}\sin \otimes D^{*} \operatorname{id} \circ D^{*}g)(x, y)(\delta) \\
-    &= ((D^{*}\sin(x) \otimes D^{*} \operatorname{id}(y)) \circ (\xi \mapsto [\xi, -\xi])) (\delta) \\
+    \CoDif f(x, y)(\delta) &= \CoDif (g \circ \sin \otimes \ident)(x, y)(\delta)\\
+    &= (\CoDif \sin \otimes \CoDif \ident \circ \CoDif g)(x, y)(\delta) \\
+    &= ((\CoDif \sin(x) \otimes \CoDif \ident(y)) \circ (\xi \mapsto [\xi, -\xi])) (\delta) \\
     &= ((\partial \sin(x) \times \cdot) \otimes (1 \times \cdot))([\delta, -\delta])  \\
     &= [\cos(x), -1] \cdot \delta
   \end{aligned}

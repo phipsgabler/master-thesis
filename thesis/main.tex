@@ -30,10 +30,10 @@
 % \usepackage[originalcommands]{ragged2e} % improved ragged paragraphs in abstract
 \usepackage{eso-pic}
 
+% \usepackage{commath}
 % \usepackage{amsmath}
 % \usepackage{amssymb}
 % \usepackage{MnSymbol} % incompatible with amssymb and amsfonts
-\usepackage{commath}
 % \usepackage{mathtools} % improvements on amsmath
 %\usepackage{pifont}
 % \usepackage{fourier-orns}
@@ -209,6 +209,11 @@
 \newcommand{\vect}[1]{\boldsymbol{#1}}
 \newcommand{\Likelihood}[1]{\mathcal{L}(#1)}
 \newcommand{\Loglikelihood}[1]{\ell(#1)}
+\newcommand{\Dif}{\mathop{}\!\mathrm{D}}
+\newcommand{\CoDif}{\mathop{}\!\mathrm{D}^{*}}
+\newcommand{\dif}{\mathop{}\!\mathrm{d}}
+\newcommand{\envert}[1]{\left\lvert#1\right\rvert}
+\newcommand{\enVert}[1]{\left\lVert#1\right\rVert}
 \DeclareMathOperator{\diag}{diag}
 \DeclareMathOperator*{\argmin}{arg min}
 \DeclareMathOperator{\Span}{span}
@@ -218,6 +223,7 @@
 \DeclareMathOperator{\rank}{rank}
 \DeclareMathOperator{\sgn}{sgn}
 \DeclareMathOperator{\supp}{supp}
+\DeclareMathOperator{\ident}{id}
 
 % Broadcast syntax for math mode, from https://tex.stackexchange.com/a/490779/46356
 \makeatletter
@@ -253,7 +259,7 @@
 % -------------------------------------------------------------------------------
 \title{\longtitle}
 
-\includeonly{background,automatic_graph_tracking}
+% \includeonly{background,automatic_graph_tracking}
 
 \begin{document}
 \chapterstyle{hangnum}
