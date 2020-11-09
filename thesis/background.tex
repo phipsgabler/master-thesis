@@ -72,7 +72,7 @@ for some measurable function \(f\) (with the base measure \(\mu\) depending on t
   \label{eq:normalizing}
   \prob{x} = \int \prob{x, \theta} \dif \mu(\theta).
 \end{equation}
-in equation~\ref{eq:bayes}, often called the \enquote{evidence}.
+in equation~\eqref{eq:bayes}, often called the \enquote{evidence}.
 
 When the distributions involved form a sufficiently \enquote{nice} combination, e.g., a conjugate
 pair \parencites[see][chapter 2.2.2]{marin2007bayesian}[chapter
@@ -737,16 +737,16 @@ mentioned \(\phi\)-functions.  Finally, this representation will be translated a
 compilation, where further optimization can happen, and machine code will be generated and executed,
 as well as stored for later usage as part of the just-in-time compilation mechanism.
 
-\newthought{A key principle} in Julia's compilation model is type
-specialization\parencite{bezanson2018julia}.  As we have seen, whenever a function call is
-evaluated, the types of the arguments are first determined, and then the most specific method
-selected and called.  This automatically gives the language dynamic semantics: an implementation can
-perform evaluation at every call.  In practice, however, at this point multiple dispatch and JIT
-compilation combine into one of the main principles of optimization.  Instead of evaluating the same
-code over and over again, methods are JIT-compiled the first time they are called.  The compiled
-code is then cached in the method table.  Method compilation does not happen recursively at once,
-though.  Only when the body of a compiled method is then executed with concrete arguments, the same
-process is performed again, for each invoked method.
+\newthought{A key principle} in Julia's compilation model is type specialization
+\parencite{bezanson2018julia}.  As we have seen, whenever a function call is evaluated, the types of
+the arguments are first determined, and then the most specific method selected and called.  This
+automatically gives the language dynamic semantics: an implementation can perform evaluation at
+every call.  In practice, however, at this point multiple dispatch and JIT compilation combine into
+one of the main principles of optimization.  Instead of evaluating the same code over and over
+again, methods are JIT-compiled the first time they are called.  The compiled code is then cached in
+the method table.  Method compilation does not happen recursively at once, though.  Only when the
+body of a compiled method is then executed with concrete arguments, the same process is performed
+again, for each invoked method.
 
 So, in a sense, JIT compilation can be seen as a function that returns compiled code, given a
 function and a tuple of types.  Similar to macros, which transform original code, given an
@@ -781,12 +781,12 @@ result in the method table.  The stored code can then be executed~-- on the argu
 to determine the type tuple the generated function has been called with!  The next time
 \jlinl{f_generated} is executed, the function body is \emph{not} executed anymore, but the generated
 code of \jlinl{:(println("Int"))} directly looked up\footnote{A caveat: technically, the compiler is
-  always free to call the generating code multiple times, though~-- which is the reason generated
-  functions should never involve side effects or depend on external state.}.  Of course, simply
-replacing dispatch, as with this example, is not what generated functions are used for in practise.
-Most applications concern parametric types with statically known shape arguments, such as tuples,
-named tuples, or array ranks.  They can also be used for type-level computations on values that
-become known only known at runtime, through singleton types such as \jlinl{Val}.
+  still free to call the generating code multiple times~-- which is the reason generated functions
+  should never involve side effects or depend on external state.}.  Of course, simply replacing
+dispatch, as with this example, is not what generated functions are used for in practise.  Most
+applications concern parametric types with statically known shape arguments, such as tuples, named
+tuples, or array ranks.  They can also be used for type-level computations on values that become
+known only known at runtime, through singleton types such as \jlinl{Val}.
 
 The direct generation of code, given argument types, is however not the furthest we can go.  For
 onegenerated functions are not only allowed to return \jlinl{Expr} objects~-- the internal
@@ -833,7 +833,7 @@ what the work of this thesis builds on.
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\section{Computation Graphs and Automatic Differentiation}
+\section{Automatic Differentiation and \newline Computation Graphs}
 \label{sec:cg-ad}
 
 This section may appear as an outlier from the original topic; in fact, the mathematics developed
@@ -853,7 +853,9 @@ optimum (or, in the non-convex case, at least a practically sufficient local min
 While in some cases the loss function is simple enough to find the gradient by hand, in general, the
 model, and therefore the loss function, may be specified in terms of rather complicated programs,
 for which hand-writing derivatives is difficult to infeasible.  For this reason, computerized
-methods for differentiation have been developed.  These can be categorized into three classes:
+methods for differentiation have been
+developed\parencite{griewank2008evaluating,baydin2018automatic}.  These can be categorized into
+three classes:
 \begin{itemize}
   \firmlist
 \item Finite differences
@@ -861,54 +863,53 @@ methods for differentiation have been developed.  These can be categorized into 
 \item Automatic differentiation
 \end{itemize}
 In finite differences, the idea is to discretize the definition of derivatives, and numerically
-evaluate the function within an environment.  This is simple to implement, increases in complexity
-with the dimension of the involved spaced and can become numerically unstable in various ways.
-Symbolic differentiation works through representing the functions in question as symbolic algebraic
-objects, and applying the differentiation rules as one would manually.  This does not lose precision
-or introduce divergence, but can suffer from blow-up of the size of the generated expressions;
-additionally, it requires the functions to be expressed in a custom representation, different from
-normal functions or programs.
+evaluate the function within an environment.  This is simple to implement, but does not scale well
+with the dimension of the involved space, and can become numerically unstable in various ways
+\parencite[section 5.7]{press2007numerical}.  Symbolic differentiation works through representing
+the functions in question as symbolic algebraic objects, and applying the differentiation rules as
+one would manually.  This does not lose precision or introduce divergence, but can suffer from
+blow-up of the size of the generated expressions; additionally, it requires the functions to be
+expressed in a custom representation, different from normal functions or programs.
 
 \newthought{Automatic differentiation}, the third category, is perhaps unfortunately named.  The
-idea is to not start from functions as black-box or symbolic objects, but from programs, represented
-throught expression graphs.  Then the perturbation that makes up the value of the derivative at a
-point is propagated through the graph.
-% numerical - symbolic - ad ; footnote: ad = symbolic with sharing
+idea is to not start from functions as black-box or symbolic objects, but from programs.  Then the
+perturbation that makes up the value of the derivative at a point is propagated through the steps of
+the program.  For this to work, there needs to exist an explicit representation of the computation
+graph at ov the evaluation at a point, which is what makes the topic relevant for this thesis.
 
-To understand how that works, let us start with the mathematics.  What is a derivative, really?
-When we talk about gradients, which is what we really need in a gradient algorithm, this is usually
-a rather informal term for \enquote{the vector of partial derivatives}, which then points into an
-ascent direction.
-
-Instead of starting with a limit of tangents, more insight is provided by viewing it as a
-best-approximating linear operator.  One of the most generaly useful definitions is provided through
-the \emph{Fréchet derivative} \parencite{bronstein1995taschenbuch}, essentially a generalization of
-the \emph{total differential}.  Let \(X\) and \(Y\) be normed spaces.  A function
+To understand how this works, let us first start with the mathematics.  What is a derivative,
+really?  When we talk about gradients, which is what we really need in a gradient algorithm, this is
+usually a rather informal term for \enquote{the vector of partial derivatives}, which then points
+into an ascent direction.  This is however not the most natural form to work with in a compositional
+approach.  Instead of starting with a limit of tangents, more insight is provided by viewing
+derivatives as best-approximating linear operators.  One of the most general definitions is provided
+through the \emph{Fréchet derivative} \parencite[p. 463]{bronstein1995taschenbuch}, essentially a
+generalization of the total differential.  Let \(X\) and \(Y\) be normed spaces.  A function
 \(f: U \subseteq X \to Y\) is Fréchet differentiable at a point \(x \in U\) if there exists a
 bounded linear operator \(A: X \to Y\) such that
 \begin{equation}
   \label{eq:frechet}
-  \lim_{\enVert{h}_X \to 0} \frac{\enVert{f(x + h) - f(x) - A(h)}_Y}{\enVert{h}_X};
-\end{equation}
-or in other words,
-\begin{equation}
-  f(x + h) = f(x) + A(h) + o\left(\enVert{h}\right).
+  \lim_{\enVert{h}_X \to 0} \frac{\enVert{f(x + h) - f(x) - A(h)}_Y}{\enVert{h}_X}.
 \end{equation}
 When such an \(A\) exists, it is unique, and we may call it \emph{the} derivative of \(f\) at \(x\),
-writing \(\Dif f(x) = A\).  When the differential exists for all \(x\), we can use \(\Dif\) as a
-well-defined higher-order function on its own, as in the following.
+writing \(\Dif f(x) = A\).  When the derivative exists for all \(x\), we can use \(\Dif\) as a
+well-defined higher-order function on its own; we will assume this in the following.
 
-The important fact here is that \(\Dif f(x)\) is still a function: a linear function approximating how
-\(f\) reacts to a perturbation, \(\Delta\), around \(x\).  This fact allows one to propagate differential
-values through composed functions, by the chain rule:
+The important fact here is that \(\Dif f(x)\) is still a function: specifically, a linear function
+approximating how \(f\) reacts to a perturbation, \(\Delta\), around \(x\).  Or, in other words:
+\begin{equation}
+  f(x + h) = f(x) + Df(x)(h) + o\left(\enVert{h}\right).
+\end{equation}
+This fact allows one to propagate differential values through composed functions, by the chain rule,
+which we write in the following compositional form:
 \begin{equation}
   \Dif(\phi \circ \psi)(x) = \Dif\phi(\psi(x)) \circ \Dif\psi(x)
 \end{equation}
 In the one-dimensional case, we simply have
 \begin{equation}
-  \Delta\Dif f(x) = \Delta \mapsto \partial_1 f(x) \; \Delta,
+  \Dif \phi(x) = \Delta \mapsto \partial_1 \phi(x) \; \Delta,
 \end{equation}
-so
+since linear maps are exactly multiplications by a scalar.  Therefore, we can recover
 \begin{equation}
   \begin{aligned}
     \Dif(\phi \circ \psi)(x)(\Delta) &=
@@ -920,22 +921,17 @@ so
   \end{aligned}
 \end{equation}
 as we know it from calculus.  Here, the product in the resulting expression arises from the fact
-that we propagated through \(\partial_1 \psi(x) \Delta\) as the input value of \(\Dif\phi(\psi(x))\).
+that we propagated through \(\partial_1 \psi(x) \Delta\) as the input value of
+\(\Dif\phi(\psi(x))\).  It is remarkable that this formula is not entirely compositional, though: to
+construct \(\Dif(\phi \circ \psi)\), it is not only necessary to know \(\Dif\phi\) and \(\Dif\psi\),
+but also \(\psi\) \parencite{elliott2018simple}.  This is not as bad as it seems, though: as we see
+below, automatic differentiation algorithms evaluate both \(((\phi \circ \psi))(x)\) and
+\(\Dif(\phi \circ \psi)(x)\) at once, in lockstep fashion, so that the intermediate values of the
+former can be reused in calculation of the latter.
 
-If \(f: U \subseteq \RR^N \to \RR\), as is the case for loss functions of parametric models, the
-partial derivatives can be recovered individually by applying the Fréchet derivative to basis
-vectors \(e^i\):
-\begin{equation}
-  \Dif f(x)({e}^i) = \partial_i f(x)
-\end{equation}
-This corresponds to the fact that the partial derivatives are the sensitivities to perturbation in
-coordinate directions~-- a special case of directional derivatives (which can be recovered the same
-way by application of the differential to any vector with unit norm.)
-
-
-Consider the specific case of \(f(x, y) = sin(x) - y\).  Writing \(g = (x, y) \mapsto x - y\) instead
-of the infix subtraction operator (with a derivative of
-\(\Dif g(x)(\Delta_1, \Delta_2) = \Delta_1 - \Delta_2\)), we have:
+Consider the specific case of \(f(x, y) = sin(x) - y\).  We will write \(g = (x, y) \mapsto x - y\)
+instead of the infix subtraction operator, with a derivative of
+\(\Dif g(x)(\Delta_1, \Delta_2) = \Delta_1 - \Delta_2\).  We have:
 \begin{equation}
   \begin{aligned}
     \Dif f(x, y) &= \Dif(g \circ (\sin \otimes \ident))(x, y) \\
@@ -948,6 +944,7 @@ of the infix subtraction operator (with a derivative of
   \end{aligned}
 \end{equation}
 
+In order to do this programmatically, 
 
 \newthought{To construct} the full gradient from this, however, requires to evaluate \(\Dif f(x)\) at
 all the \(N\) basis functions.  In order to overcome this, we can rewrite the above equation as
@@ -959,6 +956,16 @@ all the \(N\) basis functions.  In order to overcome this, we can rewrite the ab
   \end{aligned}
 \end{equation}
 where \(\CoDif f(x)\) is the \emph{adjoint operator}.
+
+If \(f: U \subseteq \RR^N \to \RR\), as is the case for loss functions of parametric models, the
+partial derivatives can be recovered individually by applying the Fréchet derivative to basis
+vectors \(e^i\):
+\begin{equation}
+  \Dif f(x)({e}^i) = \partial_i f(x)
+\end{equation}
+This corresponds to the fact that the partial derivatives are the sensitivities to perturbation in
+coordinate directions~-- a special case of directional derivatives (which can be recovered the same
+way by application of the differential to any vector with unit norm.)
 
 When we want to recover the gradient from the Jacobian, we can either multiply it with all the basis
 vectors, or simply transpose it:
@@ -982,12 +989,12 @@ vectors, or simply transpose it:
 
 
 \begin{figure}[t]
-  \centering
-  \subbottom[Forward mode.]{\includegraphics[width=0.49\textwidth]{figures/comp-graph}}
-  \bigskip
-  \subbottom[Backward mode.]{\includegraphics[width=0.49\textwidth]{figures/comp-graph-backward}}
-  \caption{Computation graph and intermediate expressions of the expression \protect\jlinl{sin(x) -
-      y}, together with the derivative graphs in forward- and backward mode.}
+  \subbottom[Forward mode.]{\includegraphics[width=0.45\textwidth]{figures/comp-graph}}
+  \hfill
+  \subbottom[Backward mode.]{\includegraphics[width=0.45\textwidth]{figures/comp-graph-backward}}
+  \caption{Computation graph and intermediate expressions of the expression \protect\jlinl{g(sin(x),
+      y)}, together with the derivative graphs in forward- and backward mode.  Dashed arrows
+    indicate re-use of primal values in the derivative graph.}
   \label{fig:comp-graph}
 \end{figure}
 % 1. AD in general

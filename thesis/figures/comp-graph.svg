@@ -10,9 +10,9 @@
    xmlns:xlink="http://www.w3.org/1999/xlink"
    xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
    xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
-   width="248.95625mm"
-   height="104.5635mm"
-   viewBox="0 0 248.95626 104.5635"
+   width="128.77899mm"
+   height="96.185112mm"
+   viewBox="0 0 128.77899 96.185112"
    version="1.1"
    id="svg8"
    inkscape:version="0.92.5 (2060ec1f9f, 2020-04-08)"
@@ -334,11 +334,11 @@
      borderopacity="1.0"
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
-     inkscape:zoom="0.7"
-     inkscape:cx="496.90989"
-     inkscape:cy="268.82955"
+     inkscape:zoom="1.4"
+     inkscape:cx="257.12218"
+     inkscape:cy="260.70414"
      inkscape:document-units="mm"
-     inkscape:current-layer="layer3"
+     inkscape:current-layer="layer1"
      showgrid="false"
      inkscape:window-width="1024"
      inkscape:window-height="1231"
@@ -367,7 +367,7 @@
      inkscape:groupmode="layer"
      id="layer1"
      style="display:inline"
-     transform="translate(-37.38178,-83.095467)">
+     transform="translate(-37.38178,-88.017365)">
     <g
        id="g855"
        transform="translate(0.30387729,-1.4174107)">
@@ -495,15 +495,15 @@
          id="g889">
         <text
            id="text882"
-           y="138.23563"
+           y="136.91286"
            x="57.34277"
            style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:10.58333302px;line-height:1.25;font-family:'Linux Biolinum O';-inkscape-font-specification:'Linux Biolinum O, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:start;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.26458332"
            xml:space="preserve"><tspan
              style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:10.58333302px;font-family:Inconsolatazi4;-inkscape-font-specification:'Inconsolatazi4, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:start;writing-mode:lr-tb;text-anchor:start;stroke-width:0.26458332"
-             y="138.23563"
+             y="136.91286"
              x="57.34277"
              id="tspan880"
-             sodipodi:role="line">-</tspan></text>
+             sodipodi:role="line">g</tspan></text>
         <circle
            style="opacity:1;vector-effect:none;fill:none;fill-opacity:1;stroke:#040204;stroke-width:0.40000001;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
            id="path878"
@@ -553,7 +553,7 @@
      inkscape:groupmode="layer"
      id="layer3"
      inkscape:label="forward"
-     transform="translate(-37.38178,-83.095467)">
+     transform="translate(-37.38178,-88.017365)">
     <g
        id="g12490"
        transform="translate(9.2224282)"
@@ -576,9 +576,7 @@
            x="68.293739"
            sodipodi:role="line"
            id="tspan9548"
-           dx="0 2.9878928e-09"><tspan
-   style="font-size:9.17222214px"
-   id="tspan18283">∂</tspan>sin(x)</tspan></text>
+           dx="0 2.9878928e-09">Dsin(x)</tspan></text>
     </g>
     <path
        inkscape:connector-curvature="0"
@@ -617,9 +615,7 @@
            x="103.30849"
            id="tspan9574"
            sodipodi:role="line"
-           dx="0 0 -0.75595236"><tspan
-   style="font-size:9.17222214px"
-   id="tspan18285">∂-</tspan>(z,y)</tspan></text>
+           dx="0 0 -0.75595236">Dg(z,y)</tspan></text>
       <ellipse
          ry="7.6814432"
          rx="22.158855"
@@ -759,147 +755,5 @@
        id="path16474"
        inkscape:connector-curvature="0"
        sodipodi:nodetypes="cc" />
-    <text
-       xml:space="preserve"
-       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:10.58333302px;line-height:1;font-family:Inconsolatazi4;-inkscape-font-specification:'Inconsolatazi4, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:start;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.26458332"
-       x="180.40692"
-       y="90.133385"
-       id="text18126"><tspan
-         sodipodi:role="line"
-         id="tspan18124"
-         x="180.40692"
-         y="90.133385"
-         style="line-height:1;stroke-width:0.26458332">x = ?</tspan><tspan
-         sodipodi:role="line"
-         x="180.40692"
-         y="100.71672"
-         style="line-height:1;fill:#4063d8;stroke-width:0.26458332"
-         id="tspan18128">x = <tspan
-   style="font-size:9.17222214px;line-height:1;fill:#4063d8"
-   id="tspan18130">Δ</tspan>x</tspan><tspan
-         sodipodi:role="line"
-         x="180.40692"
-         y="111.38686"
-         style="line-height:1;stroke-width:0.26458332"
-         id="tspan18132">y = ?</tspan><tspan
-         sodipodi:role="line"
-         x="180.40692"
-         y="121.9702"
-         style="line-height:1;fill:#4063d8;stroke-width:0.26458332"
-         id="tspan18134">y = <tspan
-   style="font-size:9.17222214px;line-height:1;fill:#4063d8"
-   id="tspan18136">Δy</tspan></tspan><tspan
-         sodipodi:role="line"
-         x="180.40692"
-         y="132.64035"
-         style="line-height:1;stroke-width:0.26458332"
-         id="tspan18138">z = sin(x)</tspan><tspan
-         sodipodi:role="line"
-         x="180.40692"
-         y="143.22368"
-         style="line-height:1;fill:#4063d8;stroke-width:0.26458332"
-         id="tspan18140">z = <tspan
-   style="font-size:9.17222214px;fill:#4063d8"
-   id="tspan18198">∂</tspan>sin(x)(x)</tspan><tspan
-         sodipodi:role="line"
-         x="180.40692"
-         y="153.89383"
-         style="line-height:1;stroke-width:0.26458332"
-         id="tspan18142"><tspan
-           style="font-size:9.17222214px"
-           id="tspan18148"
-           dx="0 0 1.4699825"><tspan
-             style="fill:#4063d8"
-             id="tspan18222">  </tspan><tspan
-             style="font-size:10.58333302px"
-             id="tspan18202"><tspan
-   style="fill:#4063d8"
-   id="tspan18224">= cos(x)</tspan> <tspan
-   style="fill:#4063d8"
-   id="tspan18226">* x</tspan></tspan></tspan></tspan><tspan
-         sodipodi:role="line"
-         x="180.40692"
-         y="164.47716"
-         style="line-height:1;stroke-width:0.26458332"
-         dx="0 0 -1.6036173"
-         id="tspan18188"><tspan
-   style="font-size:9.17222214px"
-   id="tspan18190">Ω</tspan> = z - y</tspan><tspan
-         sodipodi:role="line"
-         x="180.40692"
-         y="175.14731"
-         style="line-height:1;fill:#4063d8;stroke-width:0.26458332"
-         id="tspan18144"
-         dx="0 0 -1.6036173"><tspan
-   style="font-size:9.17222214px;fill:#4063d8"
-   id="tspan18150">Ω</tspan> = <tspan
-   style="font-size:9.17222214px;fill:#4063d8"
-   id="tspan18200">∂-</tspan>(z, y)(z, y)</tspan><tspan
-         sodipodi:role="line"
-         x="180.40692"
-         y="185.81746"
-         style="line-height:1;fill:#4063d8;stroke-width:0.26458332"
-         id="tspan18146"
-         dx="0 0 0.13363473">  = z - y</tspan></text>
-    <circle
-       r="0.35435268"
-       cy="94.550919"
-       cx="183.04604"
-       id="circle18160"
-       style="opacity:1;vector-effect:none;fill:#4063d8;fill-opacity:1;stroke:#4063d8;stroke-width:0.40000001;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1" />
-    <circle
-       r="0.35435268"
-       cy="116.06612"
-       cx="183.04604"
-       id="circle18172"
-       style="opacity:1;vector-effect:none;fill:#4063d8;fill-opacity:1;stroke:#4063d8;stroke-width:0.40000001;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1" />
-    <circle
-       r="0.35435268"
-       cy="136.97995"
-       cx="183.04604"
-       id="circle18174"
-       style="opacity:1;vector-effect:none;fill:#4063d8;fill-opacity:1;stroke:#4063d8;stroke-width:0.40000001;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1" />
-    <circle
-       style="opacity:1;vector-effect:none;fill:#4063d8;fill-opacity:1;stroke:#4063d8;stroke-width:0.40000001;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
-       id="circle18170"
-       cx="183.98148"
-       cy="167.24821"
-       r="0.35435268" />
-    <circle
-       style="opacity:1;vector-effect:none;fill:#4063d8;fill-opacity:1;stroke:#4063d8;stroke-width:0.40000001;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
-       id="circle18178"
-       cx="246.05481"
-       cy="137.24722"
-       r="0.35435268" />
-    <circle
-       style="opacity:1;vector-effect:none;fill:#4063d8;fill-opacity:1;stroke:#4063d8;stroke-width:0.40000001;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
-       id="circle18180"
-       cx="251.53384"
-       cy="168.91866"
-       r="0.35435268" />
-    <circle
-       style="opacity:1;vector-effect:none;fill:#4063d8;fill-opacity:1;stroke:#4063d8;stroke-width:0.40000001;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
-       id="circle18182"
-       cx="267.43637"
-       cy="169.11911"
-       r="0.35435268" />
-    <circle
-       r="0.35435268"
-       cy="147.80437"
-       cx="251.80112"
-       id="circle18192"
-       style="opacity:1;vector-effect:none;fill:#4063d8;fill-opacity:1;stroke:#4063d8;stroke-width:0.40000001;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1" />
-    <circle
-       r="0.35435268"
-       cy="179.87671"
-       cx="204.36076"
-       id="circle18194"
-       style="opacity:1;vector-effect:none;fill:#4063d8;fill-opacity:1;stroke:#4063d8;stroke-width:0.40000001;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1" />
-    <circle
-       style="opacity:1;vector-effect:none;fill:#4063d8;fill-opacity:1;stroke:#4063d8;stroke-width:0.40000001;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
-       id="circle18196"
-       cx="225.67551"
-       cy="180.14398"
-       r="0.35435268" />
   </g>
 </svg>
