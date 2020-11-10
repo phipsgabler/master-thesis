@@ -9,7 +9,7 @@ source-transformation based approach implemented over the intermediate represent
 from a usability point of view.  The advantages of using IR over the surface AST are the same: there
 is less overhead from handling multiple syntactic forms, and naming is already referentially
 transparent.  Additionally, there are existing Julia packages to simplify handling the IR data
-structures and set up the transformations.
+structures and set up the transformations.\todo{why not operator overloading}
 
 However, the dynamicity of the trace structure of general probabilistic programs needs to be
 preserved and exposed to the user, for each function evaluation~-- which is different from the AD
@@ -145,15 +145,14 @@ the transformed code for the geom function in Figure 3.\todo{describe algorithm}
 
 \begin{algorithm}[p]
   \hrule\footnotesize
-  \smallskip
-  This transformation happens inside a generated function called by \jlinl{trackcall}, which
-  assembles the resulting value and IR into a new node with the correct metadata.
-  \par\vspace{\baselineskip}
-  Missing from the description are the recording of metadata, the exact constructions of nodes, and
-  the mechanisms to correctly rename SSA variables during the transformation and tape references at
-  runtime.
+  % \smallskip
+  % This transformation happens inside a generated function called by \jlinl{trackcall}, which
+  % assembles the resulting value and IR into a new node with the correct metadata.
+  % \par\vspace{\baselineskip}
+  % Missing from the description are the recording of metadata, the exact constructions of nodes, and
+  % the mechanisms to correctly rename SSA variables during the transformation and tape references at
+  % runtime.
   \begin{algorithmic}
-    \Function{trackcall}{\textident{ir}}
     \State Initialize \jlinl{new_ir} \Comment create empty IR object
     \For{\jlinl{old_block} in \jlinl{blocks(ir)}}
     \State Add an empty block \jlinl{new_block} to \jlinl{new_ir}
@@ -210,7 +209,6 @@ the transformed code for the geom function in Figure 3.\todo{describe algorithm}
     \State Add statement \jlinl{\%result} to \jlinl{return_block}, creating a tuple of
     \jlinl{\%return_value} and \jlinl{recorder}
     \State Add return to \jlinl{return_block}, returning \jlinl{\%result}
-    \EndFunction
   \end{algorithmic}
   \smallskip
   \hrule

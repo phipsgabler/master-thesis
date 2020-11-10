@@ -35,10 +35,10 @@
     example.
   \item[\(\int \prob{x} \dif x = 1\)] Integrals over the whole domain of a density or measure are
     written as indefinite integrals, where the usage is clear.
-  \item[{\([x, y, z] = \smash[b]{\left(\begin{smallmatrix}x\\y\\z\end{smallmatrix}\right)}\)}] For consistency
-    with Julia code, vectors (arrays of rank \(1\)) are written in brackets, with elements separated
-    by commas.  Thereby, the form written in a row denotes a column vector; actual row vectors are
-    written as transposed column vectors.
+  \item[{\([x, y, z] = \smash[b]{\left(\begin{smallmatrix}x\\y\\z\end{smallmatrix}\right)}\)}] For
+    consistency with Julia code, vectors (arrays of rank \(1\)) are written in brackets, with
+    elements separated by commas.  Thereby, the form written in a row denotes a column vector;
+    actual row vectors are written as transposed column vectors.
   \item[{\(\kth{\Theta} = [\kth{\Theta}_1, \ldots, \kth{\Theta}_N]\)}] Superscript indices in
     parentheses are used for series or sequences of variables, and subscript indices for components of
     multivariate variables.
@@ -49,6 +49,10 @@
     code\footnote{See~\protect\url{https://docs.julialang.org/en/v1/manual/functions/\#man-vectorized-1}}:
     the function is applied over all elements of the input arrays individually, whereby arrays of
     lower rank or scalars are \enquote{broadcasted} along dimensions as necessary.
+  \item[{\(\Dif F(x, y) = (\Delta_1, \Delta_2) \mapsto \partial_1F(x, y)\,\Delta_1 + \partial_2F(x,
+      y)\,\Delta_2\)}] Derivatives are written using a capital \(\Dif\) for the Fréchet derivative
+    operator, and \(\partial_i\) for the conventional partial derivatives with respect to the
+    \(i\)-th argument.
   \item[{\jlinlfont f(x) = rand(x)}] Julia code (including identifiers mention in the text) is
     always typeset in typewriter font.
   \end{description}

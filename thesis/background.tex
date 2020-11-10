@@ -820,9 +820,9 @@ This metaprogramming pattern is extremely powerful, and becoming more and more p
 to change evaluation semantics in more profound ways than multiple dispatch can: by rewriting the
 code of the called function, it is possible to change what invoking a method within its body means.
 Through this, several abstract interpretation algorithms can be realized, by extending the existing
-data path with additional metadata (such as AD, or concolic execution), or non-standard execution be
-implemented (e.g., continuation-passing style transformations).  There exist already two Julia
-packages with the goal of simplify working with this kind of transformation:
+data path with additional metadata (such as automatic differentiation, or concolic execution), or
+non-standard execution be implemented (e.g., continuation-passing style transformations).  There
+exist already two Julia packages with the goal of simplify working with this kind of transformation:
 \juliapackage{Cassette.jl}\footnote{\protect\url{https://github.com/jrevels/Cassette.jl}}, which
 provides overloadable function application by a so-called \enquote{overdubbing} mechanism,
 abstracting out some common patterns; and
@@ -838,10 +838,10 @@ what the work of this thesis builds on.
 
 This section may appear as an outlier from the original topic; in fact, the mathematics developed
 here are not even used later.  However, it is important to explain the interrelations between
-automatic differentiation, computation graphs, and IR transformations, to be able to understand how
-SSA-form representation is a natural structure for extracting and analyzing computation graphs, and
-how the necessary transformations arise in practise.  To appreciate how the form of the computation
-graphs interacts with the mathematics, some foundations need to be introduced first.
+automatic differentiation (AD), computation graphs, and IR transformations, to be able to understand
+how SSA-form representation is a natural structure for extracting and analyzing computation graphs,
+and how the necessary transformations arise in practise.  To appreciate how the form of the
+computation graphs interacts with the mathematics, some foundations need to be introduced first.
 
 Many algorithms in machine learning and other domains can be expressed as an optimization problem
 over a multivatiate function with scalar output~-- typically a loss function over a parameter space,
@@ -853,9 +853,7 @@ optimum (or, in the non-convex case, at least a practically sufficient local min
 While in some cases the loss function is simple enough to find the gradient by hand, in general, the
 model, and therefore the loss function, may be specified in terms of rather complicated programs,
 for which hand-writing derivatives is difficult to infeasible.  For this reason, computerized
-methods for differentiation have been
-developed\parencite{griewank2008evaluating,baydin2018automatic}.  These can be categorized into
-three classes:
+methods for differentiation have been developed.  These can be categorized into three classes:
 \begin{itemize}
   \firmlist
 \item Finite differences
@@ -869,19 +867,25 @@ with the dimension of the involved space, and can become numerically unstable in
 the functions in question as symbolic algebraic objects, and applying the differentiation rules as
 one would manually.  This does not lose precision or introduce divergence, but can suffer from
 blow-up of the size of the generated expressions; additionally, it requires the functions to be
-expressed in a custom representation, different from normal functions or programs.
+expressed in a custom representation, different from normal functions or programs
+\parencite{baydin2018automatic}.
 
 \newthought{Automatic differentiation}, the third category, is perhaps unfortunately named.  The
 idea is to not start from functions as black-box or symbolic objects, but from programs.  Then the
 perturbation that makes up the value of the derivative at a point is propagated through the steps of
 the program.  For this to work, there needs to exist an explicit representation of the computation
-graph at ov the evaluation at a point, which is what makes the topic relevant for this thesis.
+graph at ov the evaluation at a point, which is what makes the topic relevant for this thesis.  In
+contrast to the former two methods, AD relies on numeric, not symbolic evaluation, but is (up to the
+floating point errors already present in the input function) exact~-- no discretization error, as in
+finite differences, is introduced.  For a more detailed treatment, I refer to
+\textcite{griewank2008evaluating}, the standard work on the topic, and the survey
+\textcite{baydin2018automatic}, which includes a comparison of state-of-the-art implementations.
 
-To understand how this works, let us first start with the mathematics.  What is a derivative,
-really?  When we talk about gradients, which is what we really need in a gradient algorithm, this is
-usually a rather informal term for \enquote{the vector of partial derivatives}, which then points
-into an ascent direction.  This is however not the most natural form to work with in a compositional
-approach.  Instead of starting with a limit of tangents, more insight is provided by viewing
+To understand how AD works, let us first start with the mathematics.  What is a derivative, really?
+When we talk about gradients, which is what we really need in a gradient algorithm, this is usually
+a rather informal term for \enquote{the vector of partial derivatives}, which then points into an
+ascent direction.  This is however not the most natural form to work with in a compositional
+approach.  Instead of starting with a limit of tangent slopes, more insight is provided by viewing
 derivatives as best-approximating linear operators.  One of the most general definitions is provided
 through the \emph{Fréchet derivative} \parencite[p. 463]{bronstein1995taschenbuch}, essentially a
 generalization of the total differential.  Let \(X\) and \(Y\) be normed spaces.  A function
@@ -889,16 +893,23 @@ generalization of the total differential.  Let \(X\) and \(Y\) be normed spaces.
 bounded linear operator \(A: X \to Y\) such that
 \begin{equation}
   \label{eq:frechet}
-  \lim_{\enVert{h}_X \to 0} \frac{\enVert{f(x + h) - f(x) - A(h)}_Y}{\enVert{h}_X}.
+  \lim_{\enVert{\Delta}_X \to 0} \frac{\enVert{f(x + \Delta) - f(x) - A(\Delta)}_Y}{\enVert{\Delta}_X}.
 \end{equation}
-When such an \(A\) exists, it is unique, and we may call it \emph{the} derivative of \(f\) at \(x\),
-writing \(\Dif f(x) = A\).  When the derivative exists for all \(x\), we can use \(\Dif\) as a
-well-defined higher-order function on its own; we will assume this in the following.
+When such an \(A\) does exist, it is unique, and we may call it \emph{the} derivative of \(f\) at
+\(x\), writing \(\Dif f(x) = A\).  When the derivative exists for all \(x\), we can use \(\Dif\) as
+a well-defined higher-order function on its own; we will assume this in the following.\footnote{In
+  in practical cases, functions are often only piecewise differentiable due to branches, failing
+  this definition on a countable set of points.  Fortunately, the formalism of AD remains the same
+  under weaker notions of differentiability.  Additionally, such points usually behave well enough
+  to admit a subdifferential, from which we can just choose an arbitrary subgradient; this does not
+  necessary lead to a descent direction, but still allows minimization under reasonable conditions
+  \parencites[see][section 6.1]{pock2017convex}[][chapter 14]{griewank2008evaluating}.}
 
 The important fact here is that \(\Dif f(x)\) is still a function: specifically, a linear function
-approximating how \(f\) reacts to a perturbation, \(\Delta\), around \(x\).  Or, in other words:
+approximating how \(f\) reacts to an input perturbation, \(\Delta\), around \(x\).  Or, in other
+words:
 \begin{equation}
-  f(x + h) = f(x) + Df(x)(h) + o\left(\enVert{h}\right).
+  f(x + \Delta) = f(x) + \Dif f(x)(\Delta) + o\left(\enVert{\Delta}\right).
 \end{equation}
 This fact allows one to propagate differential values through composed functions, by the chain rule,
 which we write in the following compositional form:
@@ -907,7 +918,7 @@ which we write in the following compositional form:
 \end{equation}
 In the one-dimensional case, we simply have
 \begin{equation}
-  \Dif \phi(x) = \Delta \mapsto \partial_1 \phi(x) \; \Delta,
+  \Dif \phi(x) = \Delta \mapsto \partial_1 \phi(x) \, \Delta,
 \end{equation}
 since linear maps are exactly multiplications by a scalar.  Therefore, we can recover
 \begin{equation}
@@ -915,23 +926,23 @@ since linear maps are exactly multiplications by a scalar.  Therefore, we can re
     \Dif(\phi \circ \psi)(x)(\Delta) &=
     \left( \Dif\phi(\psi(x)) \circ \Dif\psi(x) \right)(\Delta) \\
     &= \Dif\phi(\psi(x))\left( \Dif\psi(x)(\Delta) \right) \\
-    &= \Dif\phi(\psi(x))\left( \partial_1 \psi(x) \Delta \right) \\
-    &= \partial_1\phi(\psi(x)) \; \partial_1 \psi(x) \Delta \\
-    &= \left( \partial_1\phi(\psi(x)) \; \partial_1 \psi(x) \right) \Delta,
+    &= \Dif\phi(\psi(x))\left( \partial_1 \psi(x) \, \Delta \right) \\
+    &= \partial_1\phi(\psi(x)) \, \partial_1 \psi(x) \, \Delta \\
+    &= \left( \partial_1\phi(\psi(x)) \, \partial_1 \psi(x) \right) \, \Delta,
   \end{aligned}
 \end{equation}
 as we know it from calculus.  Here, the product in the resulting expression arises from the fact
 that we propagated through \(\partial_1 \psi(x) \Delta\) as the input value of
 \(\Dif\phi(\psi(x))\).  It is remarkable that this formula is not entirely compositional, though: to
 construct \(\Dif(\phi \circ \psi)\), it is not only necessary to know \(\Dif\phi\) and \(\Dif\psi\),
-but also \(\psi\) \parencite{elliott2018simple}.  This is not as bad as it seems, though: as we see
-below, automatic differentiation algorithms evaluate both \(((\phi \circ \psi))(x)\) and
-\(\Dif(\phi \circ \psi)(x)\) at once, in lockstep fashion, so that the intermediate values of the
-former can be reused in calculation of the latter.
+but also \(\psi\) \parencite{elliott2018simple}.  This is not as bad as it seems, though: as I will
+now explain, AD algorithms evaluate both \((\phi \circ \psi)(x)\) and \(\Dif(\phi \circ \psi)(x)\)
+at once, in lockstep fashion, so that the intermediate values of the former can be reused in
+calculation of the latter.
 
 Consider the specific case of \(f(x, y) = sin(x) - y\).  We will write \(g = (x, y) \mapsto x - y\)
 instead of the infix subtraction operator, with a derivative of
-\(\Dif g(x)(\Delta_1, \Delta_2) = \Delta_1 - \Delta_2\).  We have:
+\(\Dif g(x)(\Delta_1, \Delta_2) = \Delta_1 - \Delta_2\).  By composition, we have:
 \begin{equation}
   \begin{aligned}
     \Dif f(x, y) &= \Dif(g \circ (\sin \otimes \ident))(x, y) \\
@@ -943,62 +954,128 @@ instead of the infix subtraction operator, with a derivative of
     &= (\Delta_1, \Delta_2) \mapsto \cos(x) \, \Delta_1 - \Delta_2.
   \end{aligned}
 \end{equation}
-
-In order to do this programmatically, 
-
-\newthought{To construct} the full gradient from this, however, requires to evaluate \(\Dif f(x)\) at
-all the \(N\) basis functions.  In order to overcome this, we can rewrite the above equation as
+In order to do this algorithmically, let us expand the computation of \(f\) into a sequence of
+intermediate, primitive calculations, as we would have in a programmatical representation:
 \begin{equation}
+  \label{eq:ad-primal}
   \begin{aligned}
-    \partial_i f(x) &= \Dif f(x)({e}^i) \\
-    &= \langle 1, \Dif f(x)({e}^i) \rangle \\
-    &= \langle \CoDif f(x)(1), {e}^i \rangle,
+    x &= \operatorname{?}, \\
+    y &= \operatorname{?}, \\
+    z &= \sin(x), \\
+    \Omega &= g(z, y).
   \end{aligned}
 \end{equation}
-where \(\CoDif f(x)\) is the \emph{adjoint operator}.
-
-If \(f: U \subseteq \RR^N \to \RR\), as is the case for loss functions of parametric models, the
-partial derivatives can be recovered individually by applying the Fréchet derivative to basis
-vectors \(e^i\):
+We have given the final result the name \(\Omega\), and and introduced an intermediate value \(z\).
+This is known as the \emph{forward}, or \emph{primal} function in AD terminology.  The relations of
+these values can be expressed as the black computation graph in figure~\ref{fig:comp-graph-fw}.
+Following the graph, or equivalently, following the equations in ~\eqref{eq:ad-primal}, the
+composition of the derivative operators can be built up incrementally, as shown in the blue part of
+that figure, by calculating the following \emph{tangent values}:
 \begin{equation}
-  \Dif f(x)({e}^i) = \partial_i f(x)
-\end{equation}
-This corresponds to the fact that the partial derivatives are the sensitivities to perturbation in
-coordinate directions~-- a special case of directional derivatives (which can be recovered the same
-way by application of the differential to any vector with unit norm.)
-
-When we want to recover the gradient from the Jacobian, we can either multiply it with all the basis
-vectors, or simply transpose it:
-\begin{equation}
+  \label{eq:ad-forward}
   \begin{aligned}
-    \Dif f(x)(\mathrm{e}^i) &= \left\langle 1, \transpose{[\cos(x), -1]} {e}^i \right\rangle \\
-    &= \left\langle [\cos(x), -1], {e}^i \right\rangle
+    \dot{x} &= \Delta_1, \\
+    \dot{y} &= \Delta_2, \\
+    \dot{z} &= \Dif\sin(x)(\dot{x}) \\
+    &= \cos(x) \, \Delta_1, \\
+    \dot{\Omega} &= \Dif g(z, y)(\dot{z}, \dot{y}) \\
+    &= \cos(x) \, \Delta_1 - \Delta_2.
   \end{aligned}
 \end{equation}
-
-(Note that the adjoint operator inverses the order of composition)
-\begin{equation}
-  \begin{aligned}
-    \CoDif f(x, y)(\delta) &= \CoDif (g \circ \sin \otimes \ident)(x, y)(\delta)\\
-    &= (\CoDif \sin \otimes \CoDif \ident \circ \CoDif g)(x, y)(\delta) \\
-    &= ((\CoDif \sin(x) \otimes \CoDif \ident(y)) \circ (\xi \mapsto [\xi, -\xi])) (\delta) \\
-    &= ((\partial \sin(x) \times \cdot) \otimes (1 \times \cdot))([\delta, -\delta])  \\
-    &= [\cos(x), -1] \cdot \delta
-  \end{aligned}
-\end{equation}
-
+This algorithm, called \emph{forward-mode AD}, can now be applied practically not only on symbolic
+functions, but on programs, by always jointly computing \((v, \dot{v})\) for every variable \(v\),
+given its parents in the graph.
 
 \begin{figure}[t]
-  \subbottom[Forward mode.]{\includegraphics[width=0.45\textwidth]{figures/comp-graph}}
+  \subbottom[Forward mode.]{%
+    \includegraphics[width=0.45\textwidth]{figures/comp-graph}\label{fig:comp-graph-fw}}
   \hfill
-  \subbottom[Backward mode.]{\includegraphics[width=0.45\textwidth]{figures/comp-graph-backward}}
+  \subbottom[Backward mode.]{%
+    \includegraphics[width=0.45\textwidth]{figures/comp-graph-backward}\label{fig:comp-graph-bw}}
   \caption{Computation graph and intermediate expressions of the expression \protect\jlinl{g(sin(x),
       y)}, together with the derivative graphs in forward- and backward mode.  Dashed arrows
     indicate re-use of primal values in the derivative graph.}
   \label{fig:comp-graph}
 \end{figure}
-% 1. AD in general
-% 2. Zygote principles
+
+\newthought{To recover the full gradient} of a function \(\phi: U \subseteq \RR^N \to \RR\) (which is
+the form of loss functions of parametric models) requires to evaluate \(\Dif \phi(x)\) \(N\) times,
+however.  This is because individual partial derivatives can only be extracted from \(\Dif \phi(x)\) by
+calculating the sensitivities to unit input perturbations \(\Delta_i = 1\) with respect to one of
+the input variables:
+\begin{equation}
+  \Dif \phi(x)(0, \ldots, \Delta_i, \ldots, 0) = \partial_i \phi(x),
+\end{equation}
+This is really a special case of taking directional derivatives (which can be recovered generally by
+application of the differential to any vector with unit norm.)
+
+In order to overcome the increase of complexity with the number of input dimensions, we can
+reformulate the compositional equation.  Let us introduce \(\CoDif \phi(x)\), the \emph{adjoint
+  operator} of \(\Dif \phi(x)\), whose defining property is that in \enquote{inverts} the order of
+the perturbation application: instead of calculating a primal sensitivity with respect to an input
+perturbation (\(\Delta\)), it maps a dual vector of an output perturbation (\(\delta\))
+to an operator that applies this to the primal sensitivity:
+\begin{equation}
+  \CoDif \phi(x)(\delta) = \Delta \mapsto \delta(\Dif \phi(x)(\Delta)).
+\end{equation}
+The adjoint differential is therefor an object of the double dual space.  This becomes more readable
+when we fix a basis to represent the derivative.  Doing so, in the finite-dimensional case, the
+derivative \(\Dif \phi(x)\) is equivalent to the Jacobian matrix at \(x\), \(J_{\phi}(x)\).  In this
+setting, forward-mode AD is simply an efficient way to calculate the \emph{Jacobian-vector-product}
+\(J{\phi}(x) \, \Delta\) for a fixed perturbation, avoiding full matrix multiplication.  With
+\(\transpose{d}\) as the covector representation of \(\delta\), we have
+\begin{equation}
+  \begin{aligned}
+    \delta (\Dif \phi(x)(\Delta)) &= \transpose{d} J_{\phi}(x) \Delta \\
+    &= \transpose{\left( \transpose{J_{\phi}(x)} d \right)} \Delta \\
+    &= \CoDif \phi(x)(d)(\Delta).
+  \end{aligned}
+\end{equation}
+Since the unapplied \(\CoDif \phi(x)(\delta)\) is itself an object in the dual space, it is
+represented as a matrix~-- and in fact, it is nothing else than a multiple of the transposed
+Jacobian.  Recovering the gradient then reduces to evaluating it at a constant output perturbation
+of \(1\), which is equivalent to the application of the primal differential to the matrix of basis
+vectors~-- the identity matrix.
+
+Note that due to this matrix nature, the adjoint operator simply inverses the order of composition:
+\begin{equation}
+  \begin{aligned}
+    \Dif (\phi \circ \psi)(x) &= J_{\phi}(\psi(x)) J_{\psi}(x) \\
+    &=  \transpose{J_{\psi}(x)} \transpose{J_{\phi}(\psi(x))} \\
+    &= \CoDif\psi(x) \circ \CoDif\phi(\psi(x)).
+  \end{aligned}
+\end{equation}
+For our example function \(f\), this gives the same form of result:
+\begin{equation}
+  \begin{aligned}
+    \CoDif f(x, y) &= \CoDif (g \circ (\sin \otimes \ident))(x, y) \\
+    &= \CoDif(\sin \otimes \ident) \circ \CoDif g((\sin \otimes \ident)(x, y)) \\
+    &= (\CoDif\sin \otimes \CoDif\ident) \circ (\delta \mapsto (\delta, -\delta)) \\
+    &= ((\partial_1 \sin(x) \otimes 1) \circ (\delta \mapsto (\delta, -\delta) \\
+    &= \delta \mapsto (\delta \, \partial_1\sin(x), \delta \, 1) \\
+    &= \delta \mapsto (\delta \, \cos(x), -\delta)
+  \end{aligned}
+\end{equation}
+In this form, starting with a perturbation \(\delta(\cdot) = 1\) (a skalar in the matrix version),
+we get back the gradient tuple through just one evaluation!
+
+Applying this to equation~\eqref{eq:ad-primal}, we get (to be read in reverse order):
+\begin{equation}
+  \label{eq:ad-backward}
+  \begin{aligned}
+    \bar{x} &= \bar{z}_2 = -\delta, \\
+    \bar{y} &= \CoDif\sin(x) \, \bar{z}_1 \\
+    &= \cos(x) \, \delta\\
+    \bar{z} &= \CoDif g(x, y)(\bar{\Omega}) \\
+    &= (\delta, -\delta)
+    \bar{\Omega} &= \delta.
+  \end{aligned}
+\end{equation}
+
+
+\todo{Zygote}
+\todo{control flow}
+\todo{mixed mode, NP-completeness of OJA}
 
 
 
