@@ -394,7 +394,7 @@ one specific, continuation-based implementation called WebPPL (using a Lisp-base
 \begin{lstfloat}
   \begin{lstlisting}[style=lstfloat]
 function normal_mixture(x, K, m, s, σ)
-    function evaluator((rng, model, varinfo, sampler, context, x, K, m, s, σ)
+    function evaluator(rng, model, varinfo, sampler, context, x, K, m, s, σ)
         N = length(x)
         μ = Vector{Float64}(undef, K)
         for k = 1:K
@@ -780,16 +780,17 @@ compiler, which will lower the code and compile the method for \jlinl{Int} argum
 result in the method table.  The stored code can then be executed~-- on the arguments that were used
 to determine the type tuple the generated function has been called with!  The next time
 \jlinl{f_generated} is executed, the function body is \emph{not} executed anymore, but the generated
-code of \jlinl{:(println("Int"))} directly looked up\footnote{A caveat: technically, the compiler is
-  still free to call the generating code multiple times~-- which is the reason generated functions
-  should never involve side effects or depend on external state.}.  Of course, simply replacing
-dispatch, as with this example, is not what generated functions are used for in practise.  Most
-applications concern parametric types with statically known shape arguments, such as tuples, named
-tuples, or array ranks.  They can also be used for type-level computations on values that become
-known only known at runtime, through singleton types such as \jlinl{Val}.
+code of the the function defined through the expression \jlinl{:(println("Int"))} directly looked
+up\footnote{A caveat: technically, the compiler is still free to call the generating code multiple
+  times~-- which is the reason generated functions should never involve side effects or depend on
+  external state.}.  Of course, simply replacing dispatch, as with this example, is not what
+generated functions are used for in practise.  Most applications concern parametric types with
+statically known shape arguments, such as tuples, named tuples, or array ranks.  They can also be
+used for type-level computations on values that become known only known at runtime, through
+singleton types such as \jlinl{Val}.
 
 The direct generation of code, given argument types, is however not the furthest we can go.  For
-onegenerated functions are not only allowed to return \jlinl{Expr} objects~-- the internal
+one, generated functions are not only allowed to return \jlinl{Expr} objects~-- the internal
 representation of the surface AST~-- but also \jlinl{CodeInfo} objects, which are the internal
 representation of lowered code in (almost) SSA form.  This, on its own, would not be of much use
 most times, but there is a second, more interesting feature: it is possible to query the
@@ -803,18 +804,18 @@ these two, we now have all the tools to implement IR-level code transformations 
 \item Transform this IR however necessary.
 \item Return the IR, which will now be compiled and called on the actual arguments.
 \end{enumerate}
-Importantly, unlike macros, such transformation can be performed \emph{recursively}: by inserting
-the same generated function to the inner function calls in step 3.  Since the transformation
-operates not during parsing, the function to be transformed needs not be known beforehand, and not
-be present literally in the code~-- the generated function can be called on every available callable
-object, at any time during runtime.  This makes it possible to transform even functions from other
-libraries, internally calling yet other functions.  One particular example of this principle is
-source-to-source automatic differentiation, as shown in the next chapter: a call to a function
-\jlinl{gradient(f, x, y)} will obtain the IR of the method for \jlinl{f} on \jlinl{typeof(x)} and
-\jlinl{typeof(y)}, produce differentiated code, and call the result on \jlinl{x} and \jlinl{y}.
-Naturally, differentiating \jlinl{f} involves recursively differentiating the other, unknown
-functions within it, too (down to \enquote{primitive} functions, whose derivative is known), and
-combining the results using the chain rule.
+Importantly, unlike macros, such transformations can be performed \emph{recursively}: one simply
+inserts the same generated function to inner function calls during the transformation in step 3.
+Since the transformation operates not during parsing, the function to be transformed needs not be
+known beforehand, and not be present literally in the code~-- the generated function can be called
+on every available callable object, at any time during runtime.  This makes it possible to transform
+even functions from other libraries, internally calling yet other functions.  One particular example
+of this principle is source-to-source automatic differentiation, as shown in the next chapter: a
+call to a function \jlinl{gradient(f, x, y)} will obtain the IR of the method for \jlinl{f} on
+\jlinl{typeof(x)} and \jlinl{typeof(y)}, produce differentiated code, and call the result on
+\jlinl{x} and \jlinl{y}.  Naturally, differentiating \jlinl{f} involves recursively differentiating
+the other, unknown functions within it, too (down to \enquote{primitive} functions, whose derivative
+is known), and combining the results using the chain rule.
 
 This metaprogramming pattern is extremely powerful, and becoming more and more popular.  It allows
 to change evaluation semantics in more profound ways than multiple dispatch can: by rewriting the
@@ -878,7 +879,7 @@ graph at ov the evaluation at a point, which is what makes the topic relevant fo
 contrast to the former two methods, AD relies on numeric, not symbolic evaluation, but is (up to the
 floating point errors already present in the input function) exact~-- no discretization error, as in
 finite differences, is introduced.  For a more detailed treatment, I refer to
-\textcite{griewank2008evaluating}, the standard work on the topic, and the survey
+\textcite{griewank2008evaluating}, the standard work on the topic, and the survey by
 \textcite{baydin2018automatic}, which includes a comparison of state-of-the-art implementations.
 
 To understand how AD works, let us first start with the mathematics.  What is a derivative, really?
@@ -893,7 +894,8 @@ generalization of the total differential.  Let \(X\) and \(Y\) be normed spaces.
 bounded linear operator \(A: X \to Y\) such that
 \begin{equation}
   \label{eq:frechet}
-  \lim_{\enVert{\Delta}_X \to 0} \frac{\enVert{f(x + \Delta) - f(x) - A(\Delta)}_Y}{\enVert{\Delta}_X}.
+  \lim_{\enVert{\Delta}_X \to 0} \frac{\enVert{f(x + \Delta) - f(x) -
+      A(\Delta)}_Y}{\enVert{\Delta}_X} = 0.
 \end{equation}
 When such an \(A\) does exist, it is unique, and we may call it \emph{the} derivative of \(f\) at
 \(x\), writing \(\Dif f(x) = A\).  When the derivative exists for all \(x\), we can use \(\Dif\) as
@@ -933,23 +935,22 @@ since linear maps are exactly multiplications by a scalar.  Therefore, we can re
 \end{equation}
 as we know it from calculus.  Here, the product in the resulting expression arises from the fact
 that we propagated through \(\partial_1 \psi(x) \Delta\) as the input value of
-\(\Dif\phi(\psi(x))\).  It is remarkable that this formula is not entirely compositional, though: to
-construct \(\Dif(\phi \circ \psi)\), it is not only necessary to know \(\Dif\phi\) and \(\Dif\psi\),
-but also \(\psi\) \parencite{elliott2018simple}.  This is not as bad as it seems, though: as I will
-now explain, AD algorithms evaluate both \((\phi \circ \psi)(x)\) and \(\Dif(\phi \circ \psi)(x)\)
-at once, in lockstep fashion, so that the intermediate values of the former can be reused in
-calculation of the latter.
+\(\Dif\phi(\psi(x))\).  It is, however, remarkable that this formula is not entirely compositional:
+to construct \(\Dif(\phi \circ \psi)\), it is not only necessary to know \(\Dif\phi\) and
+\(\Dif\psi\), but also \(\psi\) \parencite{elliott2018simple}.  Still, this is not as bad as it may
+seem: as I will now explain, AD algorithms evaluate both \((\phi \circ \psi)(x)\) and
+\(\Dif(\phi \circ \psi)(x)\) at once, in lockstep fashion, so that the intermediate values of the
+former can be reused in calculation of the latter.
 
-Consider the specific case of \(f(x, y) = sin(x) - y\).  We will write \(g = (x, y) \mapsto x - y\)
-instead of the infix subtraction operator, with a derivative of
+Consider the specific case of \(f(x, y) = sin(x) - y\). For simpler notation, let
+\(g = (x, y) \mapsto x - y\) replace the infix subtraction operator, with a derivative of
 \(\Dif g(x)(\Delta_1, \Delta_2) = \Delta_1 - \Delta_2\).  By composition, we have:
 \begin{equation}
   \begin{aligned}
-    \Dif f(x, y) &= \Dif(g \circ (\sin \otimes \ident))(x, y) \\
-    &= \Dif g\left( (\sin \otimes \ident)(x, y)) \circ \Dif(\sin \otimes \ident)(x, y)
-    \right) \\
+    \Dif f(x, y) &= \Dif(g \circ (\sin \times \ident))(x, y) \\
+    &= \Dif g\left( (\sin \times \ident)(x, y) \right) \circ \Dif(\sin \times \ident)(x, y) \\
     &= \left( (\Delta_1, \Delta_2) \mapsto \Delta_1 - \Delta_2 \right) \circ \left( \Dif\sin(x)
-      \otimes \Dif \ident(y) \right) \\
+      \times \Dif \ident(y) \right) \\
     &= (\Delta_1, \Delta_2) \mapsto \partial_1\sin(x) \, \Delta_1 - 1 \Delta_2 \\
     &= (\Delta_1, \Delta_2) \mapsto \cos(x) \, \Delta_1 - \Delta_2.
   \end{aligned}
@@ -982,9 +983,13 @@ that figure, by calculating the following \emph{tangent values}:
     &= \cos(x) \, \Delta_1 - \Delta_2.
   \end{aligned}
 \end{equation}
-This algorithm, called \emph{forward-mode AD}, can now be applied practically not only on symbolic
-functions, but on programs, by always jointly computing \((v, \dot{v})\) for every variable \(v\),
-given its parents in the graph.
+The tangent values of input variables \(x\) and \(y\) become the input perturbations \(\Delta_i\).
+For every subsequent tangent value, we apply the derivative at the corresponding primal variable
+(depending on the primal parents) to the tangent values of the parents~-- this way, the composition
+of the derivative operators follows the chain rule.  This algorithm, called \emph{forward-mode AD},
+can now be applied practically not only on symbolic functions, but on programs, by always jointly
+computing \((v, \dot{v})\) for every variable \(v\), given its parents in the graph.  This requires
+a form of non-standard execution, which will be explained in more detail below.
 
 \begin{figure}[t]
   \subbottom[Forward mode.]{%
@@ -998,44 +1003,45 @@ given its parents in the graph.
   \label{fig:comp-graph}
 \end{figure}
 
-\newthought{To recover the full gradient} of a function \(\phi: U \subseteq \RR^N \to \RR\) (which is
-the form of loss functions of parametric models) requires to evaluate \(\Dif \phi(x)\) \(N\) times,
-however.  This is because individual partial derivatives can only be extracted from \(\Dif \phi(x)\) by
-calculating the sensitivities to unit input perturbations \(\Delta_i = 1\) with respect to one of
-the input variables:
+\newthought{Recovering the full gradient} of a function \(\phi: U \subseteq \RR^N \to \RR\) (which
+is generally the form of loss functions for parametric models) requires to evaluate \(\Dif \phi(x)\)
+\(N\) times, however.  This is because individual partial derivatives can only be extracted from
+\(\Dif \phi(x)\) by calculating the sensitivities to unit input perturbations \(\Delta_i = 1\) with
+respect to one of the input variables:
 \begin{equation}
   \Dif \phi(x)(0, \ldots, \Delta_i, \ldots, 0) = \partial_i \phi(x),
 \end{equation}
-This is really a special case of taking directional derivatives (which can be recovered generally by
-application of the differential to any vector with unit norm.)
+which is really a special case of taking directional derivatives (which can be recovered generally
+by application of the differential to any vector with unit norm.)
 
 In order to overcome the increase of complexity with the number of input dimensions, we can
 reformulate the compositional equation.  Let us introduce \(\CoDif \phi(x)\), the \emph{adjoint
   operator} of \(\Dif \phi(x)\), whose defining property is that in \enquote{inverts} the order of
 the perturbation application: instead of calculating a primal sensitivity with respect to an input
-perturbation (\(\Delta\)), it maps a dual vector of an output perturbation (\(\delta\))
+perturbation (\(\Delta\)), it maps a dual vector of an output perturbation (\(\mathfrak{d}\))
 to an operator that applies this to the primal sensitivity:
 \begin{equation}
-  \CoDif \phi(x)(\delta) = \Delta \mapsto \delta(\Dif \phi(x)(\Delta)).
+  \CoDif \phi(x)(\mathfrak{d}) = \Delta \mapsto \mathfrak{d}(\Dif \phi(x)(\Delta)).
 \end{equation}
-The adjoint differential is therefor an object of the double dual space.  This becomes more readable
-when we fix a basis to represent the derivative.  Doing so, in the finite-dimensional case, the
-derivative \(\Dif \phi(x)\) is equivalent to the Jacobian matrix at \(x\), \(J_{\phi}(x)\).  In this
-setting, forward-mode AD is simply an efficient way to calculate the \emph{Jacobian-vector-product}
-\(J{\phi}(x) \, \Delta\) for a fixed perturbation, avoiding full matrix multiplication.  With
-\(\transpose{d}\) as the covector representation of \(\delta\), we have
+The adjoint differential is therefore an object of the double dual space.  This becomes more
+readable when we fix a basis to represent the derivative.  Doing so, in the finite-dimensional case,
+the derivative \(\Dif \phi(x)\) is the Jacobian matrix at \(x\), \(J_{\phi}(x)\).  In this setting,
+forward-mode AD is simply an efficient way to calculate the \emph{Jacobian-vector-product}
+\(J{\phi}(x) \, \mathfrak{d}\), or equivalently the total derivative, for a fixed perturbation,
+avoiding full matrix multiplication.  With \(\transpose{\delta}\) as the covector representation of
+\(\mathfrak{d}\), we have
 \begin{equation}
   \begin{aligned}
-    \delta (\Dif \phi(x)(\Delta)) &= \transpose{d} J_{\phi}(x) \Delta \\
-    &= \transpose{\left( \transpose{J_{\phi}(x)} d \right)} \Delta \\
-    &= \CoDif \phi(x)(d)(\Delta).
+    \mathfrak{d} (\Dif \phi(x)(\Delta)) &= \transpose{\delta} J_{\phi}(x) \Delta \\
+    &= \transpose{\left( \transpose{J_{\phi}(x)} \delta \right)} \Delta \\
+    &= \CoDif \phi(x)(\mathfrak{d})(\Delta).
   \end{aligned}
 \end{equation}
-Since the unapplied \(\CoDif \phi(x)(\delta)\) is itself an object in the dual space, it is
-represented as a matrix~-- and in fact, it is nothing else than a multiple of the transposed
-Jacobian.  Recovering the gradient then reduces to evaluating it at a constant output perturbation
-of \(1\), which is equivalent to the application of the primal differential to the matrix of basis
-vectors~-- the identity matrix.
+Since the unapplied \(\CoDif \phi(x)(\mathfrak{d})\) is itself an object in the dual space, it is
+represented as a transposed matrix~-- and in fact, it is nothing else than a multiple of the
+transposed Jacobian.  Recovering the gradient then reduces to evaluating it at a constant output
+perturbation of \(1\), which is equivalent to the application of the primal differential to the
+matrix of basis vectors~-- the identity matrix.
 
 Note that due to this matrix nature, the adjoint operator simply inverses the order of composition:
 \begin{equation}
@@ -1045,19 +1051,20 @@ Note that due to this matrix nature, the adjoint operator simply inverses the or
     &= \CoDif\psi(x) \circ \CoDif\phi(\psi(x)).
   \end{aligned}
 \end{equation}
-For our example function \(f\), this gives the same form of result:
+For our example function \(f\), this gives the same structural form of the result~-- only that now,
+the value is a vector:
 \begin{equation}
   \begin{aligned}
-    \CoDif f(x, y) &= \CoDif (g \circ (\sin \otimes \ident))(x, y) \\
-    &= \CoDif(\sin \otimes \ident) \circ \CoDif g((\sin \otimes \ident)(x, y)) \\
-    &= (\CoDif\sin \otimes \CoDif\ident) \circ (\delta \mapsto (\delta, -\delta)) \\
-    &= ((\partial_1 \sin(x) \otimes 1) \circ (\delta \mapsto (\delta, -\delta) \\
-    &= \delta \mapsto (\delta \, \partial_1\sin(x), \delta \, 1) \\
-    &= \delta \mapsto (\delta \, \cos(x), -\delta)
+    \CoDif f(x, y) &= \CoDif (g \circ (\sin \times \ident))(x, y) \\
+    &= \CoDif(\sin \times \ident) \circ \CoDif g((\sin \times \ident)(x, y)) \\
+    &= (\CoDif\sin \times \CoDif\ident) \circ (\delta \mapsto [\delta, -\delta]) \\
+    &= (\partial_1 \sin(x) \times 1) \circ (\delta \mapsto [\delta, -\delta]) \\
+    &= \delta \mapsto [\delta \, \partial_1\sin(x), \delta \, 1] \\
+    &= \delta \mapsto [\delta \, \cos(x), -\delta]
   \end{aligned}
 \end{equation}
-In this form, starting with a perturbation \(\delta(\cdot) = 1\) (a skalar in the matrix version),
-we get back the gradient tuple through just one evaluation!
+In this form, starting with a perturbation \(\mathfrak{d}(\cdot) = 1\) (a skalar in the matrix
+version), we get back the gradient tuple through just one evaluation!
 
 Applying this to equation~\eqref{eq:ad-primal}, we get (to be read in reverse order):
 \begin{equation}
@@ -1067,7 +1074,7 @@ Applying this to equation~\eqref{eq:ad-primal}, we get (to be read in reverse or
     \bar{y} &= \CoDif\sin(x) \, \bar{z}_1 \\
     &= \cos(x) \, \delta\\
     \bar{z} &= \CoDif g(x, y)(\bar{\Omega}) \\
-    &= (\delta, -\delta)
+    &= [\delta, -\delta] \\
     \bar{\Omega} &= \delta.
   \end{aligned}
 \end{equation}
