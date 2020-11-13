@@ -871,16 +871,17 @@ blow-up of the size of the generated expressions; additionally, it requires the 
 expressed in a custom representation, different from normal functions or programs
 \parencite{baydin2018automatic}.
 
-\newthought{Automatic differentiation}, the third category, is perhaps unfortunately named.  The
-idea is to not start from functions as black-box or symbolic objects, but from programs.  Then the
-perturbation that makes up the value of the derivative at a point is propagated through the steps of
-the program.  For this to work, there needs to exist an explicit representation of the computation
-graph at ov the evaluation at a point, which is what makes the topic relevant for this thesis.  In
-contrast to the former two methods, AD relies on numeric, not symbolic evaluation, but is (up to the
-floating point errors already present in the input function) exact~-- no discretization error, as in
-finite differences, is introduced.  For a more detailed treatment, I refer to
-\textcite{griewank2008evaluating}, the standard work on the topic, and the survey by
-\textcite{baydin2018automatic}, which includes a comparison of state-of-the-art implementations.
+\newthought{Automatic differentiation}, the third category, is perhaps unfortunately named~-- it
+does not signify much at first sight.  The relevant idea is to not start from functions as black-box
+or symbolic objects, but from programs.  Then the perturbation that makes up the value of the
+derivative at a point is propagated through the steps of the program.  For this to work, there needs
+to exist an explicit representation of the computation graph at ov the evaluation at a point, which
+is what makes the topic relevant for this thesis.  In contrast to the former two methods, AD relies
+on numeric, not symbolic evaluation, but is (up to the floating point errors already present in the
+input function) exact~-- no discretization error, as in finite differences, is introduced.  For a
+more detailed treatment, I refer to \textcite{griewank2008evaluating}, the standard work on the
+topic, and the survey by \textcite{baydin2018automatic}, which includes a comparison of
+state-of-the-art implementations.
 
 To understand how AD works, let us first start with the mathematics.  What is a derivative, really?
 When we talk about gradients, which is what we really need in a gradient algorithm, this is usually
@@ -947,10 +948,10 @@ Consider the specific case of \(f(x, y) = sin(x) - y\). For simpler notation, le
 \(\Dif g(x)(\Delta_1, \Delta_2) = \Delta_1 - \Delta_2\).  By composition, we have:
 \begin{equation}
   \begin{aligned}
-    \Dif f(x, y) &= \Dif(g \circ (\sin \times \ident))(x, y) \\
-    &= \Dif g\left( (\sin \times \ident)(x, y) \right) \circ \Dif(\sin \times \ident)(x, y) \\
+    \Dif f(x, y) &= \Dif(g \circ (\sin \otimes \ident))(x, y) \\
+    &= \Dif g\left( (\sin \otimes \ident)(x, y) \right) \circ \Dif(\sin \otimes \ident)(x, y) \\
     &= \left( (\Delta_1, \Delta_2) \mapsto \Delta_1 - \Delta_2 \right) \circ \left( \Dif\sin(x)
-      \times \Dif \ident(y) \right) \\
+      \otimes \Dif \ident(y) \right) \\
     &= (\Delta_1, \Delta_2) \mapsto \partial_1\sin(x) \, \Delta_1 - 1 \Delta_2 \\
     &= (\Delta_1, \Delta_2) \mapsto \cos(x) \, \Delta_1 - \Delta_2.
   \end{aligned}
@@ -1018,8 +1019,8 @@ In order to overcome the increase of complexity with the number of input dimensi
 reformulate the compositional equation.  Let us introduce \(\CoDif \phi(x)\), the \emph{adjoint
   operator} of \(\Dif \phi(x)\), whose defining property is that in \enquote{inverts} the order of
 the perturbation application: instead of calculating a primal sensitivity with respect to an input
-perturbation (\(\Delta\)), it maps a dual vector of an output perturbation (\(\mathfrak{d}\))
-to an operator that applies this to the primal sensitivity:
+perturbation (\(\Delta\)), it maps a linear output perturbation (\(\mathfrak{d}\)) to an operator
+that applies this to the primal sensitivity:
 \begin{equation}
   \CoDif \phi(x)(\mathfrak{d}) = \Delta \mapsto \mathfrak{d}(\Dif \phi(x)(\Delta)).
 \end{equation}
@@ -1027,21 +1028,22 @@ The adjoint differential is therefore an object of the double dual space.  This 
 readable when we fix a basis to represent the derivative.  Doing so, in the finite-dimensional case,
 the derivative \(\Dif \phi(x)\) is the Jacobian matrix at \(x\), \(J_{\phi}(x)\).  In this setting,
 forward-mode AD is simply an efficient way to calculate the \emph{Jacobian-vector-product}
-\(J{\phi}(x) \, \mathfrak{d}\), or equivalently the total derivative, for a fixed perturbation,
-avoiding full matrix multiplication.  With \(\transpose{\delta}\) as the covector representation of
-\(\mathfrak{d}\), we have
+\(J_{\phi}(x) \Delta\), or equivalently the total derivative for a fixed perturbation, avoiding full
+matrix multiplication~-- but the result already a scalar, which is the reason we have to apply it to
+the basis vectors to get back the gradient.  Backward mode, on the other hand, calculates the
+product of the Jacobian with the operator that should be applied to the result, and returns a matrix:
 \begin{equation}
   \begin{aligned}
-    \mathfrak{d} (\Dif \phi(x)(\Delta)) &= \transpose{\delta} J_{\phi}(x) \Delta \\
-    &= \transpose{\left( \transpose{J_{\phi}(x)} \delta \right)} \Delta \\
+    \mathfrak{d} (\Dif \phi(x)(\Delta)) &= \transpose{d} J_{\phi}(x) \Delta \\
+    &= \transpose{\left( \transpose{J_{\phi}(x)} d \right)} \Delta \\
     &= \CoDif \phi(x)(\mathfrak{d})(\Delta).
   \end{aligned}
 \end{equation}
-Since the unapplied \(\CoDif \phi(x)(\mathfrak{d})\) is itself an object in the dual space, it is
-represented as a transposed matrix~-- and in fact, it is nothing else than a multiple of the
-transposed Jacobian.  Recovering the gradient then reduces to evaluating it at a constant output
-perturbation of \(1\), which is equivalent to the application of the primal differential to the
-matrix of basis vectors~-- the identity matrix.
+Where we assume \(\mathfrak{d} = \Omega \mapsto \transpose{d}\Omega\).  Since the unapplied
+\(\CoDif \phi(x)(\mathfrak{d})\) is itself an object in the dual space, it is represented as a
+transposed vector~-- and in fact, it is nothing else than a multiple of the transposed Jacobian.
+Recovering the gradient then reduces to evaluating it at a constant output perturbation of \(1\),
+which is equivalent to the application of the primal differential to the matrix of basis vectors.
 
 Note that due to this matrix nature, the adjoint operator simply inverses the order of composition:
 \begin{equation}
@@ -1052,19 +1054,21 @@ Note that due to this matrix nature, the adjoint operator simply inverses the or
   \end{aligned}
 \end{equation}
 For our example function \(f\), this gives the same structural form of the result~-- only that now,
-the value is a vector:
+the value is a vector.  \(\mathfrak{d}\) can in this case be identified with a scalar \(\delta\),
+therefore:
 \begin{equation}
   \begin{aligned}
-    \CoDif f(x, y) &= \CoDif (g \circ (\sin \times \ident))(x, y) \\
-    &= \CoDif(\sin \times \ident) \circ \CoDif g((\sin \times \ident)(x, y)) \\
-    &= (\CoDif\sin \times \CoDif\ident) \circ (\delta \mapsto [\delta, -\delta]) \\
-    &= (\partial_1 \sin(x) \times 1) \circ (\delta \mapsto [\delta, -\delta]) \\
-    &= \delta \mapsto [\delta \, \partial_1\sin(x), \delta \, 1] \\
-    &= \delta \mapsto [\delta \, \cos(x), -\delta]
+    \CoDif f(x, y) &= \CoDif (g \circ (\sin \otimes \ident))(x, y) \\
+    &= \CoDif(\sin \otimes \ident) \circ \CoDif g((\sin \otimes \ident)(x, y)) \\
+    &= (\CoDif\sin \otimes \CoDif\ident) \circ (\delta \mapsto \transpose{[\delta, -\delta]}) \\
+    &= (\partial_1 \sin(x) \otimes 1) \circ (\delta \mapsto \transpose{[\delta, -\delta]}) \\
+    &= \delta \mapsto \transpose{[\partial_1\sin(x)\delta, -1 \delta]} \\
+    &= \delta \mapsto \transpose{[\cos(x)\delta, -\delta]}.
   \end{aligned}
 \end{equation}
-In this form, starting with a perturbation \(\mathfrak{d}(\cdot) = 1\) (a skalar in the matrix
-version), we get back the gradient tuple through just one evaluation!
+In this form, starting with an outpt perturbation \(\delta = 1\), we get back the gradient tuple
+through just one evaluation.  Incidentially, this is nothing else than the backpropagation
+\enquote{trick} \parencite{bishop2006pattern}!
 
 Applying this to equation~\eqref{eq:ad-primal}, we get (to be read in reverse order):
 \begin{equation}
