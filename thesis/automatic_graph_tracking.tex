@@ -4,17 +4,19 @@
 It has been mentioned above that there is a trade-off between source-transformation methods and
 library-based approaches for tracking computation graphs.  Since the ultimate goal of this work was
 to analyze dynamic probabilistic models written in \turingjl{}, properties of both were derired.
-Inspired the the work of \textcite{innes2018don}, it seemed most promising to start from a
-source-transformation based approach implemented over the intermediate representation, especially
-from a usability point of view.  The advantages of using IR over the surface AST are the same: there
-is less overhead from handling multiple syntactic forms, and naming is already referentially
-transparent.  Additionally, there are existing Julia packages to simplify handling the IR data
-structures and set up the transformations.\todo{why not operator overloading}
+Operator overloading has been considered as well, since it would have allowed to potentially reuse
+AD implementations, but was thought insufficient, because the structure of control flow and
+recursion are lost.  Inspired the the work of \textcite{innes2018don}, it seemed most promising to
+start from a source-transformation based approach implemented over the intermediate representation,
+especially from a usability point of view.  The advantages of using a transformation of the IR over
+the surface AST are the same: there is less overhead from handling multiple syntactic forms, and
+naming is already referentially transparent.  Additionally, there are existing Julia packages to
+simplify handling the IR data structures and set up the transformations.
 
 However, the dynamicity of the trace structure of general probabilistic programs needs to be
 preserved and exposed to the user, for each function evaluation~-- which is different from the AD
 usage, where the adjoint function is already the ultimate goal, and does not change with the
-arguments.  Hence, I developed a method for a hybrid version: through an IR transformation, the
+arguments.  Hence, a method for a hybrid version was developed: through an IR transformation, the
 original code of a function to be tracked should be exteded by additional statements to record a
 trace of the executed statements and control flow operations at runtime.  The algorithm and data
 structure on which this approach is based have already been shortly described in
@@ -59,7 +61,7 @@ referenced variables, arguments, or metadata.
 
 \begin{figure}[t]
   \centering
-  \includegraphics[width=\textwidth]{figures/wengert-list}
+  \includegraphics[width=\textwidth]{figures/extended-wengert-list}
   \caption{Extended Wengert list for one run of the stochastic function geom (only three levels
     shown). The central box is the tracked graph of the call \protect\jlinl{geom(1, 0.6)}. The other
     boxes show the original IR of the called non-primitive functions, to which the nodes are
@@ -134,8 +136,8 @@ list structure~-- happens at every execution during runtime.
   \hrule
   \includegraphics[width=\textwidth]{figures/translation}
   \hrule
-  \caption{Tracked IR of the method \protect\jlinl{geom(::Int, ::Float64)}.  Parts corresponding to
-    original IR are highlighted in matching colors.}
+  \caption{Tracked IR of the method \protect\jlinl{geom(::Int, ::Float64)}.  Corresponding parts in
+    original and transformed IR are highlighted in matching colors.}
   \label{lst:geom-tracked}
 \end{lstfloat}
 \todo{make sure the figure in on same spread as explanation}
@@ -220,6 +222,8 @@ the transformed code for the geom function in Figure 3.\todo{describe algorithm}
 
 \section{Evaluation}
 \label{sec:irtracker-eval}
+
+Potential use cases: debugging, AD, message passing, conjugacy detection, Rao-Blackwellization.
 
 %%% Local Variables: 
 %%% TeX-master: "main"

@@ -950,6 +950,23 @@
   primaryClass = {cs, stat}
 }
 
+@article{manzyuk2019perturbation,
+  title = {Perturbation Confusion in Forward Automatic Differentiation of Higher-Order Functions},
+  author = {Manzyuk, Oleksandr and Pearlmutter, Barak A. and Radul, Alexey Andreyevich and Rush, David R. and Siskind, Jeffrey Mark},
+  date = {2019},
+  journaltitle = {Journal of Functional Programming},
+  shortjournal = {J. Funct. Prog.},
+  volume = {29},
+  pages = {e12},
+  issn = {0956-7968, 1469-7653},
+  doi = {10.1017/S095679681900008X},
+  url = {https://www.cambridge.org/core/product/identifier/S095679681900008X/type/journal_article},
+  urldate = {2020-11-14},
+  abstract = {Automatic differentiation (AD) is a technique for augmenting computer programs to compute derivatives. The essence of AD in its forward accumulation mode is to attach perturbations to each number, and propagate these through the computation by overloading the arithmetic operators. When derivatives are nested, the distinct derivative calculations, and their associated perturbations, must be distinguished. This is typically accomplished by creating a unique tag for each derivative calculation and tagging the perturbations. We exhibit a subtle bug, present in fielded implementations which support derivatives of higher-order functions, in which perturbations are confused despite the tagging machinery, leading to incorrect results. The essence of the bug is as follows: a unique tag is needed for each derivative calculation, but in existing implementations unique tags are created when taking the derivative of a function at a point. When taking derivatives of higher-order functions, these need not correspond! We exhibit a simple example: a higher-order function f whose derivative at a point x, namely f 1pxq, is itself a function which calculates a derivative. This situation arises naturally when taking derivatives of curried functions. Two potential solutions are presented, and their deficiencies discussed. One uses eta expansion to delay the creation of fresh tags in order to put them into one-to-one correspondence with derivative calculations. The other wraps outputs of derivative operators with tag substitution machinery. Both solutions seem very difficult to implement without violating the desirable complexity guarantees of forward AD.},
+  file = {/home/philipp/Zotero/storage/KHL66NAQ/Manzyuk et al. - 2019 - Perturbation confusion in forward automatic differ.pdf},
+  langid = {english}
+}
+
 @book{marin2007bayesian,
   title = {Bayesian Core: A Practical Approach to Computational {{Bayesian}} Statistics},
   shorttitle = {Bayesian Core},

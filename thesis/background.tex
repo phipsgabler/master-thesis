@@ -923,7 +923,8 @@ In the one-dimensional case, we simply have
 \begin{equation}
   \Dif \phi(x) = \Delta \mapsto \partial_1 \phi(x) \, \Delta,
 \end{equation}
-since linear maps are exactly multiplications by a scalar.  Therefore, we can recover
+where \(\partial_1 \phi(x)\) denotes the standard \enquote{primitive} derivative, since linear maps
+are exactly multiplications by a scalar.  Therefore, we can recover
 \begin{equation}
   \begin{aligned}
     \Dif(\phi \circ \psi)(x)(\Delta) &=
@@ -993,16 +994,17 @@ computing \((v, \dot{v})\) for every variable \(v\), given its parents in the gr
 a form of non-standard execution, which will be explained in more detail below.
 
 \begin{figure}[t]
-  \subbottom[Forward mode.]{%
-    \includegraphics[width=0.45\textwidth]{figures/comp-graph}\label{fig:comp-graph-fw}}
+  \subbottom[Forward mode.\label{fig:comp-graph-fw}]{%
+    \includegraphics[width=0.45\textwidth]{figures/comp-graph}}
   \hfill
-  \subbottom[Backward mode.]{%
-    \includegraphics[width=0.45\textwidth]{figures/comp-graph-backward}\label{fig:comp-graph-bw}}
+  \subbottom[Backward mode.\label{fig:comp-graph-bw}]{%
+    \includegraphics[width=0.45\textwidth]{figures/comp-graph-backward}}
   \caption{Computation graph and intermediate expressions of the expression \protect\jlinl{g(sin(x),
       y)}, together with the derivative graphs in forward- and backward mode.  Dashed arrows
     indicate re-use of primal values in the derivative graph.}
   \label{fig:comp-graph}
 \end{figure}
+\todo{convert omega to noto, absolute font size}
 
 \newthought{Recovering the full gradient} of a function \(\phi: U \subseteq \RR^N \to \RR\) (which
 is generally the form of loss functions for parametric models) requires to evaluate \(\Dif \phi(x)\)
@@ -1079,16 +1081,93 @@ Applying this to equation~\eqref{eq:ad-primal}, we get (to be read in reverse or
     &= \cos(x) \, \delta\\
     \bar{z} &= \CoDif g(x, y)(\bar{\Omega}) \\
     &= [\delta, -\delta] \\
-    \bar{\Omega} &= \delta.
+    \bar{\Omega} &= \delta,
   \end{aligned}
 \end{equation}
+which is displayed in the red graph in \ref{fig:comp-graph-bw}.
+
+Finally, it has to be noted that the two described modes of automatic differentiation are only two
+extremes of a spectrum.  Forward and backward calculations can really be interleaved in arbitrary
+order, just as it is possible to multiply Jacobians and their transposes in different order.  One
+frequent use case of this \emph{mixed-mode AD} is when loss functions, differentiated using backward
+mode, contain broadcasting functions; for example, nonlinearities in neural network.  These have a
+shape of \(\RR^N \to \RR^N\), so forward mode is usually faster.  In general, unfortunately,
+determining the optimal order of derivative evaluation is hard~-- this so-called \emph{optimal
+  Jacobian accumulation} problem is known to be NP-complete \parencite{naumann2007optimal}.
+
+\newthought{The practical implementation} of automatic differentiation in programming languages
+opens up another set of possible choices.  One way is to use an external, compiler-based system that
+transforms a complete program in a subset of a standard programming language (e.g., Tapenade, which
+transpiles Fortran and C code \parencite{tapenadedevelopers2019tapenade}) or in a custom
+specification, as is done in Stan \parencite{carpenter2015stan}.  But as PPLs defined by external
+DSLs, these systems lack flexibility in programming, especially concerning abstractions and
+interaction with other libraries (both mentioned exampes are really applied in niche cases:
+log-densities in a probabilistic model, and large numeric simulations).
+
+The second possibility is \emph{operator overloading}.  Forward mode can be recast in mathematically
+equivalent form by using dual numbers \parencite[][section 3.1.1]{baydin2018automatic}.  These
+consist of two parts, similar to complex numbers: \(z = x + y\epsilon\).  However, contrary to the
+imaginary unit, the infinitesimal unit \(\epsilon\) vanishes under multiplication with itself:
+\(\epsilon^2 = 0\).  The consequence of this is that functions can naturally be extended to dual
+numbers by nonstandard interpretation as truncated Taylor series:
+\begin{equation}
+  \phi(x + \epsilon) = \phi(x) + \partial_1\phi(x)\epsilon + \underbrace{\frac{\partial^2_1\phi(x)}{2}\epsilon^2
+  + \ldots}_{\epsilon^2 (\ldots) = 0}
+\end{equation}
+Since the higher order terms vanish, this is exactly the tuple of primal and tangent value that is
+calculated during the lockstep evaluation in forward mode:
+\begin{equation}
+  (z, \dot{z}) = (\phi(x), \Dif\phi(x)(\dot{x})) \Leftrightarrow z + \dot{z}\epsilon = \phi(x + \dot{x}\epsilon).
+\end{equation}
+(generalization to higher dimensions, as well as higher derivatives in form of hyper-dual numbers,
+follow equally natually.)
+
+Dual numbers can rather easily be added to an existing programming language that has a sufficiently
+extensibly system for overloading mathematical operators.  This can be done using traits or type
+classes, like in Haskell, or by dynamic dispatch, which is what is used in Python and Julia.  The
+latter is especially versatile in this respect, since every function can be extended to a new type
+of dual numbers by simply adding a method; unlike in Python, where only certain operators are open
+to extension~-- a fundamental limitation of its single dispatch, object oriented approach.
+
+\begin{figure}[t]
+  \centering
+  \includegraphics{figures/wengert-list}
+  \caption{Wengert list of the example function \protect\jlinl{g(sin(x), y)} introduced above.
+    Every intermediate variable becomes an element, linked through pointers.  The gradient can be
+    calculated by backward traversal and accumulating the adjoint values as metadata in the list
+    elements.}
+  \label{fig:wengert-list}
+\end{figure}
+
+Backward-mode AD can be implemented using operator overloading as well, but this requires more
+effort.  Since adoint values cannot be simply threaded through in parallel to forward evaluation,
+one needs to build up a data structure during the forward pass, which can at the end be traced back
+in reverse order.
+
+This is exactly what graph-based machine learning frameworks do: PyTorch
+\parencite{paszke2017automatic}, TensorFlow \parencite{abadi2015tensorflow}\footnote{Strictly
+  speaking, TensorFlow (unless in eager mode) always builds up a complete expression graph, which is
+  differentiated symbolically, and is therefore somewhat in the middle between operator overloading
+  (since the graph is a runtime data structure) and source transformation (since the graph undergoes
+  various \enquote{static} transformations, and is then \enquote{lowered}).}, DyNet
+\parencite{neubig2017dynet}, and Chainer \parencite{tokui2015chainer}.
 
 
-\todo{Zygote}
-\todo{control flow}
-\todo{mixed mode, NP-completeness of OJA}
+Zygote, control flow;
 
 
+
+Source-based methods also completely avoid the obscure issue of \enquote{perturbation confusion},
+which leads to hard-to-find errors when using nested differentiation with dual numbers
+\parencite{baydin2018automatic,manzyuk2019perturbation}
+
+As a concluding note, all these graph operations reveal that automatic differentiation is really
+only a special case of message passing algorithms in computation graphs
+\parencite{minka2019automatic}.  Other learning methods that can be described as message passing are
+optimization algorithms \parencite{ruozzi2011message,dauwels2005steepest} and a variety of
+variational approximations \parencite{winn2005variational,minka2005divergence}.  Hence, it is no
+surprise that computation graphs play a large role as the foundation of other learning algorithms in
+Bayesian methods, such as described below.
 
 %%% Local Variables: 
 %%% TeX-master: "main"
