@@ -28,6 +28,9 @@ snapshots. \todo{compare to autograd, venture, church}
 Many of the following ideas have already been informally described by me
 online\footnote{\protect\url{https://github.com/phipsgabler/probability-ir}}.
 
+Let us review the important features of a universal, flexible PPL as mentioned in
+section~\ref{sec:prob-prog}.
+
 Currently, Turing models are very primitive in this respect: a data structure called \jlinl{VarInfo}
 contains a map from variable names to values, the accumulated log-likelihood, and some other
 metadata. During this project, I noticed that retrofitting structure onto this is not ideal, and for
