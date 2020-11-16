@@ -1035,6 +1035,20 @@
   type = {Presentation}
 }
 
+@online{moses2020instead,
+  title = {Instead of {{Rewriting Foreign Code}} for {{Machine Learning}}, {{Automatically Synthesize Fast Gradients}}},
+  author = {Moses, William S. and Churavy, Valentin},
+  date = {2020-10-04},
+  url = {http://arxiv.org/abs/2010.01709},
+  urldate = {2020-11-16},
+  abstract = {Applying differentiable programming techniques and machine learning algorithms to foreign programs requires developers to either rewrite their code in a machine learning framework, or otherwise provide derivatives of the foreign code. This paper presents Enzyme, a high-performance automatic differentiation (AD) compiler plugin for the LLVM compiler framework capable of synthesizing gradients of statically analyzable programs expressed in the LLVM intermediate representation (IR). Enzyme synthesizes gradients for programs written in any language whose compiler targets LLVM IR including C, C++, Fortran, Julia, Rust, Swift, MLIR, etc., thereby providing native AD capabilities in these languages. Unlike traditional source-to-source and operator-overloading tools, Enzyme performs AD on optimized IR. On a machine-learning focused benchmark suite including Microsoft's ADBench, AD on optimized IR achieves a geometric mean speedup of 4.5x over AD on IR before optimization allowing Enzyme to achieve state-of-the-art performance. Packaging Enzyme for PyTorch and TensorFlow provides convenient access to gradients of foreign code with state-of-the art performance, enabling foreign code to be directly incorporated into existing machine learning workflows.},
+  archivePrefix = {arXiv},
+  eprint = {2010.01709},
+  eprinttype = {arxiv},
+  file = {/home/philipp/Zotero/storage/TFTUES4J/Moses_Churavy_2020_Instead of Rewriting Foreign Code for Machine Learning, Automatically.pdf},
+  primaryClass = {cs}
+}
+
 @book{muchnick1997advanced,
   title = {Advanced Compiler Design and Implementation},
   author = {Muchnick, Steven S.},
@@ -1071,6 +1085,21 @@
   eprinttype = {arxiv},
   file = {/home/philipp/Zotero/storage/3V5B92ZF/Murray et al_2017_Delayed Sampling and Automatic Rao-Blackwellization of Probabilistic Programs.pdf;/home/philipp/Zotero/storage/NZ4NCBYD/1708.html},
   primaryClass = {stat}
+}
+
+@online{murray2020automated,
+  title = {Automated Learning with a Probabilistic Programming Language: {{Birch}}},
+  shorttitle = {Automated Learning with a Probabilistic Programming Language},
+  author = {Murray, Lawrence M. and Schön, Thomas B.},
+  date = {2020-04-16},
+  url = {http://arxiv.org/abs/1810.01539},
+  urldate = {2020-11-16},
+  abstract = {This work offers a broad perspective on probabilistic modeling and inference in light of recent advances in probabilistic programming, in which models are formally expressed in Turing-complete programming languages. We consider a typical workflow and how probabilistic programming languages can help to automate this workflow, especially in the matching of models with inference methods. We focus on two properties of a model that are critical in this matching: its structure---the conditional dependencies between random variables---and its form---the precise mathematical definition of those dependencies. While the structure and form of a probabilistic model are often fixed a priori, it is a curiosity of probabilistic programming that they need not be, and may instead vary according to random choices made during program execution. We introduce a formal description of models expressed as programs, and discuss some of the ways in which probabilistic programming languages can reveal the structure and form of these, in order to tailor inference methods. We demonstrate the ideas with a new probabilistic programming language called Birch, with a multiple object tracking example.},
+  archivePrefix = {arXiv},
+  eprint = {1810.01539},
+  eprinttype = {arxiv},
+  file = {/home/philipp/Zotero/storage/5PULXUZK/Murray_Schön_2020_Automated learning with a probabilistic programming language.pdf;/home/philipp/Zotero/storage/7WYKVUKE/1810.html},
+  primaryClass = {cs, stat}
 }
 
 @incollection{narayanan2016probabilistic,

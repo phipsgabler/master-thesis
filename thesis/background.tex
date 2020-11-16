@@ -1121,14 +1121,14 @@ so-called \emph{optimal Jacobian accumulation} problem is known to be NP-complet
 opens up another set of possible choices.  One way is to use an external, compiler-based system that
 transforms a complete program in a subset of a standard programming language (e.g., Tapenade, which
 transpiles Fortran and C code \parencite{tapenadedevelopers2019tapenade}) or in a custom
-specification, as is done in Stan \parencite{carpenter2015stan}.  But as PPLs defined by external
-DSLs, these systems lack flexibility in programming, especially concerning abstractions and
-interaction with other libraries (both mentioned exampes are really applied in niche cases:
-log-densities in a probabilistic model, and large numeric simulations).  Recently, the Swift for
-TensorFlow project \parencite{tensorflowdevelopers2018swift,hong2018graph} introduced a modern
-variant of this by extending the compiler of the Swift programming language with facilities to
-perform automatic differentiation, as well as some features to simplify graph operations required by
-TensorFlow.
+specification, as is done in Stan \parencite{carpenter2015stan}.  But both of these exampes are
+really applied in niche cases: large numeric simulations, and log-densities in a probabilistic
+model.  These systems lack flexibility in programming, especially concerning abstractions and
+interaction with other libraries, and require external tooling besides a main programming language.
+Recently, the Swift for TensorFlow project \parencite{tensorflowdevelopers2018swift,hong2018graph}
+introduced a modern variant of this by extending the compiler of the Swift programming language with
+facilities to perform automatic differentiation internally, and some features to simplify graph
+operations required by TensorFlow.
 
 The second possibility is \emph{operator overloading}.  Forward mode can be recast in mathematically
 equivalent form by using dual numbers \parencite[see][section 3.1.1]{baydin2018automatic}.  These
@@ -1182,27 +1182,46 @@ operating on a special \enquote{variable} or \enquote{tensor} type.  These opera
 so that function calls, in addition to performing the primal calculations, are stored either
 explicitely on a global Wengert list structure, or implicitly in the constructed expression objects.
 Then, one can start a backward pass from any leaf variable to propagate back derivatives to the
-roots of the computation graph.
+roots of the computation graph, by following the edges and summing up adjoint values in parent
+nodes' metadata.
 
-This style of implementation has limitations, though: it requires building up many runtime
-structures, and is completely oblivious of control structures.  Additionally, the code expressing
-differentiable functions has to be written in a library-aware fashion, preventing the usage of
-third-party functions and language features, and forcing the user to adhere to certain semantic
-constraints that cannot be verified statically by the host language.  TensorFlow in graph mode
-addresses some of these points.  It builds up a complete expression graph, which is differentiated
-symbolically, and is therefore somewhat in the middle between operator overloading (since the graph
-is still a runtime data structure) and a static transformation (the resulting graph is not
-interpreted in the host language, but converted to run on an \enquote{accelerator}, which can one of
-several kinds of processing unit~-- CPU, GPU, TPU,\ldots).  It still requires to stick to the
+This style of implementation has limitations, though: it requires building up many objects at
+runtime, and is completely oblivious of control structures.  Additionally, the code expressing
+differentiable functions has to be written entirely in the DSL, in a library-aware fashion,
+preventing the usage of third-party functions and language features, and forcing the user to adhere
+to certain semantic constraints that cannot be verified statically by the host language.  TensorFlow
+in graph mode addresses some of these points.  It builds up a complete expression graph, which is
+differentiated symbolically, and is therefore somewhat in the middle between operator overloading
+(since the graph is still a runtime data structure) and a static transformation (the resulting graph
+is not interpreted in the host language, but converted to run on an \enquote{accelerator}, which can
+one of several kinds of processing unit~-- CPU, GPU, TPU,\ldots).  It still requires to stick to the
 provided expression types and library functions, though.
 
-Zygote, control flow;\todo{todo}
+Efforts to overcome these limitations lead to the third kind of approach: language-internal
+\emph{source transformation}.  Recent work in Julia \parencite{innes2018don} has shown that through
+the available metaprogramming mechanisms (described in section~\ref{sec:comp-metapr-julia}) allow to
+systematically derive \enquote{adjoint programs} for arbitrary user-provided Julia functions, given
+only an extensible set of \emph{primitive adjoints}.  This approach works purely structurally on the
+Julia IR, employing generated functions to analyze functions' code and transform them completely,
+including third-party functions and data types, and control flow.  The key insight here is that
+SSA-form IR already resembles the structure of Wengert lists, extended by branches.  As in building
+up reverse computation graphs, the adjoint code will therefore invert the control flow of the basic
+blocks in the primal function, taking into account that data flow may involve dynamic dependencies.
+Differentiation through data types and closures is supported via a unified treatment of them in a
+tuple-like form, with constructors and accessors (inspired by cons-cells in Lisp).  An
+implementation of this principle has been released as the \juliapackage{Zygote.jl}
+package\footnote{\url{https://github.com/FluxML/Zygote.jl}}.\todo{list some code\_adjoint output?}
 
+In similar spirit, there is also work on directly differentiating the LLVM intermediate
+representation, by extending the compiler pipeline with a differentiation pass that comes after all
+language-specific and high-level optimizations \parencite{moses2020instead}.
 
-
-Source-based methods also completely avoid the obscure issue of \enquote{perturbation confusion},
-which leads to hard-to-find errors when using nested differentiation with dual numbers
-\parencite{baydin2018automatic,manzyuk2019perturbation}
+Internal source-based methods can therefore be composable, extensible, and more user-friendly, since
+no special treatment of programs to be differentiated is required: primal functions can be
+implemeted as any other regular function in the host language.  A source-transformation approach
+also completely avoids the obscure issue of \enquote{perturbation confusion}, which leads to
+hard-to-find errors when using nested differentiation with dual numbers
+\parencite{baydin2018automatic,manzyuk2019perturbation}.
 
 As a concluding note, all these graph operations reveal that automatic differentiation is really
 only a special case of message passing algorithms in computation graphs
