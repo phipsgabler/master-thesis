@@ -169,6 +169,7 @@ in the following passes of type inference and lowering.
     \EndIf
     %
     \Statex
+    \LineComment{Handle arguments}
     \State Copy all arguments from \jlinl{old_block} to \jlinl{new_block}
     \State Add tracking and recording for each argument
     %
@@ -208,12 +209,12 @@ in the following passes of type inference and lowering.
   \end{algorithmic}
   \smallskip
   \hrule
-  \caption{Overview of the IR transformation to record an extended Wengert list.  This
-    transformation happens inside a generated function called by \protect\jlinl{trackcall}, which
-    assembles the resulting value and IR into a new node with the correct metadata.  The details of
-    statement tracking and branch transformation are explained in the text; the description of
-    metadata recording, and the mechanisms to correctly rename SSA variables during the
-    transformation and tape references at runtime were left out for
+  \caption[IR transformation to record an extended Wengert list]{Overview of the IR transformation
+    to record an extended Wengert list.  This transformation happens inside a generated function
+    called by \protect\jlinl{trackcall}, which assembles the resulting value and IR into a new node
+    with the correct metadata.  The details of statement tracking and branch transformation are
+    explained in the text; the description of metadata recording, and the mechanisms to correctly
+    rename SSA variables during the transformation and tape references at runtime were left out for
     simplicity.\label{alg:ir-transform}}
 \end{algorithm}
 

@@ -128,12 +128,12 @@ introduced.  One of them is MLIR (\enquote{machine learning intermediate represe
 \textcite{lattner2020mlir}), with the purpose of forming a reusable mid-layer between programming
 languages and runtimes, featuring exchangeability between different machine learning frameworks and
 and \enquote{accelerators} (pieces of hardware), while taking advantage of modern compiler
-technology similar to LLVM.  A similar role is played by Swift's intermediate representation, SIL,
-in the Swift for TensorFlow project.  XLA (\enquote{accelerated linear algebra},
-\textcite{tensorflowdevelopers2020xla}) plays a similar role for expression-graph based machine
-learning systems, compiling those graphs directly to optimized code; this system forms the basis of
-JAX \parencite{bradbury2018jax}, which allows to JIT-compile numerical Python functions, that would
-otherwise be slow, to efficient platform code.
+technology similar to LLVM.  A second one is Swift's intermediate representation, SIL, in the Swift
+for TensorFlow project.  JAX \parencite{bradbury2018jax} plays a similar role for expression-graph
+based machine learning systems, by tracing Python functions and compiling their graphs directly to
+optimized code.  This system can interact with XLA (\enquote{accelerated linear algebra},
+\textcite{tensorflowdevelopers2020xla}), which allows to compile numerical Python functions, that
+would otherwise be slow, to efficient platform code.
 
 As for the trade-off between transformation-based and library-based implementations, several hybrid
 graph tracking approaches between source transformation and graph tracking exist.  Among AD systems,

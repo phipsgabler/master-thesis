@@ -883,7 +883,8 @@ on numeric, not symbolic evaluation, but is (up to the floating point errors alr
 input function) exact~-- no discretization error, as in finite differences, is introduced.  For a
 more detailed treatment, I refer to \textcite{griewank2008evaluating}, the standard work on the
 topic, and the survey by \textcite{baydin2018automatic}, which includes a comparison of
-state-of-the-art implementations.
+state-of-the-art implementations.  There are many works on the formalization of AD in programming
+language theory; see, for example, \textcite{abadi2020simple}.
 
 To understand how AD works, let us first start with the mathematics.  What is a derivative, really?
 When we talk about gradients, which is what we really need in a gradient algorithm, this is usually
@@ -908,7 +909,8 @@ a well-defined higher-order function on its own; we will assume this in the foll
   under weaker notions of differentiability.  Additionally, such points usually behave well enough
   to admit a subdifferential, from which we can just choose an arbitrary subgradient; this does not
   necessary lead to a descent direction, but still allows minimization under reasonable conditions
-  \parencites[see][section 6.1]{pock2017convex}[][chapter 14]{griewank2008evaluating}.}
+  \parencites[see][section 6.1]{pock2017convex}[][chapter
+  14]{griewank2008evaluating}{abadi2020simple}.}
 
 The important fact here is that \(\Dif f(x)\) is still a function: specifically, a linear function
 approximating how \(f\) reacts to an input perturbation, \(\Delta\), around \(x\).  Or, in other
@@ -1112,10 +1114,11 @@ shape of \(\RR^N \to \RR^N\), but only involve a linear number of operations, so
 off\footnote{As a rule of thumb in Julia, for \(f: \RR^M \to \RR^N\), forward mode typically
   performs better when \(M \ll N\) or as long as \(M \lessapprox 100\).  This folklore should always
   be confirmed by benchmarking, though.  See
-  \url{https://github.com/JuliaDiff/ReverseDiff.jl\#should-i-use-reversediff-or-forwarddiff}.}.  In
-general, unfortunately, determining the optimal order of derivative evaluation is hard~-- this
-so-called \emph{optimal Jacobian accumulation} problem is known to be NP-complete
-\parencite{naumann2007optimal}.
+  \url{https://github.com/JuliaDiff/ReverseDiff.jl\#should-i-use-reversediff-or-forwarddiff}.}.
+Similar properties hold for second order derivatives: the calculation of Hessians is often fastest
+by using forward-over-reverse composed differentiation.  In general, unfortunately, determining the
+optimal order of derivative evaluation is hard~-- this so-called \emph{optimal Jacobian
+  accumulation} problem is known to be NP-complete \parencite{naumann2007optimal}.
 
 \newthought{The practical implementation} of automatic differentiation in programming languages
 opens up another set of possible choices.  One way is to use an external, compiler-based system that
@@ -1208,13 +1211,15 @@ SSA-form IR already resembles the structure of Wengert lists, extended by branch
 up reverse computation graphs, the adjoint code will therefore invert the control flow of the basic
 blocks in the primal function, taking into account that data flow may involve dynamic dependencies.
 Differentiation through data types and closures is supported via a unified treatment of them in a
-tuple-like form, with constructors and accessors (inspired by cons-cells in Lisp).  An
-implementation of this principle has been released as the \juliapackage{Zygote.jl}
-package\footnote{\url{https://github.com/FluxML/Zygote.jl}}.\todo{list some code\_adjoint output?}
+tuple-like form, with constructors and accessors (inspired by cons-cells in Lisp).
 
+An implementation of this principle has been released as the \juliapackage{Zygote.jl}
+package\footnote{\url{https://github.com/FluxML/Zygote.jl}}.\todo{list some code\_adjoint output?}
 In similar spirit, there is also work on directly differentiating the LLVM intermediate
 representation, by extending the compiler pipeline with a differentiation pass that comes after all
-language-specific and high-level optimizations \parencite{moses2020instead}.
+language-specific and high-level optimizations \parencite{moses2020instead}.  Furthermore, there are
+applications that use the same techniques for other purposes, like sparsity detection
+\parencite{gowda2019sparsity} or concolic execution \parencite{churavy2020vchuravy}.
 
 Internal source-based methods can therefore be composable, extensible, and more user-friendly, since
 no special treatment of programs to be differentiated is required: primal functions can be
