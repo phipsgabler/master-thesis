@@ -303,7 +303,25 @@ repository.
 \section{Evaluation}
 \label{sec:irtracker-eval}
 
-Potential use cases: debugging, AD, message passing, conjugacy detection, Rao-Blackwellization.
+The extended Wengert list created by tracking a function can be used for many purposes in which
+computation graphs are required.  All algorithms that can be formulated as message-passing can
+directly work on this, as well as all methods that operate on runtime dependency graphs, from simple
+debugging to concolic execution.
+
+As a proof of concept, a small backward-mode AD system was implemented in the form of a context.
+This simply required storing the derivative operators for all intermediate values during the forward
+pass, and writing a backward pass as graph traversal on the resulting computation
+graph.\footnote{\href{https://github.com/TuringLang/IRTracker.jl/blob/760143734de1bf4e90da655d833e7999fc0ab2de/test/test_backward_ad.jl}{\url{https://github.com/TuringLang/IRTracker.jl/blob/master/test/test_backward_ad.jl}}}
+
+More potential use cases arise when the model is actually static~-- in this case, the complete
+struture can be recovered from one graph tracking pass.  This can then be analyzed and used in
+various ways; even more so, when more semantic knowledge about the model exists, such as meanings of
+special function.  Specifically, automatic conjugacy detection and Rao-Blackwellization in
+probabilistic programs written in \turingjl{} were considered as show-cases for the system.  Due to
+the additional complexity required for them, only the automatic derivation of Gibbs conditionals, as
+shown in the next chapter, was finally executed, though.\todo{add references}
+
+TODO: limitations: typing, recovering alternative paths
 
 %%% Local Variables: 
 %%% TeX-master: "main"
