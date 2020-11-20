@@ -21,6 +21,21 @@
     <marker
        inkscape:isstock="true"
        style="overflow:visible"
+       id="marker1215"
+       refX="0"
+       refY="0"
+       orient="auto"
+       inkscape:stockid="Arrow2Lstart">
+      <path
+         inkscape:connector-curvature="0"
+         transform="matrix(1.1,0,0,1.1,1.1,0)"
+         d="M 8.7185878,4.0337352 -2.2072895,0.01601326 8.7185884,-4.0017078 c -1.7454984,2.3720609 -1.7354408,5.6174519 -6e-7,8.035443 z"
+         style="fill:#6c6c6c;fill-opacity:1;fill-rule:evenodd;stroke:#6c6c6c;stroke-width:0.625;stroke-linejoin:round;stroke-opacity:1"
+         id="path1213" />
+    </marker>
+    <marker
+       inkscape:isstock="true"
+       style="overflow:visible"
        id="marker1000"
        refX="0"
        refY="0"
@@ -321,9 +336,9 @@
      borderopacity="1.0"
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
-     inkscape:zoom="3.959798"
-     inkscape:cx="342.57321"
-     inkscape:cy="113.56479"
+     inkscape:zoom="0.9899495"
+     inkscape:cx="147.39207"
+     inkscape:cy="355.87945"
      inkscape:document-units="mm"
      inkscape:current-layer="layer1"
      showgrid="false"
@@ -1066,17 +1081,17 @@
        transform="scale(0.99992351,1.0000765)"
        id="text982"
        y="237.8257"
-       x="94.074356"
+       x="99.687447"
        style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:3.2871604px;line-height:1;font-family:'Linux Biolinum O';-inkscape-font-specification:'Linux Biolinum O';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:start;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:start;opacity:1;vector-effect:none;fill:#6c6c6c;fill-opacity:1;stroke:none;stroke-width:0.26899999;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
        xml:space="preserve"><tspan
          id="tspan980"
          style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:3.2871604px;line-height:1;font-family:'Linux Biolinum O';-inkscape-font-specification:'Linux Biolinum O';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:start;writing-mode:lr-tb;text-anchor:start;vector-effect:none;fill:#6c6c6c;fill-opacity:1;stroke:none;stroke-width:0.26899999;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
          y="237.8257"
-         x="94.074356"
+         x="99.687447"
          sodipodi:role="line">Locations in original IR</tspan><tspan
          style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:3.2871604px;line-height:1;font-family:'Linux Biolinum O';-inkscape-font-specification:'Linux Biolinum O';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:start;writing-mode:lr-tb;text-anchor:start;vector-effect:none;fill:#6c6c6c;fill-opacity:1;stroke:none;stroke-width:0.26899999;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
          y="241.16476"
-         x="94.074356"
+         x="99.687447"
          sodipodi:role="line"
          id="tspan994">(block <tspan
    style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:Inconsolatazi4;-inkscape-font-specification:Inconsolatazi4"
@@ -1085,14 +1100,14 @@
    id="tspan1008">%7</tspan> and </tspan><tspan
          style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:3.2871604px;line-height:1;font-family:'Linux Biolinum O';-inkscape-font-specification:'Linux Biolinum O';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:start;writing-mode:lr-tb;text-anchor:start;vector-effect:none;fill:#6c6c6c;fill-opacity:1;stroke:none;stroke-width:0.26899999;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
          y="244.50383"
-         x="94.074356"
+         x="99.687447"
          sodipodi:role="line"
          id="tspan1004">branch <tspan
    style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:Inconsolatazi4;-inkscape-font-specification:Inconsolatazi4"
    id="tspan1006">&amp;1</tspan>)</tspan></text>
     <path
        style="fill:none;stroke:#6c6c6c;stroke-width:0.26499999;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;marker-start:url(#marker988)"
-       d="m 88.22984,231.42112 c 2.290784,3.72477 2.877276,4.16952 5.197359,5.23666"
+       d="m 88.22984,231.42112 c 3.760766,3.52432 6.752684,4.97133 10.676384,5.16984"
        id="path984"
        inkscape:connector-curvature="0"
        sodipodi:nodetypes="cc" />
@@ -1100,7 +1115,30 @@
        sodipodi:nodetypes="cc"
        inkscape:connector-curvature="0"
        id="path996"
-       d="m 94.655435,218.75892 c 5.779125,5.19195 11.347165,10.87964 12.378905,16.10347"
+       d="m 94.655435,218.75892 c 5.779125,5.19195 17.962085,10.94646 18.993825,16.17029"
        style="fill:none;stroke:#6c6c6c;stroke-width:0.26499999;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;marker-start:url(#marker1000)" />
+    <path
+       sodipodi:nodetypes="cc"
+       inkscape:connector-curvature="0"
+       id="path1207"
+       d="m 54.837576,241.40302 c 4.876752,0.002 5.728225,-0.1305 11.174677,0.36412"
+       style="fill:none;stroke:#6c6c6c;stroke-width:0.26499999;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;marker-start:url(#marker1215)" />
+    <text
+       transform="scale(0.99992351,1.0000765)"
+       id="text1211"
+       y="240.78584"
+       x="66.614594"
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:3.2871604px;line-height:1;font-family:'Linux Biolinum O';-inkscape-font-specification:'Linux Biolinum O';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:start;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:start;opacity:1;vector-effect:none;fill:#6c6c6c;fill-opacity:1;stroke:none;stroke-width:0.26899999;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
+       xml:space="preserve"><tspan
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:3.2871604px;line-height:1;font-family:'Linux Biolinum O';-inkscape-font-specification:'Linux Biolinum O';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:start;writing-mode:lr-tb;text-anchor:start;vector-effect:none;fill:#6c6c6c;fill-opacity:1;stroke:none;stroke-width:0.26899999;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
+         y="240.78584"
+         x="66.614594"
+         sodipodi:role="line"
+         id="tspan1209">Special extra block</tspan><tspan
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:3.2871604px;line-height:1;font-family:'Linux Biolinum O';-inkscape-font-specification:'Linux Biolinum O';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:start;writing-mode:lr-tb;text-anchor:start;vector-effect:none;fill:#6c6c6c;fill-opacity:1;stroke:none;stroke-width:0.26899999;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
+         y="244.073"
+         x="66.614594"
+         sodipodi:role="line"
+         id="tspan1217">for return values</tspan></text>
   </g>
 </svg>

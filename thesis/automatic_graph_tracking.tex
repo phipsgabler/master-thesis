@@ -95,9 +95,9 @@ corresponding to the block arguments \jlinl{\%1}, \jlinl{\%2}, and \jlinl{\%3}, 
 \jlinl{rand} and \jlinl{<} as well as a conditional jump, corresponding to the branch the original
 IR, followed by calls of \jlinl{+} and \jlinl{geom}. Following back the tape references from the
 result value \jlinl{@9}, the data path of the trace can be extracted.  It can be used for
-reverse-mode AD, and only these nodes would be recorded in a conventional Wengert list.  In our
-system, however, we also record the nodes on the control path, consisting of \jlinl{@6} and the
-nodes it depends on.
+reverse-mode AD, and only these nodes would be recorded in a conventional Wengert list.  In this
+work, however, the system also records the nodes on the control path, consisting of \jlinl{@6} and
+the nodes it depends on.
 
 
 \section{Automatic Graph Tracking}
@@ -109,6 +109,17 @@ statements creating nodes and recording them on the extended Wengert list struct
 previous section. Care needs to be taken to properly record function calls, since we need to ensure
 that non-primitive functions are recursively tracked.
 
+The recording functionality is implemented as a transformation using a generated function operating
+on the IR, using the \juliapackage{IRTools.jl} package, as described in
+section~\ref{sec:comp-metapr-julia}.  The resulting IR consists of about three to five times as many
+statements as the original.  The basic blocks and control structure are preserved, except for the
+redirection of return statements to the one block at the end.  Due to JIT compilation, the
+transformation is performed at most a constant number of times per method, and then stored as
+compiled code.  However, the tracking~-- the recording of all statements in the extended Wengert
+list structure~-- happens at every execution during runtime.  Furthermore, the extended code is
+available to all standard optimizations performed in the following passes of type inference and
+lowering.
+
 \begin{lstfloat}[p]
   \hrule
   \includegraphics[width=\textwidth]{figures/translation}
@@ -119,7 +130,7 @@ that non-primitive functions are recursively tracked.
 \end{lstfloat}
 \todo{make sure the figure in on same spread as explanation}
 
-The transformed code of the example function geom, whose IR is displayed in
+The transformed code of the example function \jlinl{geom}, whose IR is displayed in
 figure~\ref{fig:ext-wengert-list} above, is displayed in listing~\ref{lst:geom-tracked}.  First, a
 \enquote{graph recorder} object is passed into the function via the extra argument \jlinl{\%5}.  In
 this, the original IR is stored for later access.  Subsequently, every original SSA statement is
@@ -129,27 +140,45 @@ its arguments, wrapped into \jlinl{TapeExpression}s directly (for constants) or 
 variables).  The \jlinl{record!}  function takes care of constructing the child node of the possibly
 nested call, and storing them on the recorder object.
 
+To get a more detailed understanding, consider the SSA statement \jlinl{\%6 = \%2 + 1} in the second
+block, which describes the application of the function \jlinl{+} to an SSA variable and a constant.
+The corresponding transformed IR is shown in the lower part of the figure, highlighted in green.
+\begin{enumerate}
+  \firmlist
+\item First, a constant node \jlinl{\%33} for the function is set up.
+\item Then, the variable argument in is tracked in \jlinl{\%34}.  There, \jlinl{trackedvariable} has
+  the purpose to correctly relate the node in the trace (\jlinl{@2}) to the original SSA variable
+  \jlinl{\%6}.  This is necessary since a block could be visited multiple times during tracking~--
+  for example, if it belongs to a loop body~-- which requires to give multiple, unique names to
+  references to the same original variable.  Additionally, \jlinl{trackedvariable} copies values,
+  since the tracked information would otherwise no preserve intermediate values correctly in the
+  case of mutations.
+\item Next, both of the function arguments are packed into the tuple \jlinl{\%35}; the second
+  argument, which was a literal value \jlinl{1} in the original IR, is preserved as a literal as
+  well (wrapped into a \jlinl{QuoteNode} object for technical reasons).
+\item Finally, the function and arguments are passed to the function \jlinl{trackedcall}, which
+  takes care of acually calling the original function.  Doing so, it will, if the called function is
+  not considered primitive, recursively track it as well, and pack the resulting child nodes into a
+  new nested node, together with the return value.  Otherwise, the result will simply be stored in a
+  special primitive-call node.
+\item The resulting node is then stored on the recorder; this operation at the same time returns the
+  value, \jlinl{\%37}, which is needed in subsequent calculations (in this case, in \jlinl{\%39}, as
+  the argument of the recursive call to \jlinl{geom}).
+\end{enumerate}
 Branches, tracked with \jlinl{trackejump} and \jlinl{trackedreturn}, cannot be stored on the
 recorder object before the respective jumps are taken.  The solution is to first construct the
-respective nodes of all possible branches of a block, and adding them as an extra argument to the
-branches.  Then, in each target branch, the jump node from which the branch originated is
-recorded immediately.  As a special case, all return branches are converted to unconditional jumps
-to one new block at the end, which contains a single unified return statement.  This way, they can
-be treated in the same way as other branches.
+respective nodes of all possible branches of a block (e.g., \jlinl{\%28}), and adding them as an
+extra argument to the old branches.  Then, in each target branch, the jump node from which the
+branch originated is recorded immediately (in this case, in statement \jlinl{\%32}).  As a special
+case, all return branches are converted to unconditional jumps to one new block at the end, which
+contains a single unified return statement (\jlinl{\%30} and \jlinl{\%48} in our example; the branch
+variables of block 1 are highlighted in colors matching to the original branches).  This way, return
+branches can be treated in the same way as internal branches.  An more formal description in
+pseudo-code is given in algorithm~\ref{alg:ir-transform}.
 
-The extension of the IR is implemented as a transformation through a generated function, using the
-\juliapackage{IRTools.jl} package, as described in section~\ref{sec:comp-metapr-julia}.  An exact
-specification of the algorithm in pseudo-code is given in algorithm~\ref{alg:ir-transform}.  The
-resulting IR consists of about three to five times as many statements as the original.  The basic
-blocks and control structure are preserved, except for the redirection of return statements to the
-one block at the end.  Due to JIT compilation, the transformation is performed at most a constant
-number of times per method, and then stored as compiled code.  However, the tracking~-- the
-recording of all statements in the extended Wengert list structure~-- happens at every execution
-during runtime.  Furthermore, the extended code is available to all standard optimizations performed
-in the following passes of type inference and lowering.
-
-\todo{describe statement tracking}
-\todo{describe context system}
+Lastly, some special dispatch is used for the transformation to work correctly on certain special
+kinds of function calls, such as built-in functions, type application, and \texttt{ccall}
+primitives, which require more careful handling.
 
 \begin{algorithm}[p]
   \footnotesize
@@ -158,10 +187,12 @@ in the following passes of type inference and lowering.
   \hrule
   \smallskip
   \begin{algorithmic}
+    \Procedure{TransformIR}{\texttt{original\_ir}}
+    %
     \State Initialize empty IR object \jlinl{new_ir}
     \Statex
     %
-    \For{\jlinl{old_block} in the original IR}
+    \For{\jlinl{old_block} in \jlinl{blocks(original_ir)}}
     \State Add an empty block \jlinl{new_block} to \jlinl{new_ir}
     % 
     \If{this is the first block}
@@ -206,6 +237,8 @@ in the following passes of type inference and lowering.
     \State Add new block to \jlinl{new_ir}, with  arguments \jlinl{\%return_value} and \jlinl{\%return_node}
     \State Add recording of \jlinl{\%return_node}
     \State Add return branch, returning \jlinl{\%return_value} and \jlinl{\%recorder}
+    %
+    \EndProcedure
   \end{algorithmic}
   \smallskip
   \hrule
@@ -217,6 +250,55 @@ in the following passes of type inference and lowering.
     rename SSA variables during the transformation and tape references at runtime were left out for
     simplicity.\label{alg:ir-transform}}
 \end{algorithm}
+
+To provide some modularity and extensibility to the system, it also affords customization of some
+behaviour by \emph{tracing contexts}.  All of the \jlinl{trackedX} functions explained above, used
+directly in the transformed code, are really special methods that work directly on the recorder
+object.  Their behaviour~-- namely, performing the actual method calls and constructing the nodes~--
+is defined in another method of the same function, which dispatches on a context object stored in
+the recorder object, and can be overloaded by the user for a custom context.  
+
+\begin{lstfloat}
+\begin{lstlisting}[style=lstfloat]
+struct DepthLimitContext <: AbstractTrackingContext
+    level::Int
+    maxlevel::Int
+end
+
+DepthLimitContext(maxlevel) = DepthLimitContext(1, maxlevel)
+canrecur(ctx::DepthLimitContext, f, args...) = ctx.level < ctx.maxlevel
+
+function trackednested(ctx::DepthLimitContext, f_repr::TapeValue,
+                       args_repr::ArgumentTuple{TapeValue}, info::NodeInfo)
+    new_ctx = DepthLimitContext(ctx.level + 1, ctx.maxlevel)
+    return recordnestedcall(new_ctx, f_repr, args_repr, info)
+end
+\end{lstlisting}
+  \caption{Implementation of a tracking context to limit the nesting depth to a maximum (which is
+    part of the implemented package).\label{lst:depthlimitcontext}}
+\end{lstfloat}
+
+This allows, for one, to overload the notion of what constitutes a \emph{primitive function}.  In
+the default context, primitive functions are only those that do not have IR on their own (such as
+intrinsics and functions defined in C), which leads to very large recursive traces.  To circumvent
+this, we can introduce a new \jlinl{DepthLimitContext}, as shown in
+listing~\ref{lst:depthlimitcontext}.  There, the function \jlinl{canrecur} is overloaded to stop at
+depth \jlinl{maxlevel}; this method will be called to determine whether a tracked function is
+considered primitive.  Besides this, we also have to redefine the behaviour of \jlinl{trackednested}
+to specify that for non-primitive functions, i.e., nested calls, the level remembered in the context
+object should be updated.  \jlinl{recordnestedcall} is a built-in function of the library that
+simply performs the recursive tracking, then.
+
+From this we see that \jlinl{trackedcall} is only a thin wrapper around a conditional statement over
+\jlinl{canrecur}, \jlinl{trackednested}, and its sibling \jlinl{trackedprimitive}.  Beyond this,
+context dispatch allows a user to change any other of the tracking functions as well.  This can be
+used to store custom metadata, calculate information during tracking, or even change return values
+or nesting dynamically.  In addition to those methods, also \jlinl{trackedargument},
+\jlinl{trackedreturn}, and \jlinl{trackedjump} can be customized, which we have seen in the example;
+furthermore, there are \jlinl{trackedspecial}, \jlinl{trackedconstant}, and \jlinl{trackederror}.
+\jlinl{trackedvariable} is more primitive and cannot be overloaded, since this would change the
+relation between references of tracked nodes.  More information is available on the package's public
+repository.
 
 \section{Evaluation}
 \label{sec:irtracker-eval}
