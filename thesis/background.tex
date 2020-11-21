@@ -821,9 +821,10 @@ This metaprogramming pattern is extremely powerful, and becoming more and more p
 to change evaluation semantics in more profound ways than multiple dispatch can: by rewriting the
 code of the called function, it is possible to change what invoking a method within its body means.
 Through this, several abstract interpretation algorithms can be realized, by extending the existing
-data path with additional metadata (such as automatic differentiation, or concolic execution), or
-non-standard execution be implemented (e.g., continuation-passing style transformations).  There
-exist already two Julia packages with the goal of simplify working with this kind of transformation:
+data path with additional metadata (such as automatic differentiation, or other forms of information
+propagation analysis \parencite[part II]{singer2018static}), or non-standard execution be
+implemented (e.g., continuation-passing style transformations).  There exist already two Julia
+packages with the goal of simplify working with this kind of transformation:
 \juliapackage{Cassette.jl}\footnote{\protect\url{https://github.com/jrevels/Cassette.jl}}, which
 provides overloadable function application by a so-called \enquote{overdubbing} mechanism,
 abstracting out some common patterns; and

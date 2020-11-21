@@ -120,18 +120,8 @@ list structure~-- happens at every execution during runtime.  Furthermore, the e
 available to all standard optimizations performed in the following passes of type inference and
 lowering.
 
-\begin{lstfloat}[p]
-  \hrule
-  \includegraphics[width=\textwidth]{figures/translation}
-  \hrule
-  \caption{Tracked IR of the method \protect\jlinl{geom(::Int, ::Float64)}.  Corresponding parts in
-    original and transformed IR are highlighted in matching colors.  (The original IR consists of
-    two blocks, shown separately on the right.)\label{lst:geom-tracked}}
-\end{lstfloat}
-\todo{make sure the figure in on same spread as explanation}
-
 The transformed code of the example function \jlinl{geom}, whose IR is displayed in
-figure~\ref{fig:ext-wengert-list} above, is displayed in listing~\ref{lst:geom-tracked}.  First, a
+figure~\ref{fig:ext-wengert-list} above, is displayed in figure~\ref{fig:geom-tracked}.  First, a
 \enquote{graph recorder} object is passed into the function via the extra argument \jlinl{\%5}.  In
 this, the original IR is stored for later access.  Subsequently, every original SSA statement is
 replaced by a call to one of the \protect\jlinl{trackedX} functions, to which both the function and
@@ -139,6 +129,16 @@ its arguments, wrapped into \jlinl{TapeExpression}s directly (for constants) or 
 \jlinl{trackedvariable} and \jlinl{trackedargument}, which preserve the symbolic mapping to SSA
 variables).  The \jlinl{record!}  function takes care of constructing the child node of the possibly
 nested call, and storing them on the recorder object.
+
+\begin{figure}[p]
+  % \hrule
+  \includegraphics[width=\textwidth]{figures/translation}
+  % \hrule
+  \caption{Tracked IR of the method \protect\jlinl{geom(::Int, ::Float64)}.  Corresponding parts in
+    original and transformed IR are highlighted in matching colors.  (The original IR consists of
+    two blocks, shown separately on the right.)\label{fig:geom-tracked}}
+\end{figure}
+\todo{make sure figure is on same spread as explanation}
 
 To get a more detailed understanding, consider the SSA statement \jlinl{\%6 = \%2 + 1} in the second
 block, which describes the application of the function \jlinl{+} to an SSA variable and a constant.
@@ -205,6 +205,7 @@ primitives, which require more careful handling.
     \State Add tracking and recording for each argument
     %
     \Statex
+    \LineComment{Take care of branch recording in target blocks}
     \If{there exist branches to \jlinl{old_block}}
     \State Add new argument \jlinl{\%branch_node} to \jlinl{new_block}
     \State Add recording for \jlinl{\%branch_node}
@@ -306,22 +307,59 @@ repository.
 The extended Wengert list created by tracking a function can be used for many purposes in which
 computation graphs are required.  All algorithms that can be formulated as message-passing can
 directly work on this, as well as all methods that operate on runtime dependency graphs, from simple
-debugging to concolic execution.
+debugging to concolic execution (see discussion below).
 
 As a proof of concept, a small backward-mode AD system was implemented in the form of a context.
 This simply required storing the derivative operators for all intermediate values during the forward
 pass, and writing a backward pass as graph traversal on the resulting computation
 graph.\footnote{\href{https://github.com/TuringLang/IRTracker.jl/blob/760143734de1bf4e90da655d833e7999fc0ab2de/test/test_backward_ad.jl}{\url{https://github.com/TuringLang/IRTracker.jl/blob/master/test/test_backward_ad.jl}}}
+The implementation has been tested on some simple composed functions, but is not intended for
+serious application.  Due to the very abstract nature of the implemetation, not more individual
+evaluations of it are performed, except unit tests to ensure basic correctness of the interface.
+The system developed in chapter~\ref{cha:graph-track-prob} provides a larger \enquote{integration
+  test}, though.
 
-More potential use cases arise when the model is actually static~-- in this case, the complete
-struture can be recovered from one graph tracking pass.  This can then be analyzed and used in
-various ways; even more so, when more semantic knowledge about the model exists, such as meanings of
-special function.  Specifically, automatic conjugacy detection and Rao-Blackwellization in
-probabilistic programs written in \turingjl{} were considered as show-cases for the system.  Due to
+More potential use cases arise when the tracked model is actually static~-- in this case, the
+complete struture can be recovered from one graph tracking pass.  This can then be analyzed and used
+in various ways; even more so, when more semantic knowledge about the model exists, such as meanings
+of certain domain-specific functions.  Specifically, two show-cases for the system, applied to
+probabilistic programs written in \turingjl{} were considered: conjugacy detection as described by
+\textcite{hoffman2018autoconj}, and Rao-Blackwellization as in \textcite{murray2017delayed}.  Due to
 the additional complexity required for them, only the automatic derivation of Gibbs conditionals, as
-shown in the next chapter, was finally executed, though.\todo{add references}
+shown in the next chapter, was finally executed, though.
 
-TODO: limitations: typing, recovering alternative paths
+The implementation is limited in two respects.  First, in practical terms, there is are some
+trade-offs to be made regarding the storage of intermediate results and functions in nodes.  In the
+current design, nodes are parametrized by the types of their contents, which leads to very large
+types, and potential slow done during type inference.  Not doing this would prevent type stability
+of the transformed code, since all of the intermediate values that are passed directly in the
+original code are wrapped in node structures and unwrapped again.  (There are even still some cases
+in which the parametrization does not eliminate type instability.  Alternatively, original values
+could be passed unwrapped into the \jlinl{trackedcall} functions, besides the node arguments; this
+would lead to more complicated handling of values, though.)
+
+The other, more fundamental restriction is one that is inherent to dynamic tracing: alternatives
+path, that were not taken due to runtime control flow, are not recorded.  Compared to a traditional
+operator overloading system, \irtrackerjl{} does at least preserve the information about which
+branches were taken, and for which reason in the case of conditional branches; this is not enough
+for complete static analysis in all cases, though.  The system is sufficient for code that does not
+change data flow paths depending on arguments or stochastic decisions, though.  One possible
+direction for extension that would extend the applicablity somewhat is concolic execution
+\parencite{zeller2019concolic}, in which the function is traced multiple times with different
+arguments, whose exact values are determined by contraint solving so that all possible execution
+paths are covered.  This is potentially slow, and goes against the spirit of the idea of tracking
+once, in parallel to the normal forward execution, though.  Alternatively, a method to merge control
+paths in the transformed function could be conceived.  This, however, would likely suffer from
+exponential blow-up in several cases, is difficult to get right in the presence of mutation, and has
+complicated theoretical properties (e.g., termination of the resulting code might be undecidable).
+
+As another future direction for extension, it is conceivable that a composable context system could
+be designed, such that, for example, one could perform automatic differentiation and dependency
+graph tracking within one tracking pass.  However, this would require more careful design, since it
+is unclear how to deal with potential non-commutativity or non-associativity of the effects of
+contexts in different orders (e.g., which one gains priority in the decision about nested or
+primitive tracking).
+
 
 %%% Local Variables: 
 %%% TeX-master: "main"
