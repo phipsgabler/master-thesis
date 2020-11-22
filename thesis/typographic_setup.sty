@@ -5,11 +5,14 @@
 % PACKAGES
 %
 
-\RequirePackage{libertine} % libertine with biolinum
+\RequirePackage[proportional]{libertine} % libertine with biolinum
 \RequirePackage[scaled=0.95, varqu]{inconsolata} % monospace font
 
 \RequirePackage[libertine, slantedGreek]{newtxmath} % matching math fonts
 \def\libertine@figurestyle{OsF} % restore old style figures (messed up by newtxmath)
+% set to propoertional, but https://tex.stackexchange.com/a/114371/46356
+\AtBeginDocument{\def\libertine@figurealign{}\libertineOsF}
+\providecommand{\libertineTabular}{\def\libertine@figurealign{T}\libertineLF}
 \renewcommand*{\rmdefault}{LinuxLibertineT-OsF}
 
 % better superscripts

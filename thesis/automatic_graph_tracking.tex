@@ -348,10 +348,12 @@ direction for extension that would extend the applicablity somewhat is concolic 
 \parencite{zeller2019concolic}, in which the function is traced multiple times with different
 arguments, whose exact values are determined by contraint solving so that all possible execution
 paths are covered.  This is potentially slow, and goes against the spirit of the idea of tracking
-once, in parallel to the normal forward execution, though.  Alternatively, a method to merge control
-paths in the transformed function could be conceived.  This, however, would likely suffer from
-exponential blow-up in several cases, is difficult to get right in the presence of mutation, and has
-complicated theoretical properties (e.g., termination of the resulting code might be undecidable).
+once, in parallel to the normal forward execution, though.  Also, it is not applicable to general
+user-defined types, but constraint to whatever theories the used SMT solver supports.
+Alternatively, a method to merge control paths in the transformed function could be conceived.
+This, however, would likely suffer from exponential blow-up in several cases, is difficult to get
+right in the presence of mutation, and has complicated theoretical properties (e.g., termination of
+the resulting code might be undecidable).
 
 As another future direction for extension, it is conceivable that a composable context system could
 be designed, such that, for example, one could perform automatic differentiation and dependency

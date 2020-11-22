@@ -13,6 +13,9 @@ snapshots. \todo{compare to autograd, venture, church}
 Not completly satisfactorily, because recursion and branch tracking aren't that useful for different
 reasons.
 
+Fragility problem: IR is rather internal, changes with Compiler versions.  IRTools is a good
+mid-layer, but still there's lot of reasons why a custom IR would be nicer. Cf. JAX.
+
 (\juliapackage{Cassette.jl} is a package very similar to \juliapackage{IRTools.jl})
 \begin{quote}
   Using Cassette on code you wrote is a bit like shooting youself with a experimental mind control
