@@ -16,9 +16,62 @@ models can be extracted.  With these, analytic Gibbs conditionals can be derived
 \section{Dependency Analysis in Dynamic Models}
 \label{sec:depend-analysis}
 
-
-
 Context for DPPL-models; slicing; graph extraction + new representation; plotting
+
+\begin{lstfloat}[t]
+\begin{lstlisting}[style=lstfloat]
+@model function bernoulli_mixture(x)
+    w ~ Dirichlet(2, 1/2)
+    p ~ DiscreteNonParametric([0.3, 0.7], w)
+    x ~ Bernoulli(p)
+end
+
+@model function hierarchical_gaussian(x)
+    λ ~ Gamma(2.0, inv(3.0))
+    m ~ Normal(0, sqrt(1 / λ))
+    x ~ Normal(m, sqrt(1 / λ))
+end
+\end{lstlisting}
+  \caption{Two simple example models: a mixture of two Bernoulli random variables with fixed
+    probabilities, and a Gaussian model with conjugate prior.  Both models are defined over one
+    single observation.}
+  \label{lst:dependency-examples}
+\end{lstfloat}
+
+\begin{figure}[t]
+  \centering
+  \subbottom[][\protect\jlinl{bernoulli_mixture}]{%
+    \includegraphics[width=0.48\textwidth]{figures/bernoulli_dependencies}}
+  \subbottom[][\protect\jlinl{hierarchical_gaussian}]{%
+    \includegraphics[width=0.48\textwidth]{figures/gaussian_dependencies}}
+  \caption{Dependency graphs of the models in \ref{lst:dependency-examples}.  More information (such
+    as variable names and values of nodes) is stored in the real model graph, but not shown for ease
+    of visualization.}
+  \label{fig:geom-deps}
+\end{figure}
+
+% ⟨2⟩ = false
+% ⟨3⟩ = Dirichlet(2, 0.5) → Dirichlet{Float64}(alpha=[0.5, 0.5])
+% ⟨4⟩ = w ~ ⟨3⟩ → [0.826304431175434, 0.17369556882456608]
+% ⟨5⟩ = DiscreteNonParametric([0.3, 0.7], ⟨4⟩) → DiscreteNonParametric{Float64,Float64,Array{Float64,1},Array{Float64,1}}(support=[0.3, 0.7], p=[0.826304431175434, 0.17369556882456608])
+% ⟨6⟩ = p ~ ⟨5⟩ → 0.3
+% ⟨7⟩ = Bernoulli(⟨6⟩) → Bernoulli{Float64}(p=0.3)
+% ⟨8⟩ = x ⩪ ⟨7⟩ ← ⟨2⟩
+
+% julia> graph0 = trackdependencies(hierarchical_gaussian(1.4))
+% ⟨2⟩ = 1.4
+% ⟨3⟩ = Gamma(2.0, 0.3333333333333333) → Gamma{Float64}(α=2.0, θ=0.3333333333333333)
+% ⟨4⟩ = λ ~ ⟨3⟩ → 0.9257859525673857
+% ⟨5⟩ = /(1, ⟨4⟩) → 1.0801632896100921
+% ⟨6⟩ = sqrt(⟨5⟩) → 1.0393090443222806
+% ⟨7⟩ = Normal(0, ⟨6⟩) → Normal{Float64}(μ=0.0, σ=1.0393090443222806)
+% ⟨8⟩ = m ~ ⟨7⟩ → 1.8505166567138398
+% ⟨9⟩ = /(1, ⟨4⟩) → 1.0801632896100921
+% ⟨10⟩ = sqrt(⟨9⟩) → 1.0393090443222806
+% ⟨11⟩ = Normal(⟨8⟩, ⟨10⟩) → Normal{Float64}(μ=1.8505166567138398, σ=1.0393090443222806)
+% ⟨12⟩ = x ⩪ ⟨11⟩ ← ⟨2⟩
+
+
 
 \section{JAGS-Style Automatic Calculation of Gibbs Conditionals}
 \label{sec:jags-style-conditionals}
