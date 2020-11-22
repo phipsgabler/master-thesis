@@ -343,13 +343,14 @@ path, that were not taken due to runtime control flow, are not recorded.  Compar
 operator overloading system, \irtrackerjl{} does at least preserve the information about which
 branches were taken, and for which reason in the case of conditional branches; this is not enough
 for complete static analysis in all cases, though.  The system is sufficient for code that does not
-change data flow paths depending on arguments or stochastic decisions, though.  One possible
-direction for extension that would extend the applicablity somewhat is concolic execution
-\parencite{zeller2019concolic}, in which the function is traced multiple times with different
-arguments, whose exact values are determined by contraint solving so that all possible execution
-paths are covered.  This is potentially slow, and goes against the spirit of the idea of tracking
-once, in parallel to the normal forward execution, though.  Also, it is not applicable to general
-user-defined types, but constraint to whatever theories the used SMT solver supports.
+change data flow paths depending on arguments or stochastic decisions, though.
+
+One possible direction for extension that would extend the applicablity somewhat is concolic
+execution \parencite{zeller2019concolic}, in which the function is traced multiple times with
+different arguments, whose exact values are determined by contraint solving so that all possible
+execution paths are covered.  This is potentially slow, and goes against the spirit of the idea of
+tracking once, in parallel to the normal forward execution, though.  Also, it is not applicable to
+general user-defined types, but constrained to whatever theories the used SMT solver supports.
 Alternatively, a method to merge control paths in the transformed function could be conceived.
 This, however, would likely suffer from exponential blow-up in several cases, is difficult to get
 right in the presence of mutation, and has complicated theoretical properties (e.g., termination of

@@ -14,9 +14,50 @@ models can be extracted.  With these, analytic Gibbs conditionals can be derived
 \turingjl{}'s within-Gibbs sampler.
 
 \section{Dependency Analysis in Dynamic Models}
-\label{sec:depend-analysis}
+\label{sec:dependency-analysis}
 
-Context for DPPL-models; slicing; graph extraction + new representation; plotting
+In order to use \irtrackerjl{} to extract the dependencies in a probabilistic model written in
+\dppljl{}, we need to remember the structure of such models, which was introduced in
+section~\ref{sec:prob-prog}: there is one evaluator function, into which the original code is
+transformed, and which evaluates the model in different modes.  This function has the same structure
+as the original code, but add some more complicated book-keeping logic to it.  Furthermore, when
+calling the model as a callable object, there are several layers of dispatch (about five layers of
+nesting), until the real evaluator function is actually hit.  On the other hand, there is no nesting
+involved~-- \turingjl{} simply does not support nested models, for technical reasons.
+
+Therefore, we at first need to introduce an \irtrackerjl{} context that will track all the internal
+function calls down to the evaluator function, and stop there.  Similar to the
+\jlinl{DepthLimitContext} demonstrated on page~\pageref{lst:depthlimitcontext}, the main task here
+is to overload the \jlinl{canrecur} method to stop at the right call.  This can easily be done by
+introducing a helper predicate function \jlinl{ismodelcall} that dispatches on the involved types.
+Next, we notice that the resulting computation graph consists of a nested and quite unusable
+structure.  To work with it, we need to strip the outer layers off the inner node containing the
+trace of the evaluator function.  Thirdly, many of the statements in the trace of the evaluator
+function do not have relevance for dependency analysis~-- those that stem from internal calculations
+done by the model, or statements that were written by the user but to not lie on the dependency
+graph, such as debugging statements or the lowered code of for loops, in some cases.  These we can
+strip off in advance, so as to clean the raw dependency trace.
+
+These three preparation steps are put together in one method:
+\begin{lstlisting}
+function slicedependencies(model::Model{F}, args...) where {F}
+    trace = trackmodel(model, args...)
+    strip = strip_model_layers(F, trace)
+    slice = strip_dependencies(strip)
+    return slice
+end
+\end{lstlisting}
+Here, \jlinl{trackmodel} extracts the computation graph with the context for \dppljl{} models,
+\jlinl{strip_model_layers} removes the outer method calls, and \jlinl{strip_dependencies} removes
+all SSA code that is not on the dependecy graph spanned by the sampling statements.
+
+The final and most intricate step is to add all the remaining SSA statements to a new graph
+structure, that describes a more domain-specific representation.  In this \jlinl{Graph} type, only
+assumption, observation, call, and constant nodes remain.  In addition, the type stores intermediate
+information used during its construction, such as the mapping between newly generated and original
+references.
+
+Two complications: mutability (track modified array elements), arguments
 
 \begin{lstfloat}[t]
 \begin{lstlisting}[style=lstfloat]
@@ -38,38 +79,74 @@ end
   \label{lst:dependency-examples}
 \end{lstfloat}
 
-\begin{figure}[t]
+This code is implemented in a function \jlinl{makegraph}, and we finally have one exported function
+\begin{lstlisting}
+function trackdependencies(model, args...)
+    slice = slicedependencies(model, args...)
+    return makegraph(slice)
+end
+\end{lstlisting}
+As an example, take the two simple models in listing~\ref{lst:dependency-analysis}.  
+
+\newsavebox{\bernoullitrace}
+\begin{lrbox}{\bernoullitrace}
+\begin{lstlisting}[style=lstfloat]
+⟨2⟩ = false
+⟨3⟩ = Dirichlet(2, 0.5) → Dirichlet{Float64}(alpha=[0.5, 0.5])
+⟨4⟩ = w ~ ⟨3⟩ → [0.826304431175434, 0.17369556882456608]
+⟨5⟩ = DiscreteNonParametric([0.3, 0.7], ⟨4⟩) → DiscreteNonParametric{...}(
+        support=[0.3, 0.7], p=[0.826304431175434, 0.17369556882456608])
+⟨6⟩ = p ~ ⟨5⟩ → 0.3
+⟨7⟩ = Bernoulli(⟨6⟩) → Bernoulli{Float64}(p=0.3)
+⟨8⟩ = x ~ ⟨7⟩ ← ⟨2⟩
+\end{lstlisting}
+\end{lrbox}
+\newsavebox{\gaussiantrace}
+\begin{lrbox}{\gaussiantrace}
+\begin{lstlisting}[style=lstfloat]
+⟨2⟩ = 1.4
+⟨3⟩ = Gamma(2.0, 0.3333333333333333) → Gamma{Float64}(
+        α=2.0, θ=0.3333333333333333)
+⟨4⟩ = λ ~ ⟨3⟩ → 0.9257859525673857
+⟨5⟩ = /(1, ⟨4⟩) → 1.0801632896100921
+⟨6⟩ = sqrt(⟨5⟩) → 1.0393090443222806
+⟨7⟩ = Normal(0, ⟨6⟩) → Normal{Float64}(μ=0.0, σ=1.0393090443222806)
+⟨8⟩ = m ~ ⟨7⟩ → 1.8505166567138398
+⟨9⟩ = /(1, ⟨4⟩) → 1.0801632896100921
+⟨10⟩ = sqrt(⟨9⟩) → 1.0393090443222806
+⟨11⟩ = Normal(⟨8⟩, ⟨10⟩) → Normal{Float64}(
+         μ=1.8505166567138398, σ=1.0393090443222806)
+⟨12⟩ = x ~ ⟨11⟩ ← ⟨2⟩
+\end{lstlisting}
+\end{lrbox}
+\begin{lstfloat}
+  \loosesubcaptions
+  \subbottom[Trace of \texttt{bernoulli\_mixture(false)}.]{%
+    \usebox{\bernoullitrace}}
+  \subbottom[Trace of \texttt{hierarchical\_gaussian(1.4)}.]{%
+    \usebox{\gaussiantrace}}
+  \caption{Traced structure of the two example models.}
+  \label{lst:trace-examples}
+\end{lstfloat}
+
+
+
+
+PLOTTING\todo{describe}
+
+\begin{figure}[p]
   \centering
   \subbottom[][\protect\jlinl{bernoulli_mixture}]{%
-    \includegraphics[width=0.48\textwidth]{figures/bernoulli_dependencies}}
+    \includegraphics[width=0.49\textwidth]{figures/bernoulli_dependencies}}
   \subbottom[][\protect\jlinl{hierarchical_gaussian}]{%
-    \includegraphics[width=0.48\textwidth]{figures/gaussian_dependencies}}
-  \caption{Dependency graphs of the models in \ref{lst:dependency-examples}.  More information (such
-    as variable names and values of nodes) is stored in the real model graph, but not shown for ease
-    of visualization.}
+    \includegraphics[width=0.49\textwidth]{figures/gaussian_dependencies}}
+  \caption{Dependency graphs of the models in listing~\ref{lst:dependency-examples}.  More
+    information (such as variable names and values of nodes) is stored in the real model graph, but
+    not shown for ease of visualization.  Circular nodes denote tilde statements, while normal SSA
+    statements are written in rectangles.}
   \label{fig:geom-deps}
 \end{figure}
 
-% ⟨2⟩ = false
-% ⟨3⟩ = Dirichlet(2, 0.5) → Dirichlet{Float64}(alpha=[0.5, 0.5])
-% ⟨4⟩ = w ~ ⟨3⟩ → [0.826304431175434, 0.17369556882456608]
-% ⟨5⟩ = DiscreteNonParametric([0.3, 0.7], ⟨4⟩) → DiscreteNonParametric{Float64,Float64,Array{Float64,1},Array{Float64,1}}(support=[0.3, 0.7], p=[0.826304431175434, 0.17369556882456608])
-% ⟨6⟩ = p ~ ⟨5⟩ → 0.3
-% ⟨7⟩ = Bernoulli(⟨6⟩) → Bernoulli{Float64}(p=0.3)
-% ⟨8⟩ = x ⩪ ⟨7⟩ ← ⟨2⟩
-
-% julia> graph0 = trackdependencies(hierarchical_gaussian(1.4))
-% ⟨2⟩ = 1.4
-% ⟨3⟩ = Gamma(2.0, 0.3333333333333333) → Gamma{Float64}(α=2.0, θ=0.3333333333333333)
-% ⟨4⟩ = λ ~ ⟨3⟩ → 0.9257859525673857
-% ⟨5⟩ = /(1, ⟨4⟩) → 1.0801632896100921
-% ⟨6⟩ = sqrt(⟨5⟩) → 1.0393090443222806
-% ⟨7⟩ = Normal(0, ⟨6⟩) → Normal{Float64}(μ=0.0, σ=1.0393090443222806)
-% ⟨8⟩ = m ~ ⟨7⟩ → 1.8505166567138398
-% ⟨9⟩ = /(1, ⟨4⟩) → 1.0801632896100921
-% ⟨10⟩ = sqrt(⟨9⟩) → 1.0393090443222806
-% ⟨11⟩ = Normal(⟨8⟩, ⟨10⟩) → Normal{Float64}(μ=1.8505166567138398, σ=1.0393090443222806)
-% ⟨12⟩ = x ⩪ ⟨11⟩ ← ⟨2⟩
 
 
 
@@ -85,7 +162,7 @@ Gibbs sampler implementation for Turing; likelihood closures; conditional likeli
 \begin{table}[t]
   \centering
   \libertineTabular
-  \begin{tabular}{llrrrrrrr}
+  \begin{tabular*}{\textwidth}{llrrrrrrr}
     \toprule
     Algorithms & & \multicolumn{3}{c}{GMM} & \multicolumn{3}{c}{HMM} & \multicolumn{1}{c}{IMM} \\
     \midrule
@@ -102,7 +179,7 @@ Gibbs sampler implementation for Turing; likelihood closures; conditional likeli
     PG + HMC, & Data size & 10 & 25 & 50 & 10 & 25 & 50 & 10 \\
     50 particles & Chains & 10 & 10 & 10 & 10 & 10 & *x & 10 \\
     \bottomrule
-  \end{tabular}
+  \end{tabular*}
   \caption{Experimental combinations that were run.  Chains were always of length \(5000\).  The
     parameters for HMC were a stepsize of \(0.1\), and \(10\) leapfrog steps.  A new static Gibbs
     conditional was extracted for each block of \(10\) chains that was run with the same parameters
