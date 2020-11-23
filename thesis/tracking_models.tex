@@ -54,10 +54,11 @@ all SSA code that is not on the dependecy graph spanned by the sampling statemen
 
 The final and most intricate step is to add all the remaining SSA statements to a new graph
 structure, that describes a more domain-specific representation.  In this \jlinl{Graph} type, only
-assumption, observation, call, and constant nodes remain.  In addition, the object stores
-intermediate information used during its construction, such as the mapping between newly generated
-and original references.  The graph construction is implemented in a function \jlinl{makegraph}, and
-we finally have one exported function
+assumption, observation, call, and constant nodes remain, containing relevant metadata such as their
+values, variable names, and distribution objects.  In addition, the object stores intermediate
+information used during its construction, such as the mapping between newly generated and original
+references.  The graph construction is implemented in a function \jlinl{makegraph}, and we finally
+have one exported function
 \begin{lstlisting}
 function trackdependencies(model, args...)
     slice = slicedependencies(model, args...)
@@ -84,8 +85,8 @@ In order to express the dependency between successive elements of \jlinl{s}, an 
 set up, and then subsequently populated by the results of the tilde statements describing the Markov
 process.  In this form, only the individual variables \jlinl{s[i]} are recognized by the model
 language.  Internally, the tilde statements are translated to array assignments of the form
-\jlinl{s[i] = tilde_assume(...)}, but with additional lowering of the involved arguments.
-Therefore, the corresponding IR will be a sequence like the following:
+\jlinl{s[i] = tilde_assume(...)}, but with additional lowering of the involved arguments, after
+which the corresponding IR will look approximately like this:
 \begin{lstlisting}
 %9 = %i - 1                 # i - 1
 %10 = getindex(%s, %9)      # s[i - 1]
@@ -95,24 +96,32 @@ Therefore, the corresponding IR will be a sequence like the following:
 %14 = tilde_assume(..., %13, ..., %12, ...)
 %15 = setindex!(%a, %14)
 \end{lstlisting}
-(to be understood symbolically, not as real SSA~-- several statements have been collapsed).  Thus,
-the direct association between the variable \jlinl{s} is not preserved in the line of the tilde
+(to be understood symbolically, not as real SSA~-- several statements have been collapsed).  We see
+that the direct association between the variable \jlinl{s} is not preserved in the line of the tilde
 method, but spread over multiple statements. Even worse, since all statements for the different
 \jlinl{s[i]} result in mutations of \jlinl{\%a}, the immediate dependency between \jlinl{s[i]} and
 \jlinl{s[i-1]} is not available as a data dependency, but must be recovered dynamically.
 
-The \jlinl{makegraph} implementation solves this by successively identifying mutated arrays that are
-representing random variables by inspecting the indexing calls around tilde statements, and
-extracting the association between the assumption and the array elements.  This part of the
-procedure is the most intricate one, and not complete; there may exist cases, where mutation is able
-to \enquote{circumvent} the dependecy detection.  Additionally, the matching between indexing
-arguments involves some careful treatment of variable names; the \dppljl{} API for this
-functionality is not very comprehensive.
+The \jlinl{makegraph} implementation solves this by successively identifying mutated arrays
+representing random variables by inspecting the indexing calls around tilde statements, and storing
+the association between the assumption and the array elements.  This part of the procedure is the
+most intricate one, and not complete; there may exist cases where mutation is able to
+\enquote{circumvent} the dependecy analysis.  Additionally, the matching between indexing arguments
+involves some careful treatment of variable names; the existing \dppljl{} API for this functionality
+is not very comprehensive.
 
-The current implementation of \autogibbsjl{} supports only \enquote{simple} indexing by one tuple of
-integers.  Other, more general indexing styles allowed in Julia could be supported in future
-extensions.  Furthermore, broadcasting tilde statements, that are supported in \dppljl{}, are not
-supported by \autogibbsjl{} either.
+Due to this, the current implementation of \autogibbsjl{} currently only supports \enquote{simple}
+indexing by one tuple of integers.  Other, more general indexing styles allowed in Julia could be
+added in future extensions.  Furthermore, broadcasting tilde statements, that are supported in
+\dppljl{}, are not supported by \autogibbsjl{} either.
+
+\newthought{As an example} for the resulting graphs, take the two simple models in
+listing~\ref{lst:dependency-examples}.  The pretty-printed dependency \jlinl{Graph}s of them are
+shown in listing~\ref{lst:trace-examples} below.  We can see that the model arguments for
+observations occur as constant values, and all of the intermediate transformation visible in the
+original model definitions are observed.  From this structure, \autogibbsjl{} can construct output
+in the Dot graph format and vizualized using GraphViz \parencite{gansner2000open}.  The visual
+outputs of the example models is shown in figure~\ref{fig:geom-deps}.
 
 \begin{lstfloat}[p]
 \begin{lstlisting}[style=lstfloat]
@@ -133,14 +142,6 @@ end
     single observation.}
   \label{lst:dependency-examples}
 \end{lstfloat}
-
-\newthought{As an example} for the resulting graphs, take the two simple models in
-listing~\ref{lst:dependency-analysis}.  The pretty-printed dependency \jlinl{Graph}s of them are
-shown in listing~\ref{lst:trace-examples} below.  We can see that the model arguments for
-observations occur as constant values, and all of the intermediate transformation visible in the
-original model definitions are observed.  From this structure, \autogibbsjl{} can construct output
-in the Dot graph format and vizualized using GraphViz \parencite{gansner2000open}.  The visual
-outputs of the example models is shown in figure~\ref{fig:geom-deps}.
 
 \newsavebox{\bernoullitrace}
 \begin{lrbox}{\bernoullitrace}
@@ -190,9 +191,9 @@ outputs of the example models is shown in figure~\ref{fig:geom-deps}.
 
 \begin{figure}[p]
   \centering
-  \subbottom[][\protect\jlinl{bernoulli_mixture(false)}]{%
+  \subbottom[][\texttt{bernoulli\_mixture(false)}]{%
     \includegraphics[width=0.49\textwidth]{figures/bernoulli_dependencies}}
-  \subbottom[][\protect\jlinl{hierarchical_gaussian(1.4)}]{%
+  \subbottom[][\texttt{hierarchical\_gaussian(1.4)}]{%
     \includegraphics[width=0.49\textwidth]{figures/gaussian_dependencies}}
   \caption{Dependency graphs of the models in listing~\ref{lst:dependency-examples}, generated by
     \autogibbsjl{} and rendered by GraphViz.  More information, such as node values, is stored in
@@ -201,8 +202,6 @@ outputs of the example models is shown in figure~\ref{fig:geom-deps}.
     written in rectangles.}
   \label{fig:geom-deps}
 \end{figure}
-
-
 
 
 \section{JAGS-Style Automatic Calculation of Gibbs Conditionals}
@@ -220,7 +219,7 @@ Gibbs sampler implementation for Turing; likelihood closures; conditional likeli
   \begin{tabularx}{\textwidth}{XXrrr@{\hskip 10mm}rrrr}
     \toprule
      & & \multicolumn{3}{c@{\hskip 10mm}}{\textbf{GMM}} & \multicolumn{3}{c}{\textbf{HMM}} & \multicolumn{1}{c}{\textbf{IMM}} \\
-    \addlinespace
+    \midrule
     & HMC Steps & & 10 & & & 10 & & 10 \\
     & HMC Step size & & 0.1 & & & 0.1 & & 0.1 \\
     \midrule
