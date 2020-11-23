@@ -22,10 +22,10 @@ section~\ref{sec:prob-prog}: there is one evaluator function, into which the ori
 transformed, and which evaluates the model in different modes.  This function has the same structure
 as the original code, but adds some more complicated book-keeping logic to it, and transforms the
 tilde statements into function calls with some additional metadata.  Furthermore, when calling the
-model as a callable object, there are several layers of dispatch (about five layers of nesting),
-until the real evaluator function is actually hit.  On the other hand, there is no further nesting
-involved beyond the evaluator function~-- \turingjl{} simply does not support nested models, for
-technical reasons.
+model as a callable object, there are several layers of dispatch (about five layers of nesting,
+depending on the arguments), until the real evaluator function is actually hit.  On the other hand,
+there is no further nesting involved beyond the evaluator function~-- \turingjl{} simply does not
+support nested models, for technical reasons.
 
 Therefore, we at first need to introduce an \irtrackerjl{} context that will record all the internal
 function calls down to the evaluator function, and stop there.  Similar to the
@@ -33,9 +33,9 @@ function calls down to the evaluator function, and stop there.  Similar to the
 is to overload the \jlinl{canrecur} method to stop at the right call.  This can easily be done by
 introducing a helper predicate function \jlinl{ismodelcall} that dispatches on the involved types.
 Next, we notice that the resulting computation graph consists of a nested and quite unusable
-structure, due to the initial levels of nesting.  To work with it the model code, we need to strip
-the outer layers off the inner node containing the trace of the evaluator function.  Thirdly, many
-of the statements in the trace of the evaluator function do not have relevance for dependency
+structure, due to the initial levels of nesting.  To work with the model code, we need to strip the
+outer layers off the inner node containing the trace of the evaluator function.  Thirdly, many of
+the statements in the trace of the evaluator function do not have relevance for dependency
 analysis~-- like those that stem from internal calculations done by the model, or statements that
 were written by the user but to not lie on the dependency graph, such as debugging statements or the
 lowered code of for loops, in some cases.  These we can strip off in advance, so as to clean the raw
