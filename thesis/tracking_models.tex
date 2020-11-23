@@ -20,25 +20,26 @@ In order to use \irtrackerjl{} to extract the dependencies in a probabilistic mo
 \dppljl{}, we need to remember the structure of such models, which was introduced in
 section~\ref{sec:prob-prog}: there is one evaluator function, into which the original code is
 transformed, and which evaluates the model in different modes.  This function has the same structure
-as the original code, but add some more complicated book-keeping logic to it.  Furthermore, when
-calling the model as a callable object, there are several layers of dispatch (about five layers of
-nesting), until the real evaluator function is actually hit.  On the other hand, there is no nesting
-involved~-- \turingjl{} simply does not support nested models, for technical reasons.
+as the original code, but adds some more complicated book-keeping logic to it, and transforms the
+tilde statements into function calls with some additional metadata.  Furthermore, when calling the
+model as a callable object, there are several layers of dispatch (about five layers of nesting),
+until the real evaluator function is actually hit.  On the other hand, there is no further nesting
+involved beyond the evaluator function~-- \turingjl{} simply does not support nested models, for
+technical reasons.
 
-Therefore, we at first need to introduce an \irtrackerjl{} context that will track all the internal
+Therefore, we at first need to introduce an \irtrackerjl{} context that will record all the internal
 function calls down to the evaluator function, and stop there.  Similar to the
 \jlinl{DepthLimitContext} demonstrated on page~\pageref{lst:depthlimitcontext}, the main task here
 is to overload the \jlinl{canrecur} method to stop at the right call.  This can easily be done by
 introducing a helper predicate function \jlinl{ismodelcall} that dispatches on the involved types.
 Next, we notice that the resulting computation graph consists of a nested and quite unusable
-structure.  To work with it, we need to strip the outer layers off the inner node containing the
-trace of the evaluator function.  Thirdly, many of the statements in the trace of the evaluator
-function do not have relevance for dependency analysis~-- those that stem from internal calculations
-done by the model, or statements that were written by the user but to not lie on the dependency
-graph, such as debugging statements or the lowered code of for loops, in some cases.  These we can
-strip off in advance, so as to clean the raw dependency trace.
-
-These three preparation steps are put together in one method:
+structure, due to the initial levels of nesting.  To work with it the model code, we need to strip
+the outer layers off the inner node containing the trace of the evaluator function.  Thirdly, many
+of the statements in the trace of the evaluator function do not have relevance for dependency
+analysis~-- like those that stem from internal calculations done by the model, or statements that
+were written by the user but to not lie on the dependency graph, such as debugging statements or the
+lowered code of for loops, in some cases.  These we can strip off in advance, so as to clean the raw
+dependency trace.  These three preparation steps are put together in one method:
 \begin{lstlisting}
 function slicedependencies(model::Model{F}, args...) where {F}
     trace = trackmodel(model, args...)
@@ -47,19 +48,73 @@ function slicedependencies(model::Model{F}, args...) where {F}
     return slice
 end
 \end{lstlisting}
-Here, \jlinl{trackmodel} extracts the computation graph with the context for \dppljl{} models,
+Here, \jlinl{trackmodel} extracts the computation graph with the context for models tracking,
 \jlinl{strip_model_layers} removes the outer method calls, and \jlinl{strip_dependencies} removes
 all SSA code that is not on the dependecy graph spanned by the sampling statements.
 
 The final and most intricate step is to add all the remaining SSA statements to a new graph
 structure, that describes a more domain-specific representation.  In this \jlinl{Graph} type, only
-assumption, observation, call, and constant nodes remain.  In addition, the type stores intermediate
-information used during its construction, such as the mapping between newly generated and original
-references.
+assumption, observation, call, and constant nodes remain.  In addition, the object stores
+intermediate information used during its construction, such as the mapping between newly generated
+and original references.  The graph construction is implemented in a function \jlinl{makegraph}, and
+we finally have one exported function
+\begin{lstlisting}
+function trackdependencies(model, args...)
+    slice = slicedependencies(model, args...)
+    return makegraph(slice)
+end
+\end{lstlisting}
+There are two complications regarding \jlinl{makegraph}.  For one, model arguments are handled
+specially by \dppljl{}~-- there are some internal arguments added, and the original arguments are
+inspected to allow to run the same model in generative or posterior mode.  This part needs to be
+sorted out, so that the passed argument values are correctly set up as constants in the dependency
+graph, but since all information is present, the task is resolved by correctly identifying the
+arguments and restructuring their contents into the right form.
 
-Two complications: mutability (track modified array elements), arguments
+The other problem is the handling of mutation, and tracking of modified array elements.  For
+example, a hidden Markov model might contain code like this:
+\begin{lstlisting}
+s = zeros(Int, N)
+s[1] ~ Categorical(K)
+for i = 2:N
+    s[i] ~ Categorical(T[s[i-1]])
+end
+\end{lstlisting}
+In order to express the dependency between successive elements of \jlinl{s}, an empty array is first
+set up, and then subsequently populated by the results of the tilde statements describing the Markov
+process.  In this form, only the individual variables \jlinl{s[i]} are recognized by the model
+language.  Internally, the tilde statements are translated to array assignments of the form
+\jlinl{s[i] = tilde_assume(...)}, but with additional lowering of the involved arguments.
+Therefore, the corresponding IR will be a sequence like the following:
+\begin{lstlisting}
+%9 = %i - 1                 # i - 1
+%10 = getindex(%s, %9)      # s[i - 1]
+%11 = getindex(%T, %10)     # T[s[i - 1]]
+%12 = VarInfo{:s}(((%i,),))
+%13 = Categorical(%11)
+%14 = tilde_assume(..., %13, ..., %12, ...)
+%15 = setindex!(%a, %14)
+\end{lstlisting}
+(to be understood symbolically, not as real SSA~-- several statements have been collapsed).  Thus,
+the direct association between the variable \jlinl{s} is not preserved in the line of the tilde
+method, but spread over multiple statements. Even worse, since all statements for the different
+\jlinl{s[i]} result in mutations of \jlinl{\%a}, the immediate dependency between \jlinl{s[i]} and
+\jlinl{s[i-1]} is not available as a data dependency, but must be recovered dynamically.
 
-\begin{lstfloat}[t]
+The \jlinl{makegraph} implementation solves this by successively identifying mutated arrays that are
+representing random variables by inspecting the indexing calls around tilde statements, and
+extracting the association between the assumption and the array elements.  This part of the
+procedure is the most intricate one, and not complete; there may exist cases, where mutation is able
+to \enquote{circumvent} the dependecy detection.  Additionally, the matching between indexing
+arguments involves some careful treatment of variable names; the \dppljl{} API for this
+functionality is not very comprehensive.
+
+The current implementation of \autogibbsjl{} supports only \enquote{simple} indexing by one tuple of
+integers.  Other, more general indexing styles allowed in Julia could be supported in future
+extensions.  Furthermore, broadcasting tilde statements, that are supported in \dppljl{}, are not
+supported by \autogibbsjl{} either.
+
+\begin{lstfloat}[p]
 \begin{lstlisting}[style=lstfloat]
 @model function bernoulli_mixture(x)
     w ~ Dirichlet(2, 1/2)
@@ -79,14 +134,13 @@ end
   \label{lst:dependency-examples}
 \end{lstfloat}
 
-This code is implemented in a function \jlinl{makegraph}, and we finally have one exported function
-\begin{lstlisting}
-function trackdependencies(model, args...)
-    slice = slicedependencies(model, args...)
-    return makegraph(slice)
-end
-\end{lstlisting}
-As an example, take the two simple models in listing~\ref{lst:dependency-analysis}.  
+\newthought{As an example} for the resulting graphs, take the two simple models in
+listing~\ref{lst:dependency-analysis}.  The pretty-printed dependency \jlinl{Graph}s of them are
+shown in listing~\ref{lst:trace-examples} below.  We can see that the model arguments for
+observations occur as constant values, and all of the intermediate transformation visible in the
+original model definitions are observed.  From this structure, \autogibbsjl{} can construct output
+in the Dot graph format and vizualized using GraphViz \parencite{gansner2000open}.  The visual
+outputs of the example models is shown in figure~\ref{fig:geom-deps}.
 
 \newsavebox{\bernoullitrace}
 \begin{lrbox}{\bernoullitrace}
@@ -119,31 +173,32 @@ As an example, take the two simple models in listing~\ref{lst:dependency-analysi
 ⟨12⟩ = x ~ ⟨11⟩ ← ⟨2⟩
 \end{lstlisting}
 \end{lrbox}
-\begin{lstfloat}
+\begin{lstfloat}[p]
   \loosesubcaptions
-  \subbottom[Trace of \texttt{bernoulli\_mixture(false)}.]{%
+  \subbottom[Trace of \texttt{bernoulli\_mixture(false)} (some type parameters not shown).]{%
     \usebox{\bernoullitrace}}
   \subbottom[Trace of \texttt{hierarchical\_gaussian(1.4)}.]{%
     \usebox{\gaussiantrace}}
-  \caption{Traced structure of the two example models.}
+  \caption{Traced structure of the two example models introduced above.  Values in \(\langle\)angle
+    brackets\(\rangle\) denote intermediate values (similar to SSA variables), and right arrows
+    denote the resulting values of function calls.  The left arrow indicates the source of the
+    observed value.}
   \label{lst:trace-examples}
 \end{lstfloat}
 
-
-
-
-PLOTTING\todo{describe}
+\FloatBlock
 
 \begin{figure}[p]
   \centering
-  \subbottom[][\protect\jlinl{bernoulli_mixture}]{%
+  \subbottom[][\protect\jlinl{bernoulli_mixture(false)}]{%
     \includegraphics[width=0.49\textwidth]{figures/bernoulli_dependencies}}
-  \subbottom[][\protect\jlinl{hierarchical_gaussian}]{%
+  \subbottom[][\protect\jlinl{hierarchical_gaussian(1.4)}]{%
     \includegraphics[width=0.49\textwidth]{figures/gaussian_dependencies}}
-  \caption{Dependency graphs of the models in listing~\ref{lst:dependency-examples}.  More
-    information (such as variable names and values of nodes) is stored in the real model graph, but
-    not shown for ease of visualization.  Circular nodes denote tilde statements, while normal SSA
-    statements are written in rectangles.}
+  \caption{Dependency graphs of the models in listing~\ref{lst:dependency-examples}, generated by
+    \autogibbsjl{} and rendered by GraphViz.  More information, such as node values, is stored in
+    the real model graph, but not printed for better readability.  Circular nodes denote tilde
+    statements, while deterministic intermediate values, corresponding to normal SSA statements, are
+    written in rectangles.}
   \label{fig:geom-deps}
 \end{figure}
 
@@ -162,29 +217,32 @@ Gibbs sampler implementation for Turing; likelihood closures; conditional likeli
 \begin{table}[t]
   \centering
   \libertineTabular
-  \begin{tabular*}{\textwidth}{llrrrrrrr}
+  \begin{tabularx}{\textwidth}{XXrrr@{\hskip 10mm}rrrr}
     \toprule
-    Algorithms & & \multicolumn{3}{c}{GMM} & \multicolumn{3}{c}{HMM} & \multicolumn{1}{c}{IMM} \\
+     & & \multicolumn{3}{c@{\hskip 10mm}}{\textbf{GMM}} & \multicolumn{3}{c}{\textbf{HMM}} & \multicolumn{1}{c}{\textbf{IMM}} \\
+    \addlinespace
+    & HMC Steps & & 10 & & & 10 & & 10 \\
+    & HMC Step size & & 0.1 & & & 0.1 & & 0.1 \\
     \midrule
-    AG + HMC & Data size & 10 & 25 & 50 & 10 & 25 & 50 & 10 \\
+    \textbf{AG + HMC} & Data size & 10 & 25 & 50 & 10 & 25 & 50 & 10 \\
     & Chains & 30 & 30 & 30 & 30 & 30 & 30 & 30 \\
-    & Compilations & 3 & 3 & 3 & 3 & 3 & 3 & 3\\
+    & Compilations & 3 & 3 & 3 & 3 & 3 & 3 & 3 \\
     \addlinespace
-    PG + HMC, & Data size & 10 & 25 & 50 & 10 & 25 & 50 & 10 \\
-    10 particles & Chains & 10 & 10 & 10 & 10 & 10 & 10 & 10 \\
+    \textbf{PG + HMC,} & Data size & 10 & 25 & 50 & 10 & 25 & 50 & 10 \\
+    \textbf{10 particles} & Chains & 10 & 10 & 10 & 10 & 10 & 10 & 10 \\
     \addlinespace
-    PG + HMC, & Data size & 10 & 25 & 50 & 10 & 25 & 50 & 10 \\
-    25 particles & Chains & 10 & 10 & 10 & 10 & 10 & 10 & 10 \\
+    \textbf{PG + HMC,} & Data size & 10 & 25 & 50 & 10 & 25 & 50 & 10 \\
+    \textbf{25 particles} & Chains & 10 & 10 & 10 & 10 & 10 & 10 & 10 \\
     \addlinespace
-    PG + HMC, & Data size & 10 & 25 & 50 & 10 & 25 & 50 & 10 \\
-    50 particles & Chains & 10 & 10 & 10 & 10 & 10 & *x & 10 \\
+    \textbf{PG + HMC,} & Data size & 10 & 25 & 50 & 10 & 25 & 50 & 10 \\
+    \textbf{50 particles} & Chains & 10 & 10 & 10 & 10 & 10 & *x & 10 \\
     \bottomrule
-  \end{tabular*}
-  \caption{Experimental combinations that were run.  Chains were always of length \(5000\).  The
-    parameters for HMC were a stepsize of \(0.1\), and \(10\) leapfrog steps.  A new static Gibbs
-    conditional was extracted for each block of \(10\) chains that was run with the same parameters
-    while Particle Gibbs was varied over the three particle sizes.  Particle Gibbs with 50 particles
-    was sometimes killed due to timeouts on the server.}
+  \end{tabularx}
+  \caption{Experimental conditions for evaluating AutoGibbs (AG) agains Particle Gibbs (PG).  Chains
+    were always of length \(5000\).  A new static Gibbs conditional was extracted for each block of
+    \(10\) chains that was run with the same parameters while Particle Gibbs was varied over the
+    three particle sizes.  Particle Gibbs with 50 particles was sometimes killed due to timeouts on
+    the server.}
   \label{tab:autogibbs-params}
 \end{table}
 

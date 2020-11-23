@@ -351,10 +351,10 @@ different arguments, whose exact values are determined by contraint solving so t
 execution paths are covered.  This is potentially slow, and goes against the spirit of the idea of
 tracking once, in parallel to the normal forward execution, though.  Also, it is not applicable to
 general user-defined types, but constrained to whatever theories the used SMT solver supports.
-Alternatively, a method to merge control paths in the transformed function could be conceived.
-This, however, would likely suffer from exponential blow-up in several cases, is difficult to get
-right in the presence of mutation, and has complicated theoretical properties (e.g., termination of
-the resulting code might be undecidable).
+Alternatively, a method to merge control paths in the transformed function could be conceived.  This
+might, however, suffer from exponential blow-up in several cases, is difficult to get right in the
+presence of mutation, and has complicated theoretical properties (e.g., termination of the resulting
+code might be undecidable).
 
 As another future direction for extension, it is conceivable that a composable context system could
 be designed, such that, for example, one could perform automatic differentiation and dependency
