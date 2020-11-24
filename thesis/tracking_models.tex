@@ -269,17 +269,20 @@ Gibbs sampling in \turingjl{} are already planned (although not necessarily base
 Besides several unit tests for correctness of the derived dependencies and conditionals on a variety
 of models chosen to test certain features and corner cases, an experimental comparison of
 \autogibbsjl{} and existing \turingjl{} samplers has been conducted.  For this purpose, three
-off-the-shelf Bayesian models were chosen: a Gaussian mixture model,
+off-the-shelf Bayesian models were chosen: a Gaussian mixture model with known variances and priors
+over cluster centers, weights, and assignments \parencite[section
+6.2]{marin2007bayesian},
 \begin{equation}
   \label{eq:gmm}
   \begin{aligned}
-    \mu_{k} &\from \Normal(0, \sigma_{1}), \quad k = 1, \ldots, K \\
     w &\from \distr{Dirichlet(K)} \\
     z_{n} &\from \distr{Discrete}([1, \ldots, K], w), \quad n = 1, \ldots, N \\
+    \mu_{k} &\from \Normal(0, \sigma_{1}), \quad k = 1, \ldots, K \\
     x_{n} &\from \Normal(\mu_{z_{n}}, \sigma_{1}), \quad n = 1, \ldots, N;
   \end{aligned}
 \end{equation}
-a hidden Markov model,
+a hidden Markov model with known variances and priors over transition and emission
+probabilities\parencite[section 7.3]{marin2007bayesian},
 \begin{equation}
   \label{eq:hmm}
   \begin{aligned}
@@ -290,8 +293,8 @@ a hidden Markov model,
     x_{k} &\from \Normal(m_{s_{k}}, \sigma_{2}), \quad k = 1, \ldots, N;
   \end{aligned}
 \end{equation}
-and an infinite mixture model in stick-breaking construction\todo{cite}, to represent a Bayesian
-nonparametric example:
+and an infinite mixture model in stick-breaking construction, but otherwise of the same form as the
+finite GMM above, to represent a nonparametric example \parencite[section 2.2]{hjort2010bayesian}:
 \begin{equation}
   \label{eq:imm}
   \begin{aligned}
@@ -360,13 +363,29 @@ end
     stick-breaking construction.  The two-step calculation of \texttt{w} via \texttt{v} is a
     technicality due to \turingjl{}'s handling of nonparametric models.  The function
     \texttt{stickbreak} normalizes the stick-lengths \texttt{v} into a Dirichlet-like distribution.}
-  \label{lst:evalation-models}
+  \label{lst:evaluation-models}
 \end{lstfloat}
 
-Three interesting metrics: compilation time, sampling speed, and performance of chains (although
-this compares Gibbs to PG, not the implementation).
-
-Concrete parameters in table
+The three interesting classes of metrics to evaluate are, in the case of this work,
+\begin{enumerate}
+  \firmlist
+\item the \enquote{compilation time} of \autogibbsjl{}, i.e., the time it takes to extract a
+  conditional,
+\item the sampling speed when used as component of a within-Gibbs sampler, and
+\item the quality of the resulting chains, in terms of convergence and variance diagnostics
+  (although this really measures Gibbs sampling, not the implementation of \autogibbsjl{}, it is a
+  relevant comparison for the practitioner).
+\end{enumerate}
+Each of the test models involves one discrete and two continuous parameters.  As benchmark for
+\autogibbsjl{}'s static conditional (AG), it is compared to \turingjl{}'s Particle Gibbs sampler
+(PG), which is also suited to discrete parameters.  Continuous variables are all sampled using
+Hamiltonian Monte Carlo (HMC) with hand-tuned parameters per model.  The experiments have been set
+up such that each model is evaluated for ten chains per parameter combination, varying between AG
+and PG, three values for the number of particles used by PG (since more particles usually lead to
+better results, but higher sampling times), and three values for the number of observations (since
+these determine the size of the trace, and thus have an influence on both AG's compile times and the
+overall sampling time).  Concrete parameters in table~\ref{tab:autogibbs-params}.\todo{more
+  meaningful table}
 
 \begin{table}[t]
   \centering
@@ -378,17 +397,17 @@ Concrete parameters in table
     & HMC Step size & & 0.1 & & & 0.1 & & 0.1 \\
     & HMC Steps & & 10 & & & 10 & & 10 \\
     \midrule
-    \textbf{AG + HMC} & Data size & 10 & 25 & 50 & 10 & 25 & 50 & 10 \\
+    \textbf{AG + HMC} & Observations & 10 & 25 & 50 & 10 & 25 & 50 & 10 \\
     & Chains & 30 & 30 & 30 & 30 & 30 & 30 & 30 \\
     & Compilations & 3 & 3 & 3 & 3 & 3 & 3 & 3 \\
     \addlinespace
-    \textbf{PG + HMC,} & Data size & 10 & 25 & 50 & 10 & 25 & 50 & 10 \\
-    \textbf{10 particles} & Chains & 10 & 10 & 10 & 10 & 10 & 10 & 10 \\
+    \textbf{PG + HMC,} & Observations & 10 & 25 & 50 & 10 & 25 & 50 & 10 \\
+    \textbf{20 particles} & Chains & 10 & 10 & 10 & 10 & 10 & 10 & 10 \\
     \addlinespace
-    \textbf{PG + HMC,} & Data size & 10 & 25 & 50 & 10 & 25 & 50 & 10 \\
-    \textbf{25 particles} & Chains & 10 & 10 & 10 & 10 & 10 & 10 & 10 \\
+    \textbf{PG + HMC,} & Observations & 10 & 25 & 50 & 10 & 25 & 50 & 10 \\
+    \textbf{35 particles} & Chains & 10 & 10 & 10 & 10 & 10 & 10 & 10 \\
     \addlinespace
-    \textbf{PG + HMC,} & Data size & 10 & 25 & 50 & 10 & 25 & 50 & 10 \\
+    \textbf{PG + HMC,} & Observations & 10 & 25 & 50 & 10 & 25 & 50 & 10 \\
     \textbf{50 particles} & Chains & 10 & 10 & 10 & 10 & 10 & *x & 10 \\
     \bottomrule
   \end{tabularx}
