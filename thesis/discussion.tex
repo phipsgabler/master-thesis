@@ -9,6 +9,9 @@ that \turingjl{} lacks a structural representation of models~-- is not at all re
 unfortunately.  This makes \autogibbsjl{} not completly satisfactory, since the recursion and branch
 tracking features of \irtrackerjl{} cannot be applied in a useful way.
 
+\autogibbsjl{} isn's so bad: significantly faster and therefore longer chains are possible,
+parallelization is possible.  Reuse between (parametrized) models.\todo{write out}
+
 The real difficulty is that dynamic models cannot be satisfactorily handled through static
 \enquote{snapshots} in the form of traces.  Systems trying to achieve this either become restrictive
 in their expressibility, or limited in their applicability.\todo{compare to autograd, venture,

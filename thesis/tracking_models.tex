@@ -88,19 +88,19 @@ language.  Internally, the tilde statements are translated to array assignments 
 \jlinl{s[i] = tilde_assume(...)}, but with additional lowering of the involved arguments, after
 which the corresponding IR will look approximately like this:
 \begin{lstlisting}
-%9 = %i - 1                 # i - 1
-%10 = getindex(%s, %9)      # s[i - 1]
-%11 = getindex(%T, %10)     # T[s[i - 1]]
+%9 = %i - 1                                  # i - 1
+%10 = getindex(%s, %9)                       # s[i - 1]
+%11 = getindex(%T, %10)                      # T[s[i - 1]]
 %12 = VarInfo{:s}(((%i,),))
 %13 = Categorical(%11)
-%14 = tilde_assume(..., %13, ..., %12, ...)
-%15 = setindex!(%a, %14)
+%14 = tilde_assume(..., %13, ..., %12, ...)  # %14 ~ %13
+%15 = setindex!(%s, %14)                     # s[i] = %14
 \end{lstlisting}
 (to be understood symbolically, not as real SSA~-- several statements have been collapsed).  We see
 that the direct association between the variable \jlinl{s} is not preserved in the line of the tilde
 method, but spread over multiple statements. Even worse, since all statements for the different
-\jlinl{s[i]} result in mutations of \jlinl{\%a}, the immediate dependency between \jlinl{s[i]} and
-\jlinl{s[i-1]} is not available as a data dependency, but must be recovered dynamically.
+\jlinl{s[i]} result in mutations of \jlinl{\%s}, the immediate dependency between \jlinl{s[i]} and
+\jlinl{s[i-1]} is not available structurally, but must be recovered dynamically.
 
 The \jlinl{makegraph} implementation solves this by successively identifying mutated arrays
 representing random variables by inspecting the indexing calls around tilde statements, and storing
@@ -211,7 +211,8 @@ BUGS) conditional extraction works over a wide range of variable types \parencit
 by symbolic analysis and recognition of several patterns (e.g., conjugate distributions from
 exponential families, log-concave or compactly supported distributions; see
 \textcite{lunn2000winbugs}.), which is possible since the class of models is constrained by the
-modelling language, and available in completely structured form.
+modelling language, and available in completely structured form.\todo{fix parskips, see
+  background.tex:445}
 
 In \turingjl{}, models are much less restricted, and the symbolic form has to recovered from
 outside, as we have seen.  To focus on the principal ideas and not to extend the scope too much, the
@@ -225,7 +226,7 @@ and reachedable within one run of model tracking.  A large fraction of the model
 do fulfill this condition, though.  As this problem is difficult so solve in general, the same
 constraint applies to JAGS and BUGS, which makes \autogibbsjl{} not more limited than these.
 
-The implementation of the conditional extraction system involves three main parts:
+The implementation of the conditional extraction system involves three main steps:
 \begin{enumerate}
   \firmlist
 \item Extracting the symbolic form of the conditional likelihood of Markov blankets in a given
@@ -240,7 +241,105 @@ then simply been reused for \autogibbsjl{}; in practice, it worked out the other
 \autogibbsjl{} sampler has, in generalized form, been added to \turingjl{} afterwards (without the
 automatic extraction, only supporting user-provided conditional distributions).
 
-likelihood closures; conditional likelihood extraction\todo{TODO}
+\newsavebox{\bmlikelihoods}
+\begin{lrbox}{\bmlikelihoods}
+\begin{lstlisting}[style=lstfloat]
+⟨2⟩ = 1.4                  ⤳ 1.4
+⟨3⟩ = Dirichlet(2, 0.5)    ⤳ Dirichlet(2, 0.5)
+⟨4⟩ = w ~ ⟨3⟩              ⤳ logpdf(Dirichlet(2, 0.5), θ[w])
+⟨5⟩ = DNP([0.3, 0.7], ⟨4⟩) ⤳ DNP([0.3, 0.7], θ[w])
+⟨6⟩ = p ~ ⟨5⟩              ⤳ logpdf(DNP([0.3, 0.7], θ[w]), θ[p])
+⟨7⟩ = Bernoulli(⟨6⟩)       ⤳ Bernoulli(θ[p])
+⟨8⟩ = x ~ ⟨7⟩ ← ⟨2⟩       ⤳ logpdf(Bernoulli(θ[p]), θ[x])
+\end{lstlisting}
+\end{lrbox}
+\newsavebox{\hglikelihoods}
+\begin{lrbox}{\hglikelihoods}
+\begin{lstlisting}[style=lstfloat]
+⟨2⟩ = 1.4                 ⤳ 1.4
+⟨3⟩ = Gamma(2.0, 1/3)     ⤳ Gamma(2.0, 1/3)
+⟨4⟩ = λ ~ ⟨3⟩             ⤳ logpdf(Gamma(2.0, 1/3), θ[λ])
+⟨5⟩ = /(1, ⟨4⟩)           ⤳ /(1, θ[λ])
+⟨6⟩ = sqrt(⟨5⟩)           ⤳ sqrt(/(1, θ[λ]))
+⟨7⟩ = Normal(0, ⟨6⟩)      ⤳ Normal(0, sqrt(/(1, θ[λ])))
+⟨8⟩ = m ~ ⟨7⟩             ⤳ logpdf(Normal(0, sqrt(/(1, θ[λ]))), θ[m])
+⟨9⟩ = /(1, ⟨4⟩)           ⤳ /(1, θ[λ])
+⟨10⟩ = sqrt(⟨9⟩)          ⤳ sqrt(/(1, θ[λ]))
+⟨11⟩ = Normal(⟨8⟩, ⟨10⟩)  ⤳ Normal(θ[m], sqrt(/(1, θ[λ])))
+⟨12⟩ = x ~ ⟨11⟩ ← ⟨2⟩    ⤳ logpdf(Normal(θ[m], sqrt(/(1, θ[λ]))), θ[x])
+\end{lstlisting}
+\end{lrbox}
+\begin{figure}[t]
+  \loosesubcaptions
+  \subbottom[\texttt{bernoulli\_mixture(false)}]{\usebox{\bmlikelihoods}}
+  \subbottom[\texttt{hierarchical\_gaussian(1.4)}]{\usebox{\hglikelihoods}}
+  \caption{Association of the dependency graph of the example models from
+    listing~\ref{lst:dependency-examples} with intermediate symbolic functions.  The expressions on
+    the right are implicit functions of \protect\jlinl{θ}.  (\texttt{DNP} is used instead of
+    \texttt{DiscreteNonParametric} for better spacing.)}
+  \label{fig:continuations}
+\end{figure}
+
+Step 1, the symbolic extraction of likelihood functions, is implemented by first converting the full
+trace into a symbolic joint log-density.  Therefor the expression of each node in the dependency
+graph is associated with a corresponding symbolic representation of a function of the \enquote{trace
+  dictionary} \jlinl{θ}, which holds the values of the random variables by name (this is to view the
+probabilistic model as a joint distribution over trace dictionaries).  This is done in the following
+simple fashion:
+\begin{itemize}
+  \firmlist
+\item References to call nodes or constant nodes (\jlinl{⟨i⟩ = x}) are inlined.
+\item References to tilde nodes (\jlinl{⟨j⟩ = v ~ D}) are converted to dictionary lookups: \jlinl{θ[v]}.
+\item Call nodes are converted to functions from the trace dictionary to a
+  function call on the converted references: \jlinl{f(⟨i⟩, ⟨j⟩)} \(\leadsto\) \jlinl{f(x, θ[v])}.
+\item Tilde nodes are converted to log-density evaluations of their values given the corresponding
+  distribution: \jlinl{⟨j⟩ = v ~ D} \(\leadsto\) \jlinl{logpdf(D, θ[v])}
+\end{itemize}
+All resulting expression are thereby to be understood as an implicit function of \jlinl{θ}.  These
+new expression function objects can then be numerically evaluated as log-densities for given values
+of all random variables.  For illustration, the joint densities of the \jlinl{bernoulli_mixture} and
+\jlinl{hierarchical_gaussian} models introduced above in listing~\ref{lst:dependency-examples}, are
+associated with corresponding symbolic functions as shown in figure~\ref{fig:continuations}.  By
+adding the likelihood functions for each tilde statement, we get the symbolic log-joint density as,
+for example,
+\begin{lstlisting}
+logpdf(Gamma(2.0, 0.333333), θ[λ]) + 
+  logpdf(Normal(0, sqrt(/(1, θ[λ]))), θ[m]) + 
+  logpdf(Normal(θ[m], sqrt(/(1, θ[λ]))), θ[x]),
+\end{lstlisting}
+corresponding to the density over \(\lambda\), \(m\), and \(x\), factorizd as
+\begin{equation}
+  p(\lambda, m, x) = p(\lambda) \, p(m \given \lambda) \, p(x \given m, \lambda).
+  % p(\lambda, m, x) = \distr{Gamma}(\lambda \given 2, 1/3)
+  % \:\distr{Normal}(m \given 0, \, \sqrt{1 / \lambda})
+  % \:\distr{Normal}(x \given m, \, \sqrt{1 / \lambda}).
+\end{equation}
+
+From this we can then derive conditionals in the usual way of normalizing the proportional
+conditional, which can be obtained by removing all terms of the joint factorization that do not
+depend on the conditioned variable:
+\begin{equation}
+  \begin{aligned}
+    p(m \given \lambda, x) &\propto p(m \given \lambda) \, p(x \given m, \lambda), \\
+    p(\lambda \given m, x) &\propto p(\lambda) \, p(m \given \lambda) \, p(x \given m, \lambda),
+    % p(m \given \lambda, x) &\propto
+    % \:\distr{Normal}(m \given 0, \, \sqrt{1 / \lambda})
+    % \:\distr{Normal}(x \given m, \, \sqrt{1 / \lambda}), \\
+    % p(\lambda \given m, x) &\propto \distr{Gamma}(\lambda \given 2, 1/3)
+    % \:\distr{Normal}(m \given 0, \, \sqrt{1 / \lambda})
+    % \:\distr{Normal}(x \given m, \, \sqrt{1 / \lambda}),
+  \end{aligned}
+\end{equation}
+which in more technical terms are given through the \emph{Markov blanket} of \(m\) and \(\lambda\)\todo{reference}.
+
+
+
+The complicated part of this step is the correction subsumption of indexed variables in the trace
+dictionary: making sure that both \jlinl{θ[x][1]} and \jlinl{θ[x[1]]} are resolved correctly to the
+same value.
+
+
+
 
 \section{Evaluation}
 \label{sec:autogibbs-eval}
@@ -250,17 +349,19 @@ manually and only once, empirically so noticeably slow, that a user may be tempt
 outright (concretely speaking, extraction of one conditional for some not-so-large models takes
 \(20\) to \(200\) seconds on the author's laptop).  This is a valid point, but two counter-arguments
 must be considered.  For one, the implementation is just more conceptual than optimized.  Much of
-the slow-down could be mitigated by improving key parts of \autogibbsjl{} and \irtrackerjl{}.  In
-addition to that, one must realize where this appearent slowness comes from: namely, from
-compilation, and therein primarily type inference, of the functions handling all the strongly typed
-expression trees.  Even neglecting optimization possibilities of these, compilation takes place only
-once; as soon as a conditional is constructed, it can be reused in arbitrarily many sampling runs of
-the same model.  The finished conditionals then do not take so much time anymore, on the contrary:
-they are much faster than other within-Gibbs samplers, since they only involve evaluating a fixed
-expression, constructing a distribution, and sampling from it once (and even this could be sped up
-further).  This makes it possible to sample much longer chains in the same time.
+the slow-down could be mitigated by improving key parts of \autogibbsjl{} and \irtrackerjl{}.
 
-So, overall, while the implementation in current form is not very applicable in practise for all
+In addition to that, one must realize where this appearent slowness comes from: namely, from
+compilation, and therein primarily type inference, of the functions handling all the strongly typed
+expression trees.  Besides the possibility of just optimizing these further, the following fact is
+most important to realize: compilation takes place only once~-- as soon as a conditional is
+constructed, it can be reused in arbitrarily many sampling runs of the same model.  The finished
+conditionals then do not take so much time anymore, quite the contrary: they are much faster than
+other within-Gibbs samplers, since they only involve evaluating a fixed expression, constructing a
+distribution, and sampling from it once (and even this could be sped up further).  This makes it
+possible to sample much longer chains in the same time, which is an overall advantage.
+
+So, to conclude, while the implementation in current form is not very applicable in practice for all
 cases, it is very much so in principle.  Based on the lessons learned through this work, further
 contributions to Gibbs sampling in \turingjl{} are already planned (although not necessarily based
 on \autogibbsjl{}).
@@ -269,36 +370,37 @@ on \autogibbsjl{}).
 Besides several unit tests for correctness of the derived dependencies and conditionals on a variety
 of models chosen to test certain features and corner cases, an experimental comparison of
 \autogibbsjl{} and existing \turingjl{} samplers has been conducted.  For this purpose, three
-off-the-shelf Bayesian models were chosen: a Gaussian mixture model with known variances and priors
-over cluster centers, weights, and assignments \parencite[section 6.2]{marin2007bayesian},
+off-the-shelf Bayesian models were chosen: a Gaussian mixture model (GMM) with known variances and
+priors over cluster centers, weights, and assignments \parencite[section 6.2]{marin2007bayesian},
 \begin{equation}
   \label{eq:gmm}
   \begin{aligned}
     w &\from \distr{Dirichlet(K)} \\
-    z_{n} &\from \distr{Discrete}([1, \ldots, K], w), \quad n = 1, \ldots, N \\
+    z_{n} &\from \distr{Categorical}([1, \ldots, K], w), \quad n = 1, \ldots, N \\
     \mu_{k} &\from \Normal(0, \sigma_{1}), \quad k = 1, \ldots, K \\
     x_{n} &\from \Normal(\mu_{z_{n}}, \sigma_{1}), \quad n = 1, \ldots, N;
   \end{aligned}
 \end{equation}
-a hidden Markov model with known variances and priors over transition and emission
+a hidden Markov model (HMM) with known variances and priors over transition and emission
 probabilities \parencite[section 7.3]{marin2007bayesian},
 \begin{equation}
   \label{eq:hmm}
   \begin{aligned}
     T_{k} &\from \distr{Dirichlet}(K), \quad k = 1, \ldots, K \\
     m_{k} &\from \Normal(k, \sigma_{1}), \quad k = 1, \ldots, K \\
-    s_{1} &\from \distr{Categorical}(K) \\
-    s_{k} &\from \distr{Categorical}(T_{s_{k-1}}), \quad k = 2, \ldots, N \\
+    s_{1} &\from \distr{Categorical}([1, \ldots, K], [1/K, \ldots, 1/K]) \\
+    s_{k} &\from \distr{Categorical}([1, \ldots, K], T_{s_{k-1}}), \quad k = 2, \ldots, N \\
     x_{k} &\from \Normal(m_{s_{k}}, \sigma_{2}), \quad k = 1, \ldots, N;
   \end{aligned}
 \end{equation}
-and an infinite mixture model in stick-breaking construction, but otherwise of the same form as the
-finite GMM above, to represent a nonparametric example \parencite[section 2.2]{hjort2010bayesian}:
+and an infinite mixture model (IMM) in stick-breaking construction, but otherwise of the same form
+as the finite GMM above, to represent a nonparametric example \parencite[section
+2.2]{hjort2010bayesian}:
 \begin{equation}
   \label{eq:imm}
   \begin{aligned}
     w &\from \distr{TruncatedStickBreakingProcess(\alpha, K)} \\
-    z_{n} &\from \distr{Categorical}(w), \quad n = 1, \ldots, N \\
+    z_{n} &\from \distr{Categorical}([1, \ldots, K], w), \quad n = 1, \ldots, N \\
     \mu_{k} &\from \Normal(0, \sigma_{1}), \quad k = 1, \ldots, K \\
     y_{n} &\from \Normal(\mu_{z_{n}}, \sigma_{2}), \quad n = 1, \ldots, N.
   \end{aligned}
@@ -309,7 +411,7 @@ The models are implemented in \dppljl{} as shown in listing~\ref{lst:evaluation-
 @model function gmm(x, K)
     N = length(x)
     w ~ Dirichlet(K, 1/K)  # Cluster association prior
-    z ~ filldist(DiscreteNonParametric(1:K, w), N)  # Cluster assignments
+    z ~ filldist(Categorical(w), N)  # Cluster assignments
     μ ~ filldist(Normal(0.0, s1_gmm), K)  # Cluster centers
 
     for n = 1:N
@@ -363,7 +465,9 @@ end
   \caption{Gaussian mixture model, hidden Markov model, and infinite mixture model using a
     stick-breaking construction.  The two-step calculation of \texttt{w} via \texttt{v} is a
     technicality due to \turingjl{}'s handling of nonparametric models.  The function
-    \texttt{stickbreak} normalizes the stick-lengths \texttt{v} into a Dirichlet-like distribution.}
+    \texttt{stickbreak} normalizes the stick-lengths \texttt{v} into a Dirichlet-like distribution.
+    The \texttt{Categorical(p)} constructor automatically infers the support of the categorical
+    distribution from the weights as \texttt{1:length(p)}.}
   \label{lst:evaluation-models}
 \end{lstfloat}
 The three interesting classes of metrics to evaluate are, in the case of this work,
