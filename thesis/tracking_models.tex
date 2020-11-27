@@ -119,14 +119,14 @@ shown in listing~\ref{lst:trace-examples} below.  We can see that the model argu
 observations occur as constant values, and all of the intermediate transformation visible in the
 original model definitions are observed.  From this structure, \autogibbsjl{} can construct output
 in the Dot graph format and vizualized using GraphViz \parencite{gansner2000open}.  The visual
-outputs of the example models is shown in figure~\ref{fig:geom-deps}.
+outputs of the example models is shown in figure~\ref{fig:geom-deps}\todo{update \(p\) to \(\pi\)}.
 
 \begin{lstfloat}[p]
 \begin{lstlisting}[style=lstfloat]
 @model function bernoulli_mixture(x)
     w ~ Dirichlet(2, 1/2)
-    p ~ DiscreteNonParametric([0.3, 0.7], w)
-    x ~ Bernoulli(p)
+    π ~ DiscreteNonParametric([0.3, 0.7], w)
+    x ~ Bernoulli(π)
 end
 
 @model function hierarchical_gaussian(x)
@@ -149,7 +149,7 @@ end
 ⟨4⟩ = w ~ ⟨3⟩ → [0.826304431175434, 0.17369556882456608]
 ⟨5⟩ = DiscreteNonParametric([0.3, 0.7], ⟨4⟩) → DiscreteNonParametric{...}(
         support=[0.3, 0.7], p=[0.826304431175434, 0.17369556882456608])
-⟨6⟩ = p ~ ⟨5⟩ → 0.3
+⟨6⟩ = π ~ ⟨5⟩ → 0.3
 ⟨7⟩ = Bernoulli(⟨6⟩) → Bernoulli{Float64}(p=0.3)
 ⟨8⟩ = x ~ ⟨7⟩ ← ⟨2⟩
 \end{lstlisting}
@@ -231,7 +231,7 @@ The implementation of the conditional extraction system involves three main step
   \firmlist
 \item Extracting the symbolic form of the conditional likelihood of Markov blankets in a given
   dependency graph.
-\item Constructing closures calculating the normalized discrete distribution from these likelihoods.
+\item Constructing closures calculating the normalized discrete conditionals from these likelihoods.
 \item Providing a Gibbs-component sampler for \turingjl{}, that can utilize the resulting
   conditional distributions.
 \end{enumerate}
@@ -248,7 +248,7 @@ automatic extraction, only supporting user-provided conditional distributions).
 ⟨3⟩ = Dirichlet(2, 0.5)    ⤳ Dirichlet(2, 0.5)
 ⟨4⟩ = w ~ ⟨3⟩              ⤳ logpdf(Dirichlet(2, 0.5), θ[w])
 ⟨5⟩ = DNP([0.3, 0.7], ⟨4⟩) ⤳ DNP([0.3, 0.7], θ[w])
-⟨6⟩ = p ~ ⟨5⟩              ⤳ logpdf(DNP([0.3, 0.7], θ[w]), θ[p])
+⟨6⟩ = π ~ ⟨5⟩              ⤳ logpdf(DNP([0.3, 0.7], θ[w]), θ[π])
 ⟨7⟩ = Bernoulli(⟨6⟩)       ⤳ Bernoulli(θ[p])
 ⟨8⟩ = x ~ ⟨7⟩ ← ⟨2⟩       ⤳ logpdf(Bernoulli(θ[p]), θ[x])
 \end{lstlisting}
@@ -276,7 +276,7 @@ automatic extraction, only supporting user-provided conditional distributions).
   \caption{Association of the dependency graph of the example models from
     listing~\ref{lst:dependency-examples} with intermediate symbolic functions.  The expressions on
     the right are implicit functions of \protect\jlinl{θ}.  (\texttt{DNP} is used instead of
-    \texttt{DiscreteNonParametric} for better spacing.)}
+    \texttt{DiscreteNonParametric} to avoid breaking lines.)}
   \label{fig:continuations}
 \end{figure}
 
@@ -295,11 +295,12 @@ simple fashion:
 \item Tilde nodes are converted to log-density evaluations of their values given the corresponding
   distribution: \jlinl{⟨j⟩ = v ~ D} \(\leadsto\) \jlinl{logpdf(D, θ[v])}
 \end{itemize}
-All resulting expression are thereby to be understood as an implicit function of \jlinl{θ}.  These
+All resulting expressions are thereby to be understood as implicit functions of \jlinl{θ}.  These
 new expression function objects can then be numerically evaluated as log-densities for given values
 of all random variables.  For illustration, the joint densities of the \jlinl{bernoulli_mixture} and
 \jlinl{hierarchical_gaussian} models introduced above in listing~\ref{lst:dependency-examples}, are
-associated with corresponding symbolic functions as shown in figure~\ref{fig:continuations}.  By
+associated with corresponding symbolic functions as shown in figure~\ref{fig:continuations}\todo{fix
+caption alignment}.  By
 adding the likelihood functions for each tilde statement, we get the symbolic log-joint density as,
 for example,
 \begin{lstlisting}
@@ -310,11 +311,7 @@ logpdf(Gamma(2.0, 0.333333), θ[λ]) +
 corresponding to the density over \(\lambda\), \(m\), and \(x\), factorizd as
 \begin{equation}
   p(\lambda, m, x) = p(\lambda) \, p(m \given \lambda) \, p(x \given m, \lambda).
-  % p(\lambda, m, x) = \distr{Gamma}(\lambda \given 2, 1/3)
-  % \:\distr{Normal}(m \given 0, \, \sqrt{1 / \lambda})
-  % \:\distr{Normal}(x \given m, \, \sqrt{1 / \lambda}).
 \end{equation}
-
 From this we can then derive conditionals in the usual way of normalizing the proportional
 conditional, which can be obtained by removing all terms of the joint factorization that do not
 depend on the conditioned variable:
@@ -322,23 +319,74 @@ depend on the conditioned variable:
   \begin{aligned}
     p(m \given \lambda, x) &\propto p(m \given \lambda) \, p(x \given m, \lambda), \\
     p(\lambda \given m, x) &\propto p(\lambda) \, p(m \given \lambda) \, p(x \given m, \lambda),
-    % p(m \given \lambda, x) &\propto
-    % \:\distr{Normal}(m \given 0, \, \sqrt{1 / \lambda})
-    % \:\distr{Normal}(x \given m, \, \sqrt{1 / \lambda}), \\
-    % p(\lambda \given m, x) &\propto \distr{Gamma}(\lambda \given 2, 1/3)
-    % \:\distr{Normal}(m \given 0, \, \sqrt{1 / \lambda})
-    % \:\distr{Normal}(x \given m, \, \sqrt{1 / \lambda}),
   \end{aligned}
 \end{equation}
-which in more technical terms are given through the \emph{Markov blanket} of \(m\) and \(\lambda\)\todo{reference}.
+which in more technical terms are given through the \emph{Markov blanket} of \(m\) and \(\lambda\)
+\parencites[section 24.2]{murphy2012machine}[section 4.5]{koller2009probabilistic}.
 
+The crucial problem here is, of course, to find the normalization factor, as always in Monte Carlo
+methods.  Normalization could, for example, be implemented by analysing the structure of the
+resulting expression and detecting conjugacies, such as the normal/normal-gamma relationship between
+\(m\), \(\lambda\), and \(x\) above.  The simplest possible case, however, occurs when when a
+conditioned variable has finite support; and as mentioned above, this is what has been implemented
+out in this work.  For example, \(p\) in the \jlinl{bernoulli_mixture} model is such a finitely
+supported variable~-- writing \(\pi\) instead of the parameter \(p\) to avoid confusing notation, we
+get
+\begin{equation}
+    p(\pi \given w, x) = \frac{p(w) \, p(\pi \given w) \, p(x \given \pi)}{
+      \sum_{\varpi \in \{0.3, 0.7\}}p(w) \, p(\varpi \given w) \, p(x \given \varpi)}
+\end{equation}
+Since the distribution of every variables is preserved in the dependency graph, we now can do the
+same thing programmatically, and turn the symbolic log-density into a distribution object by simply
+tabulating the values of the denominator through evaluating of the expression over the whole support
+of \(\pi\), the set \(\{0.3, 0.7\}\), and summing it up to get the normalization factor.  (This uses
+the interface of distribution objects from the \juliapackage{Distributions.jl} package, which have a
+\jlinl{support} method whose result is an iterable.)
 
+Concretely, this works as follows, finalizing step 2 of the above scheme, exemplified by
+\jlinl{bernoulli_mixture}:
+\begin{enumerate}
+  \firmlist
+\item Find the likelihood expressions that match a given conditioned variable (this includes indexed
+  variables subsumed by a parent, like \jlinl{v[i]} and \jlinl{v}), and their distribution:
+  \begin{equation*}
+    \begin{aligned}
+      \ell_{1} &= \mathtt{logpdf(DNP([0.3, 0.7],\theta[w]), \theta[\pi])}. \\
+      \mathcal{D} &= \mathtt{DNP([0.3, 0.7], \theta[w])}.
+    \end{aligned}
+  \end{equation*}
+\item For each of these (sub-)variables, collect the likelihoods of their children variables, thus
+  completing the Markov blanket:
+  \begin{equation*}
+    \ell_{2} = \mathtt{logpdf(Bernoulli(\theta[\pi]), \theta[x])}
+  \end{equation*}
+  The complicated part of this and the previous step is the correct matching of indexed variables in
+  the trace dictionary: forms like \jlinl{θ[v][1]} and \jlinl{θ[v[1]]} need to be resolved correctly
+  to the same value.
+\item Construct for each a closure function that takes as an argument a fixed trace dictionary,
+  tabulates the conditional log-likelihood over it with the conditioned variable fixed to all values
+  of its support, and normalizes the result:
+  \begin{equation*}
+    \begin{aligned}
+      &\theta \mapsto \{ \\
+      &\quad \Omega = \mathtt{support}(\mathcal{D}) \\
+      &\quad \mathtt{table} = \left[\operatorname{eval}(\ell_{1}, \theta[\pi \leadsto \varpi]) +
+        \operatorname{eval}(\ell_{2}, \theta[\pi \leadsto \varpi]) \mid \varpi \in \Omega \right] \\
+      &\quad \distr{DNP}(\Omega, \operatorname{softmax}(\mathtt{table})) \\
+      &\}
+    \end{aligned}
+  \end{equation*}
+  (whereby \(\operatorname{softmax}(x) = \broadcast{\exp}(x) / \sum_i \exp(x_{i})\) is the
+  normalization operation on log-probabilities).
+\end{enumerate}
+The result of this process is a collection of closures that represent the conditional likelihoods as
+\enquote{kernels}: closures returning distribution objects.  These closures can then be used to
+construct a Gibbs-conditional sampler for usage in \turingjl{}'s \jlinl{Gibbs} sampler, in
+combination with other samplers for the continuous variables.
 
-The complicated part of this step is the correction subsumption of indexed variables in the trace
-dictionary: making sure that both \jlinl{θ[x][1]} and \jlinl{θ[x[1]]} are resolved correctly to the
-same value.
-
-
+Improvements: dynamic variant; extension for more kinds of variables (autoconj); parallel sampling
+to scale on data; reuse of conditionals for trace-equivalent vectorized models.\todo{write
+  improvements}
 
 
 \section{Evaluation}
@@ -348,8 +396,9 @@ To begin with a qualitative assessment, it must be admitted that \autogibbsjl{} 
 manually and only once, empirically so noticeably slow, that a user may be tempted to dismiss it
 outright (concretely speaking, extraction of one conditional for some not-so-large models takes
 \(20\) to \(200\) seconds on the author's laptop).  This is a valid point, but two counter-arguments
-must be considered.  For one, the implementation is just more conceptual than optimized.  Much of
-the slow-down could be mitigated by improving key parts of \autogibbsjl{} and \irtrackerjl{}.
+must be considered.  For one, the implementation is a preliminary one, more conceptual than
+optimized.  Much of the slow-down could be mitigated by just improving key parts of \autogibbsjl{}
+and \irtrackerjl{}.
 
 In addition to that, one must realize where this appearent slowness comes from: namely, from
 compilation, and therein primarily type inference, of the functions handling all the strongly typed
