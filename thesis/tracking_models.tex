@@ -392,10 +392,15 @@ in BUGS or JAGS.  This could even involve symbolic methods like those in AutoCon
 sampler \parencite{gonzalez2011parallel} could be constructed, improving scalability with increasing
 data size (i.e., numbers of observations).  Or, as in Gen, a variant of \enquote{argument diffs}
 could be devised to prevent unnecessary re-evaluation of model parts \parencites[see][section
-1.2.3]{cusumano-towner2020gen}{becker2020dynamic}.  Finally, the evaluation of the conditional
-closures, which is currently performed by simple interpreation of expressions, could be sped up by
-compiling them to Julia methods, or even better by reusing the SSA-like structure to emit Julia IR
-directly.
+1.2.3]{cusumano-towner2020gen}{becker2020dynamic}.
+
+Besides improvements via inference algorithms, it would be possible for models that are written in a
+vectorized or otherwise \enquote{trace constant} fashion, such that the structure of the
+conditionals does not change with the number of observations, to record the trace for a small model
+and reuse it for arbitrary larger ones, thus avoiding recomputation and recompilation.  Finally, the
+evaluation of the conditional closures, which is currently performed by simple interpreation of
+expressions, could be sped up by compiling them to Julia methods, or even better by reusing the
+SSA-like structure to emit Julia IR directly.
 
 Realistically, though, I consider it more worthwhile to follow a different approach, like the one
 outlined in section~\ref{sec:future-work} below, and moving away from working on a trace-based
