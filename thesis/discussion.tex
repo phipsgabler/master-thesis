@@ -66,7 +66,7 @@ optimization, non-standard execution, and transformation can be performed.
 
 Currently, \turingjl{} is very primitive in this respect: one data structure (\jlinl{VarInfo})
 contains a map from variable names to values, the accumulated log-likelihood, and some other
-(stateful!) sampling metadata. \autogibbsjl{}' approach consists of retrofitting some more structure
+(mutable!) sampling metadata. \autogibbsjl{}' approach consists of retrofitting some more structure
 onto this representation~-- this is not ideal, and for proper analysis, it would be desireable to
 begin with a better representation from the start, at least for the reasons mentioned above.
 

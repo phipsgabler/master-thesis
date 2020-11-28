@@ -359,9 +359,10 @@ log-probabilities.)
 \parencite{lunn2000winbugs,lunn2009bugs}.  Others are specified in the \enquote{meta-syntax} of Lisp
 S-expressions, as Church \parencite{goodman2012church}, Anglican \parencite{wood2015new}, or Venture
 \parencite{mansinghka2014venture}.  A third group is embedded into host programming languages with
-sufficient syntactic flexibility, for example Gen \parencite{cusumano-towner2020gen} and Soss
-\parencite{scherrer2019soss} in Julia (besides the already named \turingjl{}), or Pyro
-\parencite{bingham2018pyro} and PyMC3 \parencite{salvatier2016probabilistic} in Python.
+sufficient syntactic flexibility, for example Gen
+\parencite{cusumano-towner2019gen,cusumano-towner2020gen} and Soss \parencite{scherrer2019soss} in
+Julia (besides the already named \turingjl{}), or Pyro \parencite{bingham2018pyro} and PyMC3
+\parencite{salvatier2016probabilistic} in Python.
 
 The latter approach is advantageous when one wants to enable the use of regular, general-purpose
 programming constructs or interact with other functionalities of the host language.  There are also
@@ -752,7 +753,7 @@ So, in a sense, JIT compilation can be seen as a function that returns compiled 
 function and a tuple of types.  Similar to macros, which transform original code, given an
 expression, this process of generating compiled methods from types is customizable in Julia: via
 so-called \emph{generated functions}, there exists a process to dynamically generate code, given
-argument types~-- a form of stated programming
+argument types~-- a form of staged programming
 \parencite{rompf2010lightweight,bolewski2015staged}. Such generated functions, when called, are not
 directly translated into machine code: instead, they emit new code to the compiler, based on the
 types of their arguments.  The new code is then JIT-compiled.  For example, when we have two methods
@@ -1187,7 +1188,10 @@ so that function calls, in addition to performing the primal calculations, are s
 explicitely on a global Wengert list structure, or implicitly in the constructed expression objects.
 Then, one can start a backward pass from any leaf variable to propagate back derivatives to the
 roots of the computation graph, by following the edges and summing up adjoint values in parent
-nodes' metadata.
+nodes' metadata.  JAX \parencite{bradbury2018jax} carries the idea further and allows general
+composable source transformations to implement not only differentiation, but also vectorization,
+parallelization, and other syntactic abstractions over functional programs written in Python, over a
+unified intermediate representation that is recovered from an original function by tracing.
 
 This style of implementation has limitations, though: it requires building up many objects at
 runtime, and is completely oblivious of control structures.  Additionally, the code expressing
@@ -1220,7 +1224,7 @@ In similar spirit, there is also work on directly differentiating the LLVM inter
 representation, by extending the compiler pipeline with a differentiation pass that comes after all
 language-specific and high-level optimizations \parencite{moses2020instead}.  Furthermore, there are
 applications that use the same techniques for other purposes, like sparsity detection
-\parencite{gowda2019sparsity} or concolic execution \parencite{churavy2019vchuravy}.
+\parencite{gowda2019sparsity} or concolic execution \parencite{churavy2019vchuravy}.  
 
 Internal source-based methods can therefore be composable, extensible, and more user-friendly, since
 no special treatment of programs to be differentiated is required: primal functions can be

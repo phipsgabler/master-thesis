@@ -114,12 +114,13 @@ allowed in Julia could be added in future extensions.  Furthermore, broadcasting
 that are supported in \dppljl{}, are not supported by \autogibbsjl{} either.
 
 \newthought{As an example} for the resulting graphs, take the two simple models in
-listing~\ref{lst:dependency-examples}.  The pretty-printed dependency \jlinl{Graph}s of them are
-shown in listing~\ref{lst:trace-examples} below.  We can see that the model arguments for
-observations occur as constant values, and all of the intermediate transformation visible in the
-original model definitions are observed.  From this structure, \autogibbsjl{} can construct output
-in the Dot graph format and vizualized using GraphViz \parencite{gansner2000open}.  The visual
-outputs of the example models is shown in figure~\ref{fig:geom-deps}\todo{update \(p\) to \(\pi\)}.
+listing~\ref{lst:dependency-examples}.  The pretty-printed dependency \jlinl{Graph} objects
+extracted from them are shown in listing~\ref{lst:trace-examples} below.  We can see that the model
+arguments for observations occur as constant values, and all of the intermediate transformation
+visible in the original model definitions are observed.  From this structure, \autogibbsjl{} can
+construct output in the Dot graph format and vizualized using GraphViz \parencite{gansner2000open}.
+The visual outputs of the example models is shown in figure~\ref{fig:geom-deps}\todo{update \(p\) to
+  \(\pi\)}.
 
 \begin{lstfloat}[p]
 \begin{lstlisting}[style=lstfloat]
@@ -300,9 +301,8 @@ new expression function objects can then be numerically evaluated as log-densiti
 of all random variables.  For illustration, the joint densities of the \jlinl{bernoulli_mixture} and
 \jlinl{hierarchical_gaussian} models introduced above in listing~\ref{lst:dependency-examples}, are
 associated with corresponding symbolic functions as shown in figure~\ref{fig:continuations}\todo{fix
-caption alignment}.  By
-adding the likelihood functions for each tilde statement, we get the symbolic log-joint density as,
-for example,
+  caption alignment}.  By adding the log-likelihoods for each tilde statement, we get the symbolic
+log-joint density as, for example,
 \begin{lstlisting}
 logpdf(Gamma(2.0, 0.333333), θ[λ]) + 
   logpdf(Normal(0, sqrt(/(1, θ[λ]))), θ[m]) + 
@@ -330,8 +330,7 @@ resulting expression and detecting conjugacies, such as the normal/normal-gamma 
 \(m\), \(\lambda\), and \(x\) above.  The simplest possible case, however, occurs when when a
 conditioned variable has finite support; and as mentioned above, this is what has been implemented
 out in this work.  For example, \(p\) in the \jlinl{bernoulli_mixture} model is such a finitely
-supported variable~-- writing \(\pi\) instead of the parameter \(p\) to avoid confusing notation, we
-get
+supported variable~-- we get
 \begin{equation}
     p(\pi \given w, x) = \frac{p(w) \, p(\pi \given w) \, p(x \given \pi)}{
       \sum_{\varpi \in \{0.3, 0.7\}}p(w) \, p(\varpi \given w) \, p(x \given \varpi)}
@@ -343,7 +342,7 @@ of \(\pi\), the set \(\{0.3, 0.7\}\), and summing it up to get the normalization
 the interface of distribution objects from the \juliapackage{Distributions.jl} package, which have a
 \jlinl{support} method whose result is an iterable.)
 
-Concretely, this works as follows, finalizing step 2 of the above scheme, exemplified by
+Concretely, the construction works as follows, finalizing step 2 of the above scheme, exemplified by
 \jlinl{bernoulli_mixture}:
 \begin{enumerate}
   \firmlist
@@ -380,13 +379,30 @@ Concretely, this works as follows, finalizing step 2 of the above scheme, exempl
   normalization operation on log-probabilities).
 \end{enumerate}
 The result of this process is a collection of closures that represent the conditional likelihoods as
-\enquote{kernels}: closures returning distribution objects.  These closures can then be used to
-construct a Gibbs-conditional sampler for usage in \turingjl{}'s \jlinl{Gibbs} sampler, in
-combination with other samplers for the continuous variables.
+\enquote{kernels}: functions from conditioned-on variables to distribution objects.  These closures
+can then be used to construct a conditional sampler for usage in \turingjl{}'s \jlinl{Gibbs}
+sampler, in combination with other samplers for the continuous variables.
 
-Improvements: dynamic variant; extension for more kinds of variables (autoconj); parallel sampling
-to scale on data; reuse of conditionals for trace-equivalent vectorized models.\todo{write
-  improvements}
+\newthought{As for potential improvements}, there is of course a wide range of possibilities, as the
+current implementation is a most primitive one.  As has been mentioned before, further classes of
+random variables beyond those with finite support could be handled, using methods and heuristics as
+in BUGS or JAGS.  This could even involve symbolic methods like those in AutoConj
+\parencite{hoffman2018autoconj}. More generally, variance-reducing transformation, as those in
+\textcite{murray2017delayed}, are applicable.  For computational efficiency, a parallel Gibbs
+sampler \parencite{gonzalez2011parallel} could be constructed, improving scalability with increasing
+data size (i.e., numbers of observations).  Or, as in Gen, a variant of \enquote{argument diffs}
+could be devised to prevent unnecessary re-evaluation of model parts \parencites[see][section
+1.2.3]{cusumano-towner2020gen}{becker2020dynamic}.  Finally, the evaluation of the conditional
+closures, which is currently performed by simple interpreation of expressions, could be sped up by
+compiling them to Julia methods, or even better by reusing the SSA-like structure to emit Julia IR
+directly.
+
+Realistically, though, I consider it more worthwhile to follow a different approach, like the one
+outlined in section~\ref{sec:future-work} below, and moving away from working on a trace-based
+reconstruction and to a domain-specific intermediate representation with generalized transformation
+capabilities.  On such a representation, all of the named ideas still apply, but it would have the
+advantage of being more invariant to a specific inference system, and be able to handle more general
+probabilistic programs (foremost, not only static ones).
 
 
 \section{Evaluation}

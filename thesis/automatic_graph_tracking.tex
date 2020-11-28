@@ -187,7 +187,9 @@ primitives, which require more careful handling.
   \hrule
   \smallskip
   \begin{algorithmic}
-    \Procedure{TransformIR}{\texttt{original\_ir}}
+    \State \textbf{Input:} \jlinl{original_ir}
+    \State \textbf{Output:} New IR with tracking statements inserted
+    %\Procedure{TransformIR}{\texttt{original\_ir}}
     %
     \State Initialize empty IR object \jlinl{new_ir}
     \Statex
@@ -238,8 +240,6 @@ primitives, which require more careful handling.
     \State Add new block to \jlinl{new_ir}, with  arguments \jlinl{\%return_value} and \jlinl{\%return_node}
     \State Add recording of \jlinl{\%return_node}
     \State Add return branch, returning \jlinl{\%return_value} and \jlinl{\%recorder}
-    %
-    \EndProcedure
   \end{algorithmic}
   \smallskip
   \hrule
