@@ -50,7 +50,7 @@ end
 \end{lstlisting}
 Here, \jlinl{trackmodel} extracts the computation graph with the context for models tracking,
 \jlinl{strip_model_layers} removes the outer method calls, and \jlinl{strip_dependencies} removes
-all SSA code that is not on the dependecy graph spanned by the sampling statements.
+all SSA code that is not on the dependency graph spanned by the sampling statements.
 
 The final and most intricate step is to add all the remaining SSA statements to a new graph
 structure, that describes a more domain-specific representation.  In this \jlinl{Graph} type, only
@@ -106,7 +106,7 @@ The \jlinl{makegraph} implementation solves this by successively identifying mut
 representing random variables by inspecting the indexing calls around tilde statements, and storing
 the association between the assumption and the array elements.  This part of the procedure is the
 most intricate one, and not complete; there may exist cases where mutation is able to
-\enquote{circumvent} the dependecy analysis.  Additionally, the matching between indexing arguments
+\enquote{circumvent} the dependency analysis.  Additionally, the matching between indexing arguments
 involves some careful treatment of variable names; the existing \dppljl{} API for this functionality
 is not very comprehensive.  Due to this, the current implementation of \autogibbsjl{} currently only
 supports \enquote{simple} indexing by one tuple of integers.  Other, more general indexing styles
@@ -118,9 +118,8 @@ listing~\ref{lst:dependency-examples}.  The pretty-printed dependency \jlinl{Gra
 extracted from them are shown in listing~\ref{lst:trace-examples} below.  We can see that the model
 arguments for observations occur as constant values, and all of the intermediate transformation
 visible in the original model definitions are observed.  From this structure, \autogibbsjl{} can
-construct output in the Dot graph format and vizualized using GraphViz \parencite{gansner2000open}.
-The visual outputs of the example models is shown in figure~\ref{fig:geom-deps}\todo{update \(p\) to
-  \(\pi\)}.
+construct output in the Dot graph format and visualized using GraphViz \parencite{gansner2000open}.
+The visual outputs of the example models is shown in figure~\ref{fig:geom-deps}.
 
 \begin{lstfloat}[p]
 \begin{lstlisting}[style=lstfloat]
@@ -212,8 +211,7 @@ BUGS) conditional extraction works over a wide range of variable types \parencit
 by symbolic analysis and recognition of several patterns (e.g., conjugate distributions from
 exponential families, log-concave or compactly supported distributions; see
 \textcite{lunn2000winbugs}.), which is possible since the class of models is constrained by the
-modelling language, and available in completely structured form.\todo{fix parskips, see
-  background.tex:445}
+modeling language, and available in completely structured form.
 
 In \turingjl{}, models are much less restricted, and the symbolic form has to recovered from
 outside, as we have seen.  To focus on the principal ideas and not to extend the scope too much, the
@@ -223,7 +221,7 @@ log-densities is independent from the normalization step, though, this can serve
 for further, more general conditional samplers, as those in JAGS and BUGS.  Additionally, and this
 is a more fundamental limitation, the models to which the extraction algorithm can be applied must
 be static in a specific sense: the whole Markov blanket of the variable in question must be unique,
-and reachedable within one run of model tracking.  A large fraction of the models used in practise
+and reachable within one run of model tracking.  A large fraction of the models used in practice
 do fulfill this condition, though.  As this problem is difficult so solve in general, the same
 constraint applies to JAGS and BUGS, which makes \autogibbsjl{} not more limited than these.
 
@@ -308,7 +306,7 @@ logpdf(Gamma(2.0, 0.333333), θ[λ]) +
   logpdf(Normal(0, sqrt(/(1, θ[λ]))), θ[m]) + 
   logpdf(Normal(θ[m], sqrt(/(1, θ[λ]))), θ[x]),
 \end{lstlisting}
-corresponding to the density over \(\lambda\), \(m\), and \(x\), factorizd as
+corresponding to the density over \(\lambda\), \(m\), and \(x\), factorized as
 \begin{equation}
   p(\lambda, m, x) = p(\lambda) \, p(m \given \lambda) \, p(x \given m, \lambda).
 \end{equation}
@@ -398,7 +396,7 @@ Besides improvements via inference algorithms, it would be possible for models t
 vectorized or otherwise \enquote{trace constant} fashion, such that the structure of the
 conditionals does not change with the number of observations, to record the trace for a small model
 and reuse it for arbitrary larger ones, thus avoiding recomputation and recompilation.  Finally, the
-evaluation of the conditional closures, which is currently performed by simple interpreation of
+evaluation of the conditional closures, which is currently performed by simple interpretation of
 expressions, could be sped up by compiling them to Julia methods, or even better by reusing the
 SSA-like structure to emit Julia IR directly.
 
@@ -421,7 +419,7 @@ must be considered.  For one, the implementation is a preliminary one, more conc
 optimized.  Much of the slow-down could be mitigated by just improving key parts of \autogibbsjl{}
 and \irtrackerjl{}.
 
-In addition to that, one must realize where this appearent slowness comes from: namely, from
+In addition to that, one must realize where this apparent slowness comes from: namely, from
 compilation, and therein primarily type inference, of the functions handling all the strongly typed
 expression trees.  Besides the possibility of just optimizing these further, the following fact is
 most important to realize: compilation takes place only once~-- as soon as a conditional is
@@ -579,7 +577,7 @@ Concrete parameters in table~\ref{tab:autogibbs-params}.\todo{more meaningful ta
      & Chains & 10 & 10 & 10 & 10 & 10 & 10 & 10 \\
     \bottomrule
   \end{tabularx}
-  \caption{Experimental conditions for evaluating AutoGibbs (AG) agains Particle Gibbs (PG).  Chains
+  \caption{Experimental conditions for evaluating AutoGibbs (AG) against Particle Gibbs (PG).  Chains
     were always of length \(10000\).  A new static Gibbs conditional was extracted for each block of
     \(10\) chains that was run with the same parameters while Particle Gibbs was varied over the
     three particle sizes.  Particle Gibbs with 50 particles was sometimes killed due to timeouts on

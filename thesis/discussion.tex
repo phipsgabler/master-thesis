@@ -12,7 +12,7 @@ Gibbs conditional sampler in \turingjl{} allows to directly implement many model
 literature, for which conditionals are often provided analytically.  Automatic derivation allows to
 generalize this to a large class of models that have been found useful in other systems such as
 JAGS.  The underlying issue~-- that \turingjl{} lacks a structural representation of models~-- is
-not at all resolved by the implementation, unfortunately.  This makes \autogibbsjl{} not completly
+not at all resolved by the implementation, unfortunately.  This makes \autogibbsjl{} not completely
 satisfactory, since the recursion and branch tracking features of \irtrackerjl{} cannot be applied
 in a useful way.
 
@@ -33,13 +33,13 @@ feature of the language, and may change between compiler versions.  The \juliapa
 package provides a good mid-layer mitigating this, but still there's lot of reasons why a custom IR
 would be nicer.  From the other side, also the structure of \dppljl{}'s model representations is not
 stable, and actually an implementation detail that should not be relied on from the outside~--
-especially not by an important feature such as dependency extration.  In a certain sense, the whole
+especially not by an important feature such as dependency extraction.  In a certain sense, the whole
 approach is misguided: why rely on external tracking for a framework that is really under ones
 control, using such heavy machinery as IR transformations?  This is illuminated by following very
 telling quote about similar tendencies (\juliapackage{Cassette.jl} is a package very similar to
 \juliapackage{IRTools.jl}):
 \begin{quote}
-  Using Cassette on code you wrote is a bit like shooting youself with a experimental mind control
+  Using Cassette on code you wrote is a bit like shooting yourself with a experimental mind control
   weapon, to force your hands to move like you knew how to fly a helicopter.  Even if it works, you
   still had to learn to fly the helicopter in order to program the mind-control weapon to force
   yourself to act like you knew how to fly a helicopter.\footnote{Lyndon White (2020), private
@@ -47,18 +47,18 @@ telling quote about similar tendencies (\juliapackage{Cassette.jl} is a package 
 \end{quote}
 
 In conclusion, the dynamic graph tracking system has turned out to be an interesting idea with some
-application possibilities.  Unfortunatley, the analysis of dynamic probabilistic models could not be
+application possibilities.  Unfortunately, the analysis of dynamic probabilistic models could not be
 shown to be among them.  In the course of development, though, various techniques have been tried or
 ruled out, challenges identified, and other alternatives explored.  This knowledge has lead me to a
 better understanding of the domain and some more advanced ideas for the future, some of which are
-layed out in the following section.
+laid out in the following section.
 
 \section{Future Work}
 \label{sec:future-work}
 
 While \irtrackerjl{} is quite a satisfying and complete system, the approach that \autogibbsjl{}
 takes provides only an ad-hoc solution to one shortcoming of \turingjl{}: the lack a structural
-model represenation that is open to analysis and transformations.  This has lead me to consider
+model representation that is open to analysis and transformations.  This has lead me to consider
 alternatives, approaching the representation problem for probabilistic programming languages on a
 more fundamental level.  Most of the following ideas I have already informally described
 online\footnote{\protect\url{https://github.com/phipsgabler/probability-ir}}.
@@ -71,7 +71,7 @@ optimization, non-standard execution, and transformation can be performed.  Curr
 is very primitive in this respect: one data structure (\jlinl{VarInfo}) contains a map from variable
 names to values, the accumulated log-likelihood, and some other (mutable!) sampling
 metadata. \autogibbsjl{}' approach consists of retrofitting some more structure onto this
-representation~-- this is not ideal, and for proper analysis, it would be desireable to begin with a
+representation~-- this is not ideal, and for proper analysis, it would be desirable to begin with a
 better representation from the start, at least for the reasons mentioned above.
 
 From difficulties described above, which became apparent during the implementation of the Gibbs
@@ -91,10 +91,10 @@ type-theoretic formulations; see
 
 \newthought{Universal PPLs} have as their goal to let the user write down every model the language
 allows, and still be able to do inference on it.  Of course, at the boundary of the space of
-reasonable programs, tradeoffs need to be made to still be able to do this.  It seem advantageous to
-split up this conjuction: by creating a format in which one can denote every possible model of a
+reasonable programs, trade-offs need to be made to still be able to do this.  It seem advantageous to
+split up this conjunction: by creating a format in which one can denote every possible model of a
 very large class, without a priori having to deal with the restrictions of inference.  Then for each
-model, suitable transformations and analyses can be performd in a uniform representation, and
+model, suitable transformations and analyses can be performed in a uniform representation, and
 specialized backends be chosen from a wide range, which understand precisely the fragment of the
 model language used.
 
@@ -103,7 +103,7 @@ how things are currently construed in most of the approaches.  Instead of starti
 \enquote{sampling function}, which is evaluated to extract graphs or other symbolic representations
 from it, one should start from a representation that already is general, yet richly structured, and
 derive evaluators from it.  Viewed from the opposite direction, in contrast to PPLs that are built
-on top of a DLS representation, such an representation should be backend-agnostic, and instead allow
+on top of a DSL representation, such an representation should be backend-agnostic, and instead allow
 all kinds of models to be specified in a uniform syntax, without being constraint by the demands of
 a specific sampling algorithm or inference technique.  And if furthermore it shouldn't matter
 whether the model is complicated, nonparametric, dynamic~-- the object that is worked with is always
@@ -115,9 +115,9 @@ implementations seems novel.  The closest correspondence would be the formalizat
 probabilistic models through monads and type systems; but that is more semantic than syntactic.
 There are some domain-specific \enquote{linguae frankae} like the syntax of Stan and JAGS, but they
 are, too, somewhat restricted, and not independently defined and maintained~-- the systems coming
-later just chose to take over the same kind of input format for their own implemenation.  All these
+later just chose to take over the same kind of input format for their own implementation.  All these
 approaches could rather be abstracted out into a model specification formalism in its own right,
-that has more general analysis capabilites, and can then be transformed abstractly, ultimately
+that has more general analysis capabilities, and can then be transformed abstractly, ultimately
 producing the format some concrete evaluator (i.e., sampling algorithm) requires.
 
 The advantage of this kind of approach, besides making available solutions and techniques from
@@ -125,14 +125,14 @@ programming language theory, is that it provides a different kind of common abst
 than is possible through a DSL per system.  Recently, people have started writing \enquote{bridge
   code} to allow PPL interaction: there is invented a common interface that multiple PPL systems can
 be fit under, and then models in each can be used from within the other at evaluation.  This is
-necessary due to the lack of division of a system into an evalator and a model specification part:
+necessary due to the lack of division of a system into an evaluator and a model specification part:
 they always go together.  I believe that starting from a common model specification language is in
-many cases preferrable, and more general than defining a common interface for evaluators.
+many cases preferable, and more general than defining a common interface for evaluators.
 
 The latter tends to assume much more about the internals, while the capabilities of universal
 probabilistic programs are essentially fixed: the notation of random variables used in model
 specification by hand, extended through the forms of an embedding programming language.  Such a sort
-of least upper bound of all the PPL modelling approaches, consists of
+of least upper bound of all the PPL modeling approaches, consists of
 \begin{itemize}
   \firmlist
 \item General Julia code: this can most conveniently be represented like normal Julia IR with SSA
@@ -158,11 +158,11 @@ is closer to lambda calculus in A-normal form than SSA-form IR; it assumes refer
 and has no representation of control structures.  In Julia, Soss \parencite{scherrer2019soss} takes
 a somewhat comparable approach by representing models written in a Julia DSL in completely symbolic
 expression form, from which inference code is generated.  Also here, not the full generality of the
-host language is available, but only a pure subset of it; and again, constrol structure can only be
+host language is available, but only a pure subset of it; and again, control structure can only be
 realized through combinator functions, not at language level.
 
 Most comparable, although stemming from a complete different domain, would be tactic or elaborator
-systems in proof assistents \parencite[e.g.,][]{brady2013idris,coqdevelopmentteam2010coq}.  There,
+systems in proof assistants \parencite[e.g.,][]{brady2013idris,coqdevelopmentteam2010coq}.  There,
 user-written programs are iteratively refined into other, more specialized forms through functions
 expressed in a metalanguage (the so-called tactics), interleaving automated transformations and
 manual interventions.  A similar style of development could profit the usability of Bayesian

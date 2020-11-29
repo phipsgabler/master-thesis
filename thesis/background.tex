@@ -3,7 +3,7 @@
 
 This chapter provides the background for the concepts used later in
 chapters~\ref{cha:impl-dynam-graph} and \ref{cha:graph-track-prob}.  Initially, it gives a quick
-overview of Baysian inference and probabilistic programming in general, necessary to understand the
+overview of Bayesian inference and probabilistic programming in general, necessary to understand the
 requirements and usual approaches of probabilistic programming systems.
 
 Consequently, the machinery and language used to develop the graph tracking system forming the main
@@ -18,15 +18,15 @@ will be used later, and often provided inspiration.
 \section{Bayesian Inference and MCMC methods}
 \label{sec:bayes-infer}
 
-Generative modelling is an approach for modelling phenomena based on the assumption that
+Generative modeling is an approach for modeling phenomena based on the assumption that
 observables can be fully described through some stochastic process.  When we assume this process to
 belong to a specified family of processes, the estimation of the \enquote{best} process is a form of
-learning: if we have a good description of how obserations are generated, we can make summary
+learning: if we have a good description of how observations are generated, we can make summary
 statements about the whole population (descriptive statistics) or predictions about new
 observations.  When observations come in pairs of independent and dependent variables, learning the
 conditional model of one given the other solves a regression or classification problem.
 
-Within a Baysian statistical framework, we assume that the family of processes used is specified by
+Within a Bayesian statistical framework, we assume that the family of processes used is specified by
 random variables related through conditional distributions with densities, which describe how the
 observables would be generated: some \emph{unobserved variables} are generated from \emph{prior
   distributions}, and the \emph{observed data} are generated conditionally on the unobserved
@@ -38,7 +38,7 @@ set picture cats and dogs, respectively, the distribution of these labels forms 
 the information which kind of animal is depicted on it, an image can then be generated as a matrix
 of pixels based on a distribution of images conditioned on labels.  The posterior distribution is
 then conditional distribution of the label given an image.  When we have this information, we can,
-for example, build a Baysian classifier, by returning for a newly observed image that label which
+for example, build a Bayesian classifier, by returning for a newly observed image that label which
 has the highest probability under the posterior.
 
 This kind of learning is called Bayesian inference since, in the form of densities, the form of the
@@ -58,7 +58,7 @@ variables have to be model parameters we are actually interested in; these can b
 
 Going beyond simple applications like the classifier mentioned above, handling the posterior gets
 difficult, though.  Simply evaluating the posterior density
-\(\theta \mapsto \prob{\theta \given x}\) at single points is not enough in a Baysian setting for
+\(\theta \mapsto \prob{\theta \given x}\) at single points is not enough in a Bayesian setting for
 usages such as prediction, parameter estimation, or evaluation of probabilities of continuous
 variables.  The problem is that almost all of the relevant quantities depend on some sort of
 expectation over the posterior density, an integral of the form
@@ -121,7 +121,7 @@ define \(\kth{Y}\) via a (time-homogeneous) Markov chain:
     % &\quad = k(y \given \kth{y}) \dif\mu(y)
   \end{aligned}
 \end{equation}
-for all \(k \ge 1\).  By constructing the parametrized measure \(K\), the \emph{transition kernel},
+for all \(k \ge 1\).  By constructing the parameterized measure \(K\), the \emph{transition kernel},
 in the right way, the resulting chain is ergodic with the target density \(\pi\) as the unique
 stationary distribution, i.e., for all measurable sets \(A\),
 \begin{equation}
@@ -181,7 +181,7 @@ Hamiltonian Monte Carlo (HMC) \parencite{betancourt2018conceptual,girolami2011ri
 
 For multi-component structures, of the form \(\Theta = [\Theta_1, \ldots, \Theta_N]\), a good
 proposal distribution can be hard to find, though.  One way to break down the problem is to use a
-family of componentwise updates, given by conditional distributions \(q_{i}\) operating on only one
+family of component-wise updates, given by conditional distributions \(q_{i}\) operating on only one
 component of \(\Theta\), with the others fixed:
 \begin{equation}
   \label{eq:conditional-kernels}
@@ -198,7 +198,7 @@ This so-called \enquote{within-Gibbs} sampler bears its name because it is a gen
 classical \emph{Gibbs sampling} algorithm \parencite{geman1984stochastic}: often, the simplest
 available set of transition kernels is given by the conditional densities
 \(\theta_{i} \mapsto p(\theta_{i} \given \theta_{-i}, x)\). They can directly be used as component
-proposals for a within-Gibbs sampler, leading to a cancelling acceptance rate of
+proposals for a within-Gibbs sampler, leading to a canceling acceptance rate of
 \(\alpha \equiv 1\).  This approach has the advantage of being very algorithmic, which makes it
 rather easy to apply, even by hand, to many models, and simply to express algorithmically.  Hence,
 the method is a popular starting point for general probabilistic programming systems, most
@@ -324,8 +324,8 @@ julia> chain = sample(m, MH(), 1000);
 \end{lstlisting}
 The value of \jlinl{forward} will be an dataframe-like object containing 10 values for each variable
 sampled from the forward (i.e., joint) distribution, matching the size of \jlinl{x_observations}.
-Similarly, \jlinl{chain} will contain a length 1000 sample from a Markov chain targetting the
-posterior, conditially on \jlinl{x_observations}, created using the MH algorithm.  If we were to
+Similarly, \jlinl{chain} will contain a length 1000 sample from a Markov chain targeting the
+posterior, conditionally on \jlinl{x_observations}, created using the MH algorithm.  If we were to
 write out code for these two functionalities manually, in idiomatic Julia, we would end up with at
 least two separate functions needed for the sampler:
 \begin{lstlisting}
@@ -347,7 +347,7 @@ end
 \end{lstlisting}
 And still, with these, we would lack much of the flexibility that models written in \turingjl: no
 general interface for sampling algorithms to automatically detect all latent and observed variables;
-no possility for other, nonstandard execution forms as are needed for Variational Inference or
+no possibility for other, nonstandard execution forms as are needed for Variational Inference or
 gradient computation for HMC; no automatic name extraction and dataframe building for chains.  All
 these points highlight the advantages of dedicated probabilistic programming languages (PPLs) over
 hand-written model code.  (Additionally, there is of course a benefit of reducing errors introduced
@@ -375,7 +375,7 @@ possible, while allowing to use the host language to:
 \item define recursive relationships,
 \item write models using imperative constructs, such as loops, or mutable intermediate computations
   for efficiency,
-\item optimize details of th execution, e.g. for memoization, likelihood scaling, or preliminary
+\item optimize details of the execution, e.g. for memoization, likelihood scaling, or preliminary
   termination,
 \item use distributions over complex custom data structures, e.g. trees,
 \item perform inference involving complex transformations from other domains, for which
@@ -386,7 +386,7 @@ Depending on the choice of features should be supported, several possibilities f
 implementation of such a DSL exist.  All are based on some form of abstract interpretation.  A rough
 distinction can be made between \emph{compilation-based methods}, which statically translate the
 model code to a graph or density function, and \emph{evaluation-based methods}, which dynamically or
-implicitely build such a structure at runtime, by allowing an inference algorithm to interleave the
+implicitly build such a structure at run-time, by allowing an inference algorithm to interleave the
 execution.  The latter make it easier to include host-language control constructs.  See
 \textcite{vandemeent2018introduction} for a general introduction into some common implementation
 approaches for PPLs, and \textcite{goodman2014design} for a detailed overview of the internals of
@@ -454,7 +454,7 @@ code. In the concrete case of the model in listing~\ref{lst:normal}, the resulti
 approximately equal to the code in listing~\ref{lst:normal-expanded}.  The purpose of this is the
 following: the outer function, the \enquote{generator}, constructs an instance of the model for
 given parameters~-- usually done once per inference problem, to fix the observations and
-hyperparameters.  Subsequently, the \jlinl{sample} function can be applied to this instance with
+hyper-parameters.  Subsequently, the \jlinl{sample} function can be applied to this instance with
 different values for the sampling algorithm, which in turn will use the \jlinl{evaluator} function
 of the instance to run the model with chosen \jlinl{sampler} and \jlinl{context} arguments, that are
 passed to the \enquote{tilde functions}, to which the statements of the form \jlinl{expr ~ D} are
@@ -465,18 +465,18 @@ arguments. \dppljl{} distinguishes between \emph{assumptions}, i.e., latent vari
 recovered through posterior inference, and \emph{observations}, that need to be provided when
 instantiating the model and are conditioned upon.  The latter by default will only contribute to the
 likelihood, instead of being sampled.  But in certain cases, such as in probability evaluation or
-when using the complete model in a generative way, this behaviour can be different.  For this
+when using the complete model in a generative way, this behavior can be different.  For this
 purpose, the tilde functions for the variables \jlinl{x[i]} in listing~\ref{lst:normal-expanded} are
 differentiated in a conditional statement.
 
 Inside the tilde functions, the real stochastic work happens.  Depending on the \jlinl{sampler} and
-the \jlinl{context}, values may be generated and stored in the \jlinl{varinfo} object, and the joint
+the \jlinl{context}, values may be generated and stored in the \jlinl{VarInfo} object, and the joint
 log-likelihood incremented, as happens for most MCMC samplers.  In this case, one call to the
 \jlinl{evaluator} corresponds to one sampling step.  In other situations, model evaluation serves
 the purpose of density evaluation, in which no new values need to be produced; this use case is
 needed for probability queries, or density-based algorithms (which might additionally use automatic
 differentiation on the density evaluation procedure).  All shared information for external usage is
-thereby conventionally stored in the \jlinl{varinfo} object, which resembles a dictionary from
+thereby conventionally stored in the \jlinl{VarInfo} object, which resembles a dictionary from
 variable names\footnote{These \jlinl{VarName} objects, constructed by the macro \jlinl{@varname},
   simply represent an indexed variable through a symbol and a tuple of integers.}  to values
 (internal sampler state can also be stored in the \jlinl{sampler} object).  Through the
@@ -489,7 +489,7 @@ representation of model structure.  This is sufficient for many kinds of inferen
 it already implements~-- Metropolis-Hastings, several particle methods, HMC and NUTS, and
 within-Gibbs combinations of these~-- but does not allow more intelligent usage of the available
 information.  For example, to use a true, conditional, Gibbs sampler, the user has to calculate the
-conditionals themselves.  Structure-based optimizations such as partial specializtion of a model to
+conditionals themselves.  Structure-based optimizations such as partial specialization of a model to
 save calculations, automatic conjugacy detection \parencite{hoffman2018autoconj}, or model
 transformations such as Rao-Blackwellization \parencite{murray2017delayed} cannot be performed in
 this representation.
@@ -508,7 +508,7 @@ to Matlab, Python, or Ruby, but contrary to them, it is its own compiler, and no
 reliance on libraries calling foreign functions (e.g., Numpy), which is intrinsically enabling
 C-like speed.  Although Julia does rely on, e.g., BLAS and LAPACK for numerical algebra, there is
 nothing that fundamentally prevents implementing their functions: true array types, fast loops, and
-various optimiations are available, as opposed to languages like Python, which are fundamentally
+various optimizations are available, as opposed to languages like Python, which are fundamentally
 limited by to their dynamic interpretation.  This advantage carries over to domains outside of
 numeric computation, of course.
 
@@ -532,14 +532,14 @@ function foo(x)
     return y
 end
 \end{lstlisting}
-The invocation of the standard libray macro \jlinl{@show} will be treated by the compiler, during
+The invocation of the standard library macro \jlinl{@show} will be treated by the compiler, during
 parsing, as a function call receiving as input the following data structure, representing \jlinl{y
   += sin(x[i])} in S-expression-like form:
 \begin{lstlisting}
 Expr(:(+=), :y, Expr(:call, :sin, Expr(:ref, :x, :i)))
 \end{lstlisting}
 In this particular case, the nested structure is not taken advantage of or transformed, but simply
-converted to a string used to print the value of the expression, labelled by its form in the code:
+converted to a string used to print the value of the expression, labeled by its form in the code:
 \begin{lstlisting}
 macro show(ex)
     blk = Expr(:block)
@@ -600,7 +600,7 @@ order to not possibly shadow any variables from the calling scope.)
 \end{lstfloat}
 
 After macro expansion, the code of the method is \emph{lowered} into an intermediate
-representation consisting of only function calls and branches.  This comprises of sevaral
+representation consisting of only function calls and branches.  This comprises of several
 transformations: for one, certain syntactic constructs are \enquote{desugared} into primitive
 function calls.  For example, array accesses, \jlinl{x[i]}, are replaced by calls to the library
 function \jlinl{getindex(x, i)}.  The for loop in the example is converted into a while loop using
@@ -617,7 +617,7 @@ end
 Consequently, all nested expressions are split apart, so that only simple, unnested calls remain,
 and any subsequent assignments to variables are linearized to a series of definitions, with newly
 introduced names of the form \jlinl{\%i}.  The remaining control flow statements (e.g., while loops
-and conditionals) are a represented through sequence of labelled \emph{basic blocks}, with (possibly
+and conditionals) are a represented through sequence of labeled \emph{basic blocks}, with (possibly
 conditional) jumps between them.  The sequence of assignments is further processed into \emph{single
   static assignment (SSA) form} \parencite{singer2018static}, the characteristic property of which
 is that every variable is assigned exactly once, thus giving it a unique, position-independent name
@@ -627,7 +627,7 @@ transformations easier.  Accordingly, SSA form is widely used in intermediate fo
 systems, simplifying transformations and optimizations.  The result of the translation of our
 example into into three basic blocks can be found in listing~\ref{lst:foo-inferred}.
 
-There is one noteable complication regarding conversion to SSA form: we need to be able to
+There is one notable complication regarding conversion to SSA form: we need to be able to
 distinguish between assignments of variables arising from \enquote{joined} control flow.  Consider
 the assignment of \jlinl{y} in the following code example:
 \begin{lstlisting}
@@ -640,7 +640,7 @@ end
 h(y)
 \end{lstlisting}
 Here, the value of \jlinl{h(y)} depends on two possible locations of \jlinl{y}~-- hence, we cannot
-simply rename every varaible in a naive way.  Instead, in the variant of SSA form used in this text
+simply rename every variable in a naive way.  Instead, in the variant of SSA form used in this text
 and most of Julia, values of variables that are assigned in multiple parent blocks are passed on as
 \emph{block arguments}, as in figure~\ref{fig:ssa-phi} on the right, and subsequently in this work.
 This makes basic blocks resemble local function, in a way, and cleanly resolves the problem of joins
@@ -663,7 +663,7 @@ in the same figure on the left.
   \label{fig:ssa-phi}
 \end{figure}
 
-Note that until now, the operations involved were purely syntactic in nature, and could be perfomed
+Note that until now, the operations involved were purely syntactic in nature, and could be performed
 by solely taking into account the code of the function \jlinl{foo}.  As soon as \jlinl{foo} is
 called on a concrete type during evaluation, though, the most specific method fitting to the
 argument types will be selected, and type inference on its body be applied.  If we go on and call
@@ -785,9 +785,9 @@ code of the the function defined through the expression \jlinl{:(println("Int"))
 up\footnote{A caveat: technically, the compiler is still free to call the generating code multiple
   times~-- which is the reason generated functions should never involve side effects or depend on
   external state.}.  Of course, simply replacing dispatch, as with this example, is not what
-generated functions are used for in practise.  Most applications concern parametric types with
+generated functions are used for in practice.  Most applications concern parametric types with
 statically known shape arguments, such as tuples, named tuples, or array ranks.  They can also be
-used for type-level computations on values that become known only known at runtime, through
+used for type-level computations on values that become known only known at run-time, through
 singleton types such as \jlinl{Val}.
 
 The direct generation of code, given argument types, is however not the furthest we can go.  For
@@ -809,7 +809,7 @@ Importantly, unlike macros, such transformations can be performed \emph{recursiv
 inserts the same generated function to inner function calls during the transformation in step 3.
 Since the transformation operates not during parsing, the function to be transformed needs not be
 known beforehand, and not be present literally in the code~-- the generated function can be called
-on every available callable object, at any time during runtime.  This makes it possible to transform
+on every available callable object, at any time during run-time.  This makes it possible to transform
 even functions from other libraries, internally calling yet other functions.  One particular example
 of this principle is source-to-source automatic differentiation, as shown in the next chapter: a
 call to a function \jlinl{gradient(f, x, y)} will obtain the IR of the method for \jlinl{f} on
@@ -831,7 +831,7 @@ provides overloadable function application by a so-called \enquote{overdubbing} 
 abstracting out some common patterns; and
 \juliapackage{IRTools.jl}\footnote{\protect\url{https://github.com/FluxML/IRTools.jl}}, which has a
 more user-friendly alternative to \jlinl{CodeInfo}, and a macro similar to \jlinl{@generated} that
-makes writing recursive functiona IR-transformation using this data structure easier.  The latter is
+makes writing recursive functional IR-transformation using this data structure easier.  The latter is
 what the work of this thesis builds on.
 
 
@@ -844,11 +844,11 @@ This section may appear as an outlier from the original topic; in fact, the math
 here are not even used later.  However, it is important to explain the interrelations between
 automatic differentiation (AD), computation graphs, and IR transformations, to be able to understand
 how SSA-form representation is a natural structure for extracting and analyzing computation graphs,
-and how the necessary transformations arise in practise.  To appreciate how the form of the
+and how the necessary transformations arise in practice.  To appreciate how the form of the
 computation graphs interacts with the mathematics, some foundations need to be introduced first.
 
 \newthought{Many algorithms in machine learning} and other domains can be expressed as an
-optimization problem over a multivatiate function with scalar output~-- typically a loss function
+optimization problem over a multivariate function with scalar output~-- typically a loss function
 over a parameter space, which measures how far a model prediction is form the true target values.
 The optimal model is then just that one for which the parameters minimize the loss function.  When
 the loss function is (sub-)differentiable, there exist a variety of gradient-based optimization
@@ -879,7 +879,7 @@ expressed in a custom representation, different from normal functions or program
 does not signify much at first sight.  The relevant idea is to not start from functions as black-box
 or symbolic objects, but from programs.  Then the perturbation that makes up the value of the
 derivative at a point is propagated through the steps of the program.  For this to work, there needs
-to exist an explicit representation of the computation graph at ov the evaluation at a point, which
+to exist an explicit representation of the computation graph at  the evaluation at a point, which
 is what makes the topic relevant for this thesis.  In contrast to the former two methods, AD relies
 on numeric, not symbolic evaluation, but is (up to the floating point errors already present in the
 input function) exact~-- no discretization error, as in finite differences, is introduced.  For a
@@ -1056,9 +1056,9 @@ perturbation~-- therefore, it returns a matrix:
     &= \CoDif \phi(x)(\mathfrak{d})(\Delta),
   \end{aligned}
 \end{equation}
-where we assume \(\mathfrak{d}\) to be represented by the covector \(\transpose{d}\).  Since the
+where we assume \(\mathfrak{d}\) to be represented by the co-vector \(\transpose{d}\).  Since the
 unapplied \(\CoDif \phi(x)(\mathfrak{d})\) is itself an object in the dual space, it is also
-represented as a covector~-- and in fact, nothing else than a transformation of the transposed
+represented as a co-vector~-- and in fact, nothing else than a transformation of the transposed
 Jacobian.  Recovering the gradient of a loss function then reduces to evaluating it at a constant
 scalar output perturbation of \(1\), which is equivalent to the application of the primal
 differential to the matrix of basis vectors.
@@ -1084,8 +1084,8 @@ mode~-- only that now, the value is a vector:
     &= \delta \mapsto \transpose{[\cos(x)\delta, -\delta]}.
   \end{aligned}
 \end{equation}
-In this form, starting with an outpt perturbation \(\delta = 1\), we get back the gradient tuple
-through just one evaluation.  Incidentially, this is nothing else than the backpropagation
+In this form, starting with an output perturbation \(\delta = 1\), we get back the gradient tuple
+through just one evaluation.  Incidentally, this is nothing else than the back-propagation
 \enquote{trick} \parencite{bishop2006pattern}!  Furthermore, applying this result to
 \([\Delta_1, \Delta_2]\) gives back the linear combination of the forward mode result.
 
@@ -1102,7 +1102,7 @@ intermediate values \(\bar{v}\).  For the values in equation~\eqref{eq:ad-primal
     \bar{\Omega} &= \delta,
   \end{aligned}
 \end{equation}
-which is displayed in the red graph in \ref{fig:comp-graph-bw}.  Note that now, the backpropagated
+which is displayed in the red graph in \ref{fig:comp-graph-bw}.  Note that now, the back-propagated
 values can not be computed in parallel with forward evaluation; hence the equations are stated in
 reverse order.  Instead, the intermediate primal values have to be remembered and reused in a
 second, backward pass.
@@ -1126,7 +1126,7 @@ optimal order of derivative evaluation is hard~-- this so-called \emph{optimal J
 opens up another set of possible choices.  One way is to use an external, compiler-based system that
 transforms a complete program in a subset of a standard programming language (e.g., Tapenade, which
 transpiles Fortran and C code \parencite{tapenadedevelopers2019tapenade}) or in a custom
-specification, as is done in Stan \parencite{carpenter2015stan}.  But both of these exampes are
+specification, as is done in Stan \parencite{carpenter2015stan}.  But both of these examples are
 really applied in niche cases: large numeric simulations, and log-densities in a probabilistic
 model.  These systems lack flexibility in programming, especially concerning abstractions and
 interaction with other libraries, and require external tooling besides a main programming language.
@@ -1154,7 +1154,7 @@ calculated during the lockstep evaluation in forward mode:
 follow equally naturally.)
 
 Dual numbers can rather easily be added to an existing programming language that has a sufficiently
-extensibly system for overloading mathematical operators.  This can be done using traits or type
+extensible system for overloading mathematical operators.  This can be done using traits or type
 classes, like in Haskell, or by dynamic dispatch, which is what is used in Python and Julia.  The
 latter is especially versatile in this respect, since every function can be extended to a new type
 of dual numbers by simply adding a method; unlike in Python, where only certain operators are open
@@ -1171,7 +1171,7 @@ to extension~-- a fundamental limitation of its single dispatch, object oriented
 \end{figure}
 
 Backward-mode AD can be implemented using operator overloading as well, but this requires more
-effort.  Since adoint values cannot be simply threaded through in parallel to forward evaluation,
+effort.  Since adjoint values cannot be simply threaded through in parallel to forward evaluation,
 one needs to build up a data structure during the forward pass, which can at the end be traced back
 in reverse order.  One possibility of doing this is to use closures, but the usage of many higher
 order function might lead to unwanted heap allocation and makes understanding harder.
@@ -1185,7 +1185,7 @@ in eager mode, DyNet \parencite{neubig2017dynet}, and Chainer \parencite{tokui20
 these, the programmer interacts with a library mirroring the usual numerical functions, but
 operating on a special \enquote{variable} or \enquote{tensor} type.  These operations are overloaded
 so that function calls, in addition to performing the primal calculations, are stored either
-explicitely on a global Wengert list structure, or implicitly in the constructed expression objects.
+explicitly on a global Wengert list structure, or implicitly in the constructed expression objects.
 Then, one can start a backward pass from any leaf variable to propagate back derivatives to the
 roots of the computation graph, by following the edges and summing up adjoint values in parent
 nodes' metadata.  JAX \parencite{bradbury2018jax} carries the idea further and allows general
@@ -1194,13 +1194,13 @@ parallelization, and other syntactic abstractions over functional programs writt
 unified intermediate representation that is recovered from an original function by tracing.
 
 This style of implementation has limitations, though: it requires building up many objects at
-runtime, and is completely oblivious of control structures.  Additionally, the code expressing
+run-time, and is completely oblivious of control structures.  Additionally, the code expressing
 differentiable functions has to be written entirely in the DSL, in a library-aware fashion,
 preventing the usage of third-party functions and language features, and forcing the user to adhere
 to certain semantic constraints that cannot be verified statically by the host language.  TensorFlow
 in graph mode addresses some of these points.  It builds up a complete expression graph, which is
 differentiated symbolically, and is therefore somewhat in the middle between operator overloading
-(since the graph is still a runtime data structure) and a static transformation (the resulting graph
+(since the graph is still a run-time data structure) and a static transformation (the resulting graph
 is not interpreted in the host language, but converted to run on an \enquote{accelerator}, which can
 one of several kinds of processing unit~-- CPU, GPU, TPU,\ldots).  It still requires to stick to the
 provided expression types and library functions, though.
@@ -1228,7 +1228,7 @@ applications that use the same techniques for other purposes, like sparsity dete
 
 Internal source-based methods can therefore be composable, extensible, and more user-friendly, since
 no special treatment of programs to be differentiated is required: primal functions can be
-implemeted as any other regular function in the host language.  A source-transformation approach
+implemented as any other regular function in the host language.  A source-transformation approach
 also completely avoids the obscure issue of \enquote{perturbation confusion}, which leads to
 hard-to-find errors when using nested differentiation with dual numbers
 \parencite{baydin2018automatic,manzyuk2019perturbation}.
