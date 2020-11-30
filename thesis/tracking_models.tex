@@ -388,9 +388,9 @@ in BUGS or JAGS.  This could even involve symbolic methods like those in AutoCon
 \parencite{hoffman2018autoconj}. More generally, variance-reducing transformation, as those in
 \textcite{murray2017delayed}, are applicable.  For computational efficiency, a parallel Gibbs
 sampler \parencite{gonzalez2011parallel} could be constructed, improving scalability with increasing
-data size (i.e., numbers of observations).  Or, as in Gen, a variant of \enquote{argument diffs}
-could be devised to prevent unnecessary re-evaluation of model parts \parencites[see][section
-1.2.3]{cusumano-towner2020gen}{becker2020dynamic}.
+data size (i.e., numbers of observations).  Or, as in \juliapackage{Gen.jl}, a variant of
+\enquote{argument diffs} could be devised to prevent unnecessary re-evaluation of model parts
+\parencites[see][section 1.2.3]{cusumano-towner2020gen}{becker2020dynamic}.
 
 Besides improvements via inference algorithms, it would be possible for models that are written in a
 vectorized or otherwise \enquote{trace constant} fashion, such that the structure of the
@@ -555,7 +555,10 @@ Hamiltonian Monte Carlo (HMC) with hand-tuned parameters per model.  The experim
 up such that each model is evaluated for ten chains of length \(10000\), varying between AG and PG,
 and four different values for the number of observations (since these determine the size of the
 trace, and thus have an influence on both AG's compile times and the overall sampling time).  PG was
-always used with \(100\) particles, since lower values did lead to convergent chains.
+always used with \(100\) particles, since lower values did lead to convergent chains.  Experiments
+were conducted on XY, and performed single-threaded with exclusive resource usage.  The PG-runs with
+50 observations were not completed due to the twelve hour time limit of the server.\todo{describe
+  hardware}
 
 Concrete parameters in table~\ref{tab:autogibbs-params}.\todo{more meaningful table}
 
