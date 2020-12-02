@@ -574,52 +574,91 @@ session.  The last two chains of IMM with \(50\) observations using Particle Gib
 completed, due to the twelve hour time limit set by the job scheduler.
 
 \cleartoverso
+\FloatBlock
 
 \begin{figure}[p]
   \centering
   \includegraphics[width=0.49\textwidth]{figures/GMM-sampling_times}
   \includegraphics[width=0.49\textwidth]{figures/GMM-compile_times}
   \par
-  \includegraphics[width=0.49\textwidth]{figures/HMM-sampling_times}
-  \includegraphics[width=0.49\textwidth]{figures/HMM-compile_times}
-  \caption{Extraction and sampling times.}
-  \label{fig:extraction-sampling}
-\end{figure}
-
-\cleartorecto
-
-\begin{figure}[p]
-  \centering
   \includegraphics[width=0.49\textwidth]{figures/GMM-rhat}
   \includegraphics[width=0.49\textwidth]{figures/GMM-ess}
   \par
-  \includegraphics[width=0.49\textwidth]{figures/HMM-rhat}
-  \includegraphics[width=0.49\textwidth]{figures/HMM-ess}
-  \caption{Convergence diagnostics.}
-  \label{fig:convergence_diagnostics}
-\end{figure}
-
-\cleartoverso
-
-\begin{figure}[p]
-  \centering
   \includegraphics[width=\textwidth]{figures/GMM-chains}
-  \par
-  \includegraphics[width=\textwidth]{figures/HMM-chains}
-  \caption{Chains.}
-  \label{fig:chains}
+  \caption{Extraction and sampling times.}
 \end{figure}
 
 \cleartorecto
+\FloatBlock
+
+\begin{figure}[t]
+  \centering
+  \includegraphics[width=\textwidth]{figures/GMM-acfs}
+  \contcaption{Extraction and sampling times.}
+  \label{fig:plots-gmm}
+\end{figure}
+
+\subsection*{GMM}
+
+bla bla bla...
+
+\cleartoverso
+\FloatBlock
 
 \begin{figure}[p]
   \centering
-  \includegraphics[width=\textwidth]{figures/GMM-acfs}
+  \includegraphics[width=0.49\textwidth]{figures/HMM-sampling_times}
+  \includegraphics[width=0.49\textwidth]{figures/HMM-compile_times}
   \par
-  \includegraphics[width=\textwidth]{figures/HMM-acfs}
-  \caption{Autocorrelation estimates.}
-  \label{fig:chains}
+  \includegraphics[width=0.49\textwidth]{figures/HMM-rhat}
+  \includegraphics[width=0.49\textwidth]{figures/HMM-ess}
+  \par
+  \includegraphics[width=\textwidth]{figures/HMM-chains}
+  \caption{Extraction and sampling times.}
 \end{figure}
+
+\cleartorecto
+\FloatBlock
+
+\begin{figure}[t]
+  \centering
+  \includegraphics[width=\textwidth]{figures/HMM-acfs}
+  \contcaption{Extraction and sampling times.}
+  \label{fig:plots-hmm}
+\end{figure}
+
+\subsection*{HMM}
+
+bla bla bla...
+
+\cleartoverso
+\FloatBlock
+
+\begin{figure}[p]
+  \centering
+  \includegraphics[width=0.49\textwidth]{figures/IMM-sampling_times}
+  \includegraphics[width=0.49\textwidth]{figures/IMM-compile_times}
+  \par
+  \includegraphics[width=0.49\textwidth]{figures/IMM-rhat}
+  \includegraphics[width=0.49\textwidth]{figures/IMM-ess}
+  \par
+  \includegraphics[width=\textwidth]{figures/IMM-chains}
+  \caption{Extraction and sampling times.}
+\end{figure}
+
+\cleartorecto
+\FloatBlock
+
+\begin{figure}[t]
+  \centering
+  \includegraphics[width=\textwidth]{figures/IMM-acfs}
+  \contcaption{Extraction and sampling times.}
+  \label{fig:plots-imm}
+\end{figure}
+
+\subsection*{IMM}
+
+bla bla bla...
 
 % \begin{table}[t]
 %   \centering
