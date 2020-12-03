@@ -618,13 +618,22 @@ end
 \cleartoverso
 \FloatBlock
 
+\newcommand{\leftplotcaption}[1]{%
+  Sampling and extraction times for #1, factored by algorithm and number
+  of observations.  Points are jittered horizontally to increase readability.  A quadratic curve is
+  fitted to the extraction times.
+}
+\newcommand{\rightplotcaption}[1]{%
+  Diagnostics, factored by algorithm, number of observations, and a selection of model parameters.
+  \(\widehat{\mathrm{R}}\) and ESS point estimates are jittered horizontally for better readability.
+  For chain plots and autocorrelation, the first chain of the respective combination has been used.
+}
+
 \begin{figure}[t!]
   \centering
   \includegraphics[width=0.49\textwidth]{figures/GMM-sampling_times}
   \includegraphics[width=0.49\textwidth]{figures/GMM-compile_times}
-  \caption{Sampling and extraction times for GMM, factored by algorithm and number of observations.
-    Points are jittered horizontally to increase readability.  A quadratic curve is fitted to the
-    extraction times.}
+  \caption{\leftplotcaption{GMM}}
   \label{fig:plots-gmm}
 \end{figure}
 
@@ -644,10 +653,7 @@ XXX\todo{write interpretation}
   \par
   \includegraphics[width=0.49\textwidth]{figures/GMM-rhat}
   \includegraphics[width=0.49\textwidth]{figures/GMM-ess}
-  \contcaption{Diagnostics, factored by algorithm, number of observations, and a selection of model
-    parameters.  \(\widehat{\mathrm{R}}\) and ESS point estimates are jittered horizontally for better
-    readability.  For chain plots and autocorrelation, the first chain of the respective combination
-    has been used.}
+  \contcaption{\rightplotcaption{GMM}}
 \end{figure}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -658,7 +664,7 @@ XXX\todo{write interpretation}
   \centering
     \includegraphics[width=0.49\textwidth]{figures/HMM-sampling_times}
   \includegraphics[width=0.49\textwidth]{figures/HMM-compile_times}
-  \contcaption{Extraction and sampling times.}
+  \caption{\leftplotcaption{HMM}}
   \label{fig:plots-hmm}
 \end{figure}
 
@@ -678,7 +684,7 @@ XXX\todo{write interpretation}
   \par
   \includegraphics[width=0.49\textwidth]{figures/HMM-rhat}
   \includegraphics[width=0.49\textwidth]{figures/HMM-ess}
-  \caption{Extraction and sampling times.}
+  \contcaption{\rightplotcaption{HMM}}
 \end{figure}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -689,7 +695,7 @@ XXX\todo{write interpretation}
   \centering
   \includegraphics[width=0.49\textwidth]{figures/IMM-sampling_times}
   \includegraphics[width=0.49\textwidth]{figures/IMM-compile_times}
-  \caption{Extraction and sampling times.}
+  \caption{\leftplotcaption{IMM}}
   \label{fig:plots-imm}
 \end{figure}
 
@@ -706,7 +712,7 @@ XXX\todo{write interpretation}
   \par
   \includegraphics[width=0.49\textwidth]{figures/IMM-rhat}
   \includegraphics[width=0.49\textwidth]{figures/IMM-ess}
-  \caption{Convergence diagnostics for }
+  \contcaption{\rightplotcaption{IMM}}
 \end{figure}
 
 \FloatBlock
