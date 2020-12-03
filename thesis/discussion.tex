@@ -7,14 +7,14 @@ a proof of concept in the form of a very specific inference method.  As we have 
 pieces of software have emerged from it: \irtrackerjl{} and \autogibbsjl{}.  On its own, the latter
 is indeed an improvement over the previous situation: Gibbs conditional samplers can be
 significantly faster, thus allowing longer chains, than particle-based samplers, the go-to
-instrument for discrete variables in \turingjl{} so far.  Already the addition of a \enquote{manual}
-Gibbs conditional sampler in \turingjl{} allows to directly implement many models from the
-literature, for which conditionals are often provided analytically.  Automatic derivation allows to
-generalize this to a large class of models that have been found useful in other systems such as
-JAGS.  The underlying issue~-- that \turingjl{} lacks a structural representation of models~-- is
-not at all resolved by the implementation, unfortunately.  This makes \autogibbsjl{} not completely
-satisfactory, since the recursion and branch tracking features of \irtrackerjl{} cannot be applied
-in a useful way.
+instrument for discrete variables in \turingjl{} so far, while delivering comparable inference
+results.  Already the addition of a \enquote{manual} Gibbs conditional sampler in \turingjl{} allows
+to directly implement many models from the literature, for which conditionals are often provided
+analytically.  Automatic derivation allows to generalize this to a large class of models that have
+been found useful in other systems such as JAGS.  The underlying issue~-- that \turingjl{} lacks a
+structural representation of models~-- is not at all resolved by the implementation, unfortunately.
+This makes \autogibbsjl{} not completely satisfactory, since the recursion and branch tracking
+features of \irtrackerjl{} cannot be applied in a useful way.
 
 But the real difficulty is that dynamic models cannot be satisfactorily handled through
 snapshot-like slices in the form of traces.  Systems trying to achieve this either become

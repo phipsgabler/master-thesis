@@ -524,7 +524,7 @@ plots each.  First, PG and AG are compared in terms of sampling times by number 
 the top left.  Right of this, we have the dependency of the extraction time of AG given the number
 observations.  The first of these points is almost always an outlier, since it involves additional
 compilation time.  Through the rest, quadratic a quadratic function is fitted, which always matched
-the values very closely.  \todo{fix x-axis for extraction time plots; remove intercept}
+the values very closely.
 
 On the recto pages, plots for convergence analysis are visualized.  Since these are estimated per
 parameter, and the test models involve larger arrays of parameters, the first elements of the
@@ -534,7 +534,7 @@ qualitative representative (thinned for easier plotting).  Well-converging chain
 white noise, not like a random walk.  In the middle plot, the estimated autocorrelation functions of
 the same chains are given, which are a way to evaluate convergence speed by eye.  The functions
 should vanish quickly (indicated by the gray significance bar around the abscissa); uncorrelated
-samples would have zero autocorrelation except for the first lag.\todo{ACF on unthinned chains!}
+samples would have zero autocorrelation except for the first lag.
 
 Lastly, two diagnostic values are plotted for each combination and chain.  The
 \enquote{scale-reduction} \(\widehat{\mathrm{R}}\), after \textcite{gelman1992inference}, estimates
