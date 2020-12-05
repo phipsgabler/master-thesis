@@ -1219,12 +1219,12 @@ Differentiation through data types and closures is supported via a unified treat
 tuple-like form, with constructors and accessors (inspired by cons-cells in Lisp).
 
 An implementation of this principle has been released as the \juliapackage{Zygote.jl}
-package\footnote{\url{https://github.com/FluxML/Zygote.jl}}.\todo{list some code\_adjoint output?}
-In similar spirit, there is also work on directly differentiating the LLVM intermediate
-representation, by extending the compiler pipeline with a differentiation pass that comes after all
-language-specific and high-level optimizations \parencite{moses2020instead}.  Furthermore, there are
-applications that use the same techniques for other purposes, like sparsity detection
-\parencite{gowda2019sparsity} or concolic execution \parencite{churavy2019vchuravy}.  
+package\footnote{\url{https://github.com/FluxML/Zygote.jl}}.  In similar spirit, there is also work
+on directly differentiating the LLVM intermediate representation, by extending the compiler pipeline
+with a differentiation pass that comes after all language-specific and high-level optimizations
+\parencite{moses2020instead}.  Furthermore, there are applications that use the same techniques for
+other purposes, like sparsity detection \parencite{gowda2019sparsity} or concolic execution
+\parencite{churavy2019vchuravy}.
 
 Internal source-based methods can therefore be composable, extensible, and more user-friendly, since
 no special treatment of programs to be differentiated is required: primal functions can be

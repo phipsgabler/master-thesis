@@ -362,7 +362,7 @@ Concretely, the construction works as follows, finalizing step 2 of the above sc
   to the same value.
 \item Construct for each a closure function that takes as an argument a fixed trace dictionary,
   tabulates the conditional log-likelihood over it with the conditioned variable fixed to all values
-  of its support, and normalizes the result:
+  of its support, and normalizes the result:\todo{Better typesetting?}
   \begin{equation*}
     \begin{aligned}
       &\theta \mapsto \{ \\
@@ -513,7 +513,8 @@ Platform Info:
 Everything was executed single-threaded, with exclusive resource access on the server, to preclude
 measurement noise as much as possible.  Each of the three models was benchmarked in a separate Julia
 session.  The last two chains of the HMM with \(50\) observations using Particle Gibbs could not be
-completed, due to the twelve hour time limit set by the job scheduler.
+completed, due to the twelve hour time limit set by the job scheduler.  The raw data can be found in
+\textcite{gabler2020mcmc}. 
 
 The \dppljl{} implementations of the models can be found in listing~\ref{lst:evaluation-models}.
 Note that for each, there exists a second, equivalent implementation used for PG, since particle
@@ -530,7 +531,7 @@ On the recto pages, plots for convergence analysis are visualized.  Since these 
 parameter, and the test models involve larger arrays of parameters, the first elements of the
 continuous and the fifth element of the discrete parameters have always been chosen as
 representatives.  On the top, the first chain of each experimental combination is shown as a
-qualitative representative (thinned for easier plotting).  Well-converging chains should look like
+qualitative representative (thinned for ease of plotting).  Well-converging chains should look like
 white noise, not like a random walk.  In the middle plot, the estimated autocorrelation functions of
 the same chains are given, which are a way to evaluate convergence speed by eye.  The functions
 should vanish quickly (indicated by the gray significance bar around the abscissa); uncorrelated
@@ -545,7 +546,7 @@ sample size (ESS) arises in the estimation of the asymptotic variance of Markov 
 \parencite[][section 7.2]{vihola2020lectures}, where it is formally analogous to the sample size in
 the variance estimator for \iid{} variables.  The ESS can also be interpreted as a one-point summary
 of the autocorrelation estimate, normalized by chain length.  It should be close to the actual
-number of samples, or at least of the same order of magnitude.\todo{publish measurement data}
+number of samples, or at least of the same order of magnitude.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
