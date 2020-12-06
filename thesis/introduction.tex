@@ -19,11 +19,12 @@ might occur through the need to derive abstract graphs of program flow from a gi
 
 There are several options how to extract the computation graph in question, many of which are
 already established in the AD community (see \textcite{baydin2018automatic} for a survey on AD
-methods).  For one, graphs can be required to be written out explicitly by the user, by defining
-providing a library to build graphs \enquote{by hand}
-(e.g. \textcite{chewxy2020gorgonia,jia2014caffe}~-- these interfaces tend to be more low level) or
-through a higher-level API (application programming interface), e.g. PyTorch
-\parencite{paszke2017automatic} or TensorFlow \parencite{abadi2015tensorflow}.  Such APIs are called
+methods).  For one, graphs can be required to be written out explicitly by the user, by providing a
+library to build graphs \enquote{by hand} (e.g. \textcite{chewxy2020gorgonia,jia2014caffe}) in a
+more low-level application programming interface (API).  Alternatively, there are higher-level APIs
+like PyTorch \parencite{paszke2017automatic} or AutoGrad \parencite{maclaurin2015autograd}, where
+the graphs are defined implicitely from a forward program written in more declarative style
+(TensorFlow \parencite{abadi2015tensorflow} is somewhere between these).  Such APIs are called
 \emph{operator overloading} in AD language, because they extend existing operations to additionally
 track the computation graph at run-time on so-called tapes or Wengert lists
 \parencite{bartholomew-biggs2000automatic}.  This kind of tracking is dynamic, in the sense that a
@@ -36,8 +37,8 @@ interpretation of derivatives stored on the tape.
 
 Alternatively, an implementation can allow the user to write out computations as a \enquote{normal}
 program in an existing programming language (or possibly a restricted subset of it), and use program
-transformation techniques to extract graphs from the input program.  Such meta-programs, known under
-the name \emph{source transformations}, can in turn operate on plain source code (cf. Tapenade,
+transformation techniques to extract graphs from the input program.  Such meta-programs, known as
+\emph{source transformations}, can in turn operate on plain source code (cf. Tapenade,
 \textcite{tapenadedevelopers2019tapenade}), or on another, more abstracted notion used by the
 programming language infrastructure, like the abstract syntax tree (AST), or an intermediate
 representation (IR).  They operate on the syntactic structure of the whole program, during or before
@@ -51,19 +52,34 @@ static information is used only at compile time, and cannot be accessed for furt
 transformation during execution.  (See section~\ref{sec:cg-ad} for a more in-depth treatment of
 automatic differentiation techniques.)
 
-\newthought{In a variety} of domains, though, the execution path of programs can drastically change
-at each run.  Examples of this are implementations of models containing non-uniform data, such as
-parse trees \parencite{socher2011parsing} or molecular graphs \parencite{bianucci2000application},
-of Bayesian nonparametric models \parencite{hjort2010bayesian}, or simply the occurrence of
-stochastic control flow in any probabilistic model.  We call such models dynamic.  The lack of an
-explicit, unique graph structure makes it impossible, or at least difficult, to apply source
-transformation approaches on their implementation.  Operator overloading is the more direct way for
-supporting dynamic models, since it automatically records a new tape for each input. In fact, many
-of the already mentioned state-of-the-art machine learning libraries are based on dynamic graphs
-using operator overloading in some form.
+For probabilitic programming languages, there exist mainly two paradigms for handling program
+structure \parencite{vandemeent2018introduction}.  In the case of evaluation-based systems (e.g.,
+\turingjl{} \parencite{ge2018turing}, \juliapackage{Gen.jl}'s dynamic interface
+\parencite{cusumano-towner2020gen}, Church \parencite{goodman2012church}, Anglican
+\parencite{wood2015new}, Pyro \parencite{bingham2018pyro}), no structure is extracted at all.  The
+interaction between the system and user programs consists only of a sequence of messages (in an
+abstract sense), indicating \enquote{events} that can be taken up by inference algorithms.  In
+graph-based systems, an static representation of the model is first constructed and then passed to
+the inference algorithm.  This representation can be close to probabilistic graphical models
+(\juliapackage{ForneyLab.jl}, \parencite{cox2018forneylab}, Venture
+\parencite{mansinghka2014venture}, PyMC3 \parencite{salvatier2016probabilistic}), symbolic
+(\juliapackage{Gen.jl}'s static interface, \juliapackage{Soss.jl} \parencite{scherrer2019soss}), or
+more compiler-oriented as in Stan \parencite{carpenter2017stan}, BUGS \parencite{lunn2000winbugs},
+or JAGS \parencite{plummer2003jags}.
 
-However, relying on operator overloading makes it impossible to take advantage of the benefits of
-source transformations, such as utilizing information about the control flow, integrating with
+In a variety of modelled domains, though, the execution path of programs can drastically change at
+each run.  Examples of this are implementations of models containing non-uniform data, such as parse
+trees \parencite{socher2011parsing} or molecular graphs \parencite{bianucci2000application}, of
+Bayesian nonparametric models \parencite{hjort2010bayesian}, or simply the occurrence of stochastic
+control flow in any probabilistic model.  We call such models dynamic.  The lack of an explicit,
+unique graph structure makes it impossible, or at least difficult, to apply source transformation
+approaches on their implementation.  Operator overloading is the more direct way for supporting
+dynamic models, since it automatically records a new tape for each input. In fact, many of the
+already mentioned state-of-the-art machine learning libraries are based on dynamic graphs using
+operator overloading in some form.
+
+Reliance on operator overloading makes it impossible to take advantage of the benefits of source
+transformations, such as utilizing information about the control flow, integrating with
 optimizations at compile time, or exploiting the source model structure.  A source transformation
 approach based on intermediate compiler representations has recently gained popularity in machine
 learning, and promises to resolve this dilemma; see \textcite{bradbury2018jax,lattner2020mlir}.
@@ -71,19 +87,28 @@ While the main focus of these efforts has been optimization of linear algebra/te
 and automatic differentiation, other use cases start to emerge, for example automatic detection of
 sparsity patterns \parencite{gowda2019sparsity}.
 
-In this thesis, I present a novel variant of automatic extraction of computation graphs suitable for
-static and dynamic models, using IR-based source transformation instead of operator overloading.
-Inspired by recent work on differential programming \parencite{innes2018don}, the approach
-transforms the intermediate representation used by the compiler of the Julia programming language.
-This system can be used to dynamically track computation graphs of any Julia program, including
-machine learning models and probabilistic programming systems, without having to explicitly declare
-graph structures. The transformation is implemented as a custom part of the compilation process.
-Its result is passed back to the compiler, where it can be optimized further. At run time, both data
-and control path are tracked alongside the original calculations, in the form of a nested data
-structure.  This data structure contains all functions called during execution, enriched by recorded
-control flow decisions and possibly meta-information that can be used to analyse the
-execution. Thus, the system combines advantages of a source transformation with a tape-based
-run-time approach.
+\newthought{In this thesis}, I present a novel variant of automatic extraction of computation graphs
+suitable for static and dynamic models, using IR-based source transformation instead of operator
+overloading.  Inspired by recent work on differential programming \parencite{innes2018don}, the
+approach transforms the intermediate representation used by the compiler of the Julia programming
+language.  This system can be used to dynamically track computation graphs of any Julia program,
+including machine learning models and probabilistic programming systems, without having to
+explicitly declare graph structures. The transformation is implemented as a custom part of the
+compilation process.  Its result is passed back to the compiler, where it can be optimized
+further. At run time, both data and control path are tracked alongside the original calculations, in
+the form of a nested data structure.  This data structure contains all functions called during
+execution, enriched by recorded control flow decisions and possibly meta-information that can be
+used to analyse the execution. Thus, the system combines advantages of a source transformation with
+a tape-based run-time approach.
+
+The extracted graphs can be used for various purposes.  It is possible to implement automatic
+differentiation on top of it, as well as other algorithms that can be formulated via message-passing
+\parencite{minka2019automatic,minka2005divergence}, and methods that operate on run-time dependency
+graphs, from simple debugging to concolic execution \parencite{sen2005cute,zeller2019concolic}.  As
+a specific use case in the field of Bayesian inference, a dependency tracking system for a class of
+models in the Julia-base probabilistic programming language \turingjl{} has been implemented.  On
+top of this, Gibbs conditionals can automatically be derived for the models and used in compound
+MCMC algorithms, similar to JAGS and BUGS.
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -102,21 +127,33 @@ overloading systems that were driven by the rise of deep learning
 \parencite{abadi2015tensorflow,paszke2017automatic,neubig2017dynet,tokui2015chainer}, compiler-based
 approaches have regained popularity.  More recently, there have been efforts to add built-in
 automatic differentiation to the Swift programming language in Swift for TensorFlow
-\parencite{tensorflowdevelopers2018swift}, and work in Julia for Zygote \parencite{innes2018don}.
-Both started to apply source transformation to the intermediate representation of the compiler,
-which enables differentiating through complex control flow, custom data types, and nested functions.
-A similar approach to Zygote is taken in Python with Tangent \parencite{vanmerrienboer2018tangent}.
+\parencite{tensorflowdevelopers2018swift}, and work in Julia for \juliapackage{Zygote.jl}
+\parencite{innes2018don}.  Both started to apply source transformation to the intermediate
+representation of the compiler, which enables differentiating through complex control flow, custom
+data types, and nested functions.  A similar approach to \juliapackage{Zygote.jl} is taken in Python
+with Tangent \parencite{vanmerrienboer2018tangent}.
 
 Generalizations of the kinds of analyses and transformations used in these systems can be found
 under multiple terms in the compiler literature: data- and control-flow analysis, information
-propagation, or abstract interpretation \parencite{muchnick1997advanced,singer2018static}.  These
-methods, most of which find recursive solutions to equations defined over program structure, can in
-turn be seen as a form of message passing, under which not only a variety of learning algorithms can
-be summarized \parencite{minka2005divergence}, but also automatic differentiation
-\parencite{minka2019automatic} and gradient based optimization \parencite{dauwels2005steepest}.
-Other forms of abstract analysis exist for program optimization, e.g., sparsity detection
-\parencite{gowda2019sparsity} or the detection of program parts that need not to be reevaluation
-after input changes \parencite{becker2020dynamic}.
+propagation, or abstract interpretation \parencite{muchnick1997advanced,singer2018static}.  There,
+the program structure is always assumed to be known statically, though, as compilers fundamentally
+are source transformers.  Closest to an evaluation-based analysis are concolic execution methods
+\parencite{sen2005cute,zeller2019concolic}, in which a given program is \enquote{instrumented}
+through additional instructions that, next to the concrete evaluation, track the execution in
+symbolic form (hence the name).  The symbolic information can then be used in formal methods to, for
+example, find sets of program input that ensure complete test coverage of all branches.  There
+already exists a proof-of-concept implementation of a concolic fuzzer in Julia
+\parencite{churavy2019vchuravy}, which applies the same kind IR-based transformations as
+\juliapackage{Zygote.jl}.
+
+These information propagatino methods, most of which find recursive solutions to equations defined
+over program structure, can in turn be seen as a form of message passing, under which not only a
+variety of learning algorithms can be summarized \parencite{minka2005divergence}, but also automatic
+differentiation \parencite{minka2019automatic} and gradient based optimization
+\parencite{dauwels2005steepest}.  Other forms of abstract analysis exist for program optimization,
+e.g., sparsity detection in numerical programming \parencite{gowda2019sparsity}, or the detection of
+parts of probabilistic programs that need not to be reevaluation after input changes
+\parencite{becker2020dynamic}.
 
 Many implementations of these methods do not use the original form of the program, but a
 syntactically simplified lowered form.  Such forms can be dependency graphs as used in compiler
@@ -131,28 +168,33 @@ One of them is the machine learning intermediate representation (MLIR, \textcite
 with the purpose of forming a reusable mid-layer between programming languages and run-times,
 featuring exchangeability between different machine learning frameworks and and
 \enquote{accelerators} (pieces of hardware), while taking advantage of modern compiler technology
-similar to LLVM.  A second one is Swift's intermediate representation (SIL) in the Swift for
-TensorFlow project.  JAX \parencite{bradbury2018jax} plays a similar role for expression-graph based
-machine learning systems, by tracing Python functions and compiling their graphs directly to
-optimized code.  This system can interact with XLA (\enquote{accelerated linear algebra},
-\textcite{tensorflowdevelopers2020xla}), which allows to compile numerical Python functions, that
-would otherwise be slow, to efficient platform code.
+like LLVM.  Another one is Swift's intermediate representation (SIL) in the Swift for TensorFlow
+project.  JAX \parencite{bradbury2018jax} plays a similar role for expression-graph based machine
+learning systems, by tracing Python functions and compiling their graphs directly to optimized code.
+This system can interact with XLA (\enquote{accelerated linear algebra},
+\textcite{tensorflowdevelopers2020xla}), which allows to compile sequences of numerical Python
+functions, which would otherwise be slow, to efficiently fused platform code.
 
-As for the trade-off between transformation-based and library-based implementations, several hybrid
-graph tracking approaches between source transformation and graph tracking exist.  Among AD systems,
-recent TensorFlow versions have introduced
+As for the trade-off between transformation-based and evaluation-based implementations, several
+hybrid graph tracking approaches between source transformation and graph tracking exist.  Among AD
+systems, recent TensorFlow versions have introduced
 AutoGraph\footnote{\url{https://www.tensorflow.org/api_docs/python/tf/autograph}, visited
   on~2020-10-26}, which rewrites regular Python functions to traced TensorFlow implementations by
 replacing control flow statements with TensorFlow combinators.  Such functions still need to be
 re-traced whenever a non-tensor input argument changes.  Its predecessor TensorFlow Fold
 \parencite{looks2017deep} follows a similar, but more explicit style and provides many of these
 combinators as \enquote{dynamic batching operators} to define static graphs emulating dynamic
-operations.  The \enquote{dynamicity} problem can be approached in other ways as well: stochastic
-memoization is employed in the probabilistic programming languages Church
-\parencite{goodman2012church} and Venture \parencite{mansinghka2014venture} to produce what in the
-latter is called \enquote{probabilistic execution traces}, where multiple different traces are
-dynamically stored as alternative parallel paths in the execution trace, with possible
-interconnections.
+operations.  In probabilistic programming, \enquote{dynamicity problem} can be approached in other
+ways as well: a technique called \emph{stochastic memoization} is employed in the probabilistic
+programming languages Church \parencite{goodman2012church} and Venture
+\parencite{mansinghka2014venture} to produce what in the latter is called \enquote{probabilistic
+  execution traces}, where multiple different traces are dynamically stored as alternative parallel
+paths in the execution trace, with possible interconnections.  \juliapackage{Gen.jl}
+\parencite{cusumano-towner2019gen,cusumano-towner2020gen} in Julia is defined over a single abstract
+interface, for which two implementations are defined: a dynamic one, where dictionary-like traces
+are recorded at runtime from general programs, and a static one, that converts a restricted,
+combinator-based model syntax to a fixed graph structure through meta-programming.
+
 
 %%% Local Variables: 
 %%% TeX-master: "main"

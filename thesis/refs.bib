@@ -398,6 +398,15 @@
   type = {Manual}
 }
 
+@inproceedings{cox2018forneylab,
+  title = {{{ForneyLab}}. Jl: Fast and Flexible Automated Inference through Message Passing in {{Julia}}},
+  booktitle = {International Conference on Probabilistic Programming (Boston, {{MA}})},
+  author = {Cox, Marco and van de Laar, Thijs and de Vries, Bert},
+  date = {2018},
+  file = {/home/philipp/Zotero/storage/36HK97S2/Cox et al_2018_ForneyLab.pdf},
+  options = {useprefix=true}
+}
+
 @inproceedings{cusumano-towner2019gen,
   title = {Gen: A General-Purpose Probabilistic Programming System with Programmable Inference},
   shorttitle = {Gen},
@@ -1073,13 +1082,14 @@
   organization = {{Half Integer}}
 }
 
-@article{maclaurinautograd,
-  title = {Autograd: {{Eﬀortless Gradients}} in {{Numpy}}},
+@inproceedings{maclaurin2015autograd,
+  title = {Autograd: {{Effortless}} Gradients in Numpy},
+  booktitle = {{{ICML}} 2015 {{AutoML}} Workshop},
   author = {Maclaurin, Dougal and Duvenaud, David and Adams, Ryan P},
-  pages = {3},
-  abstract = {Automatic differentiation can greatly speed up prototyping and implementation of machine learning models. However, most packages are implicitly domain-specific, requiring the use of a restricted mini-language for specifying functions. We introduce autograd, a package which differentiates standard Python and Numpy code, and can differentiate code containing while loops, branches, closures, classes and even its own gradient evaluations.},
-  file = {/home/philipp/Zotero/storage/XDWTWS7W/Maclaurin et al. - Autograd Eﬀortless Gradients in Numpy.pdf},
-  langid = {english}
+  date = {2015},
+  volume = {238},
+  pages = {5},
+  file = {/home/philipp/Zotero/storage/XDWTWS7W/Maclaurin et al. - Autograd Eﬀortless Gradients in Numpy.pdf}
 }
 
 @online{mansinghka2014venture,
@@ -1586,6 +1596,22 @@
   file = {/home/philipp/Zotero/storage/J3UHJCXN/Ścibior et al. - 2018 - Functional programming for modular Bayesian infere.pdf},
   issue = {ICFP},
   langid = {english}
+}
+
+@article{sen2005cute,
+  title = {{{CUTE}}: {{A}} Concolic Unit Testing Engine for c},
+  author = {Sen, Koushik and Marinov, Darko and Agha, Gul},
+  date = {2005-09},
+  journaltitle = {SIGSOFT Softw. Eng. Notes},
+  volume = {30},
+  pages = {263--272},
+  issn = {0163-5948},
+  doi = {10.1145/1095430.1081750},
+  url = {https://doi.org/10.1145/1095430.1081750},
+  abstract = {In unit testing, a program is decomposed into units which are collections of functions. A part of unit can be tested by generating inputs for a single entry function. The entry function may contain pointer arguments, in which case the inputs to the unit are memory graphs. The paper addresses the problem of automating unit testing with memory graphs as inputs. The approach used builds on previous work combining symbolic and concrete execution, and more specifically, using such a combination to generate test inputs to explore all feasible execution paths. The current work develops a method to represent and track constraints that capture the behavior of a symbolic execution of a unit with memory graphs as inputs. Moreover, an efficient constraint solver is proposed to facilitate incremental generation of such test inputs. Finally, CUTE, a tool implementing the method is described together with the results of applying CUTE to real-world examples of C code.},
+  file = {/home/philipp/Zotero/storage/37WFQS63/Sen et al. - CUTE A Concolic Unit Testing Engine for C.pdf},
+  keywords = {concolic testing,data structure testing,explicit path model-checking,random testing,testing C programs,unit testing},
+  number = {5}
 }
 
 @book{singer2018static,
