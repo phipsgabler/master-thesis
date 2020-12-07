@@ -524,8 +524,8 @@ samplers in \turingjl{} require the usage of special data types due to their tas
 plots each.  First, PG and AG are compared in terms of sampling times by number of observations on
 the top left.  Right of this, we have the dependency of the extraction time of AG given the number
 observations.  The first of these points is almost always an outlier, since it involves additional
-compilation time.  Through the rest, quadratic a quadratic function is fitted, which always matched
-the values very closely.
+compilation time.  Through the rest, a quadratic function is fitted, which always matched the values
+very closely.
 
 On the recto pages, plots for convergence analysis are visualized.  Since these are estimated per
 parameter, and the test models involve larger arrays of parameters, the first elements of the
@@ -640,7 +640,24 @@ end
 
 \subsection*{Gaussian Mixture Model}
 
-XXX\todo{write interpretation}
+For the GMM, the AG sampling times lie consistenly below the minimum of the PG sampling times, even
+with the largest number of observations.  Extraction time seems to grow quadratically, with
+exception of the first call of the conditional extraction, involving compilation and type
+inference.
+
+The mixing behaviour of the chains shows a large variation.  With \(10\) and \(25\) observations,
+neither of the altgorithms reaches consistently satisfactory results; the distribution of
+\(\widehat{R}\) values is quite diffuse and suspiciously large (more so for PG), and especially the
+ESS numbers are way too low.  A look at the exemplary autocorrelation plots confirms bad
+convergence.  The corresponding chains clearly show random-walk-like or \enquote{lumped} behaviour
+for some combinations.
+
+For \(50\) observations, the result is different with AG.  The \(w\) and \(\mu\) parameters appear
+to converge well in most cases, with very low-variance chains and visibly large ESS values.  But for
+unknown reasons, the \(z\) parameter seems to have gotten \enquote{stuck} in this particular example
+and not moved at all, which is the reason no autocorrelation function could be estimated.  PG might
+have improved somewhat, looking at the lower \(\widehat{R}\) distributions, but not enough to make a
+meaningful difference, as ESS and autocorrelation plots show no sufficiently good behaviour.
 
 
 \cleartorecto
@@ -671,8 +688,14 @@ XXX\todo{write interpretation}
 
 \subsection*{Hidden Markov Model}
 
-XXX\todo{write interpretation}
+Also for HMM, the same trends in sampling and extraction times is visible, with AG being consistenly
+faster.  The extraction times seem to be quite the same as GMM, even in absolute terms.
 
+Mixing behaviour for this model is much better overall.  The chains look less like random walks,
+especially for \(\mu\).  Autocorrelation plots are sometimes quite good, especially for \(s\), and
+in all cases better as those above for GMM.  The \(\widehat{R}\) values are all in better ranges
+(note the difference in the scale of the ordinate!), and ESS noticeably higher.  Overall, AG seems
+to improve over PG on average, although neither of the results is stellar.
 
 \cleartorecto
 \FloatBlock
@@ -700,9 +723,17 @@ XXX\todo{write interpretation}
   \label{fig:plots-imm}
 \end{figure}
 
-\subsection*{Infinite Mixture Modell}
+\subsection*{Infinite Mixture Model}
 
-XXX\todo{write interpretation}
+Again, similar trends of sampling times and extraction times are noticeable.  Here we can observe
+some larger involved factors, though; both curves grow faster, with PG on \(10\) observations even
+being faster than AG on \(50\) observations (although that still does not scale, of course).
+
+In this case, PG appears to work better on average.  In the chain plots, we can only see a
+noticeable difference for \(\mu\), while the autocorrelation graphs are almost all worse for AG
+(although both algorithms seem to do better than in the GMM test).  ESS is only satisfactory for the
+\(z\) parameters, but PG here shows a much more consistent behaviour of the \(\widehat{R}\)
+distribution.
 
 
 \begin{figure}[p]
@@ -717,6 +748,32 @@ XXX\todo{write interpretation}
 \end{figure}
 
 \FloatBlock
+
+
+\subsection*{Summary}
+
+Whereas the sampling times of Particle Gibbs always grows rather fast, depending on the number of
+observations, the increase seems to be much lower for AutoGibbs.  The growth of these curves appears
+to be superlinear, perhaps quadratic.  For GMM and HMM, the maximal sampling time of AG is always
+below the minimal sampling time of PG; and even in the case of IMM, AG's sampling time with \(50\)
+observations is closest to PG's with only \(10\) particles.
+
+With regard to the extraction times, we can note a pretty clear quadratic run time depending on the
+number of observations.  The first run is always significantly above this trend, due to the impact
+of compilation and type inference.  Additionally, the first invocation for the lowest number of
+observations might have involved additional compilation of library functions, explaining the larger
+residual compared to the first runs of the larger numbers.
+
+In terms of convergence, AG and PG deliver quite comparable results, varying with some variation in
+quality depending on model and number of observations.  In most cases, judging by eye through the
+exemplary autocorrelation plots, one or the other seems to slightly beat the other, which is
+buttressed by the distribution of the diagnostic values.  IMM poses a particularly bad application
+for AG, but otherwise, no consistent \enquote{winner} is visible, and variations do not seem to
+follow a consistent pattern.
+
+In conclusion, it can be said that for models where both are applicable, AutoGibbs provides a viable
+alternative to PG, delivering comparable results in less time.  Care has to be taken to diagnose
+mixing behaviour, though, as always in MCMC simulations.
 
 
 % \begin{table}[t]
