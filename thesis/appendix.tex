@@ -1,0 +1,34 @@
+\chapter{Appendix}
+\label{ch:appendix}
+
+\section{Measure Theory}
+\label{sec:measure-theory}
+
+Measure theoretic notation \parencite{kallenberg2006foundations} allows to treat both discrete and
+continuous probabilities under a generalized form of measure integrals.  Probability theory always
+operates within a \emph{probability space}, a triple \((\Omega, \mathcal{A}, P_X)\), where
+\(\Omega\) is the set of events that we deal with, \(\mathcal{A} \subseteq 2^{\Omega}\) is the
+\(\sigma\)-algebra of \emph{measurable sets}, and \(P_X: \mathcal{A} \to [0, 1]\) is a probability
+measure on \(\Omega, \mathcal{A}\) (i.e., it is countably additive, \(P_X(\Omega) = 1\), and
+\(P_X(\emptyset) = 0\)).
+
+A function is called measurable when every preimage of a measureable set is measurable. \emph{Random
+  variables} \(X\) are measureable functions
+\((\Omega, \mathcal{A}, \mathbb{P}) \to (\Psi, \mathcal{B}, \mu_X)\) from a probability space to another
+one with a \emph{base measure} \(\mu\), such that additionally, \(\mu_X(B) = P(X^{-1}(B))\) for
+\(B \in \mathcal{B}\).  For discrete random variables, the domain space is the given by
+\(\ZZ, 2^{\ZZ}, \kappa\) with \(\kappa\) the counting measure; for finite-dimensional continuous
+variables, it is \(\RR^N, \mathcal{B}^N, \lambda\), the real numbers with the Borel
+\(\sigma\)-algebras and the Lebesgue measure.
+
+In such a setting, probabilities
+\begin{equation}
+  \label{eq:measure-integral}
+  \Prob{X \in A} = \int_{A} \prob{x} \dif\mu(x).
+\end{equation}
+
+
+
+%%% Local Variables: 
+%%% TeX-master: "main"
+%%% End:
