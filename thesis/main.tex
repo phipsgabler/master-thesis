@@ -51,7 +51,7 @@
   sorting=nyt,
   %natbib=true,
   giveninits=true,
-  %url=false,
+  url=false,
   isbn=false,
   date=year,
   urldate=ymd
@@ -60,22 +60,23 @@
 
 % only capitalize real titles
 % http://tex.stackexchange.com/a/22981/46356
-\DeclareFieldFormat{sentencecase}{\MakeSentenceCase{#1}}
-\renewbibmacro*{title}{%
-  \ifthenelse{\iffieldundef{title}\AND\iffieldundef{subtitle}}
-    {}
-    {\printtext[title]{%
-        \printfield[sentencecase]{title}%
-        \setunit{\subtitlepunct}%
-        \printfield[sentencecase]{subtitle}}
-      \newunit}%
-  \printfield{titleaddon}}
+% \DeclareFieldFormat{sentencecase}{\MakeSentenceCase{#1}}
+% \renewbibmacro*{title}{%
+%   \ifthenelse{\iffieldundef{title}\AND\iffieldundef{subtitle}}
+%     {}
+%     {\printtext[title]{%
+%         \printfield[sentencecase]{title}%
+%         \setunit{\subtitlepunct}%
+%         \printfield[sentencecase]{subtitle}}
+%       \newunit}%
+%   \printfield{titleaddon}}
 
 \defbibheading{memoir}[\bibname]{\chapter*{#1}}
 \setcounter{biburllcpenalty}{7000}
 \setcounter{biburlucpenalty}{8000}
 
 \AtEveryBibitem{\clearlist{language}} % clears language
+\AtEveryBibitem{\clearlist{pagetotal}} % clears book pages
 \renewcommand*\bibnamedash{\rule[0.48ex]{3em}{0.14ex}\space}
 \renewcommand*{\multinamedelim}{,\space}
 \renewcommand*{\finalnamedelim}{\space\&\space}
@@ -254,7 +255,7 @@
 % -------------------------------------------------------------------------------
 \title{\longtitle}
 
-% \includeonly{tracking_models}
+% \includeonly{bibliography}
 
 \begin{document}
 \chapterstyle{hangnum}
