@@ -45,7 +45,7 @@ In the following, we will mostly assume that the involved random variables have 
 respect to a suitable base measure, generally written as \(\mu\): the counting measure in the
 discrete case, and the Lebesgue measure in the finite-dimensional continuous case
 \parencite{kallenberg2006foundations}.  This allows to conveniently unify summation and integration
-under one notation.  See section~\ref{sec:measure-theory} in the appendix for more information.
+under one notation.  See chapter~\ref{ch:measure-theory} in the appendix for more information.
 
 The posterior of the generative model can be expressed as a conditional distribution using Bayes'
 theorem. In terms of densities, we then have\footnote{Note the abuse of notation regarding
@@ -66,9 +66,9 @@ the latent variables, but only a marginal; this corresponds to integrating out s
 Going beyond simple applications like the example mentioned above, handling the posterior gets
 difficult, though.  Simply evaluating the posterior density
 \(\theta \mapsto \prob{\theta \given x}\) at single points is not enough in a Bayesian setting for
-usages such as prediction, certain parameter estimation methods, or evaluation of the normalization
-term \(\prob{x}\).  The problem is that almost all of the relevant quantities depend on some sort of
-expectation over the posterior, an integral of the form
+usages such as prediction, certain parameter estimation methods, or exact evaluation of the
+normalization term \(\prob{x}\).  The problem is that almost all of the relevant quantities depend
+on some sort of expectation over the posterior, an integral of the form
 \begin{equation}
   \label{eq:posterior-expectation}
   \Exp{f(\Theta) \given X = x} = \int f(\theta) \prob{\theta \given x} \dif \mu(\theta),
@@ -102,10 +102,12 @@ procedure with a consistent estimator for expectations:
 \end{equation}
 in some appropriate stochastic convergence (usually convergence in probability is enough).
 
-Examples of such methods are rejection sampling, importance sampling, and particle filters\todo{Add
-  references}.  Many Monte Carlo methods are defined in a form that directly samples a sequence of
-individual random variables \(\sequence{\kth{Y}}\), called a \emph{chain}, for which the estimator
-is given by the arithmetic mean, such that a law of large numbers (LLN) holds:
+Examples of such methods are rejection sampling \parencites[chapter
+II.3]{devroye1986nonuniform}[section 4]{vihola2020lectures}, importance sampling \parencite[section
+4]{vihola2020lectures}, and particle filters \parencite{dahlin2015getting}.  Many Monte Carlo
+methods are defined in a form that directly samples a sequence of individual random variables
+\(\sequence{\kth{Y}}\), called a \emph{chain}, for which the estimator is given by the arithmetic
+mean, such that a law of large numbers (LLN) holds:
 \begin{equation}
   \label{eq:mc-lln}
   \kth{I}(f) = \frac{1}{k} \sum_{i=1}^{k} f(\kth[i]{Y}) \to \Exp{f(\Theta) \given X = x}
@@ -113,44 +115,47 @@ is given by the arithmetic mean, such that a law of large numbers (LLN) holds:
 If we can sample \(\kth{Y} \from \pi(\cdot \given x)\) exactly, they are \iid{} and the LLN holds
 trivially; such samplers exist, but might also be difficult to derive or not possess good enough
 convergence properties (especially in high dimensions).  Another large class of samplers is formed
-by \emph{Markov Chain Monte Carlo} (MCMC) methods, which, instead of sampling exactly from the
-density, define \(\kth{Y}\) via a (time-homogeneous) Markov chain:
+by \emph{Markov Chain Monte Carlo} (MCMC) methods \parencite{vihola2020lectures,robert1999monte},
+which, instead of sampling exactly from the density, define \(\kth{Y}\) via a (time-homogeneous)
+Markov chain:
 \begin{equation}
   \label{eq:mc-kernel}
   \begin{aligned}
     &\Prob{\kth[k+1]{Y} \in \dif y
       \given \kth{Y} = \kth{y}, \ldots, \kth[1]{Y} = \kth[1]{y}} \\
     &\quad = \Prob{\kth[k+1]{Y} \in \dif y \given \kth{Y} = \kth{y}}  \\
-    &\quad = K(dy \given \kth{y}) \\
+    &\quad = K(\kth{y}, \dif y) \\
     % &\quad = k(y \given \kth{y}) \dif\mu(y)
   \end{aligned}
 \end{equation}
 for all \(k \ge 1\).  By constructing the parameterized measure \(K\), the \emph{transition kernel},
-in the right way, the resulting chain is ergodic \parencite{robert1999monte} with the target density
-\(\pi(\cdot \given x)\) as the unique stationary distribution~-- that means for all measurable sets
-\(A\),
+in the right way, the resulting has target density \(\pi(\cdot \given x)\) as the unique stationary
+distribution~-- that means for all \(\pi(\cdot \given x)\)-measurable sets \(A\),
 \begin{equation}
   \label{eq:stationarity}
-  \int \pi(\theta \given x) K(A \given \theta) \dif\mu(\theta) = \int_A \pi(\theta \given x) \dif\mu(\theta) =
+  \int \pi(\theta \given x) K(\theta, A) \dif\mu(\theta) = \int_A \pi(\theta \given x) \dif\mu(\theta) =
   \Prob{\Theta \in A \given X = x},
 \end{equation}
 and the LLN for Markov chains holds.  (For discrete spaces, this relation is more familiarly written
-as a left eigen-problem on a stochastic matrix: \(\pi K = \pi\) for \(x\) fixed.)  The advantage of
-MCMC methods is that they apply equally well to many structurally complex models, and treat
-densities in a uniform way, without requiring special knowledge about the specific distribution in
-question.  I refer to \textcites[chapter 6]{vihola2020lectures}{robert1999monte}[chapters 24 and
-following]{murphy2012machine} as introductions to MCMC theory and practice.
+as a left eigen-problem on a stochastic matrix: \(\pi K = \pi\) for \(x\) fixed, and \(\pi\) and
+\(K\) considered a vector and matrix.)  The advantage of MCMC methods is that they apply equally
+well to many structurally complex models, and treat densities in a uniform way, without requiring
+special knowledge about the specific distribution in question.  I refer to \textcites[chapter
+6]{vihola2020lectures}{robert1999monte}[chapters 24 and following]{murphy2012machine} as
+introductions to MCMC theory practice.
 
 \newthought{Fre{q}uently, MCMC methods} are variations of the \emph{Metropolis-Hastings algorithm}
 (MH), which splits the general definition of the transition kernel into two parts: a proposal
-distribution, given by a conditional density \(q\) that needs to be easy to sample from, and an
-acceptance rate \(\alpha\).  Subsequent samples are then produced by proposing values from \(q\)
-given the previous element of the chain, and incorporating them into the chain with a probability
-given through \(\alpha\) (see algorithm~\ref{alg:mh}).  There exist many MH-based schemes with
-different properties and requirements: from the classical random-walk Metropolis algorithm with
-Gaussian proposals, over Reversible Jump MCMC for varying dimensions
-\parencite{green1995reversible}, to gradient-informed methods like Metropolis Adjusted Langevin and
-Hamiltonian Monte Carlo (HMC) \parencite{betancourt2018conceptual,girolami2011riemann}.
+distribution, given by a transition kernel
+\((\kth[k-1]{y}, \kth{y}) \mapsto q(\kth[k-1]{y}, \kth{y})\) which is easy to sample from, and an
+acceptance rate function \(\alpha\).  Subsequent samples are then produced by proposing values from
+the conditional distribution \(q(\kth[k-1]{y}, \cdot)\) dependent on previous chain element
+\(\kth[k-1]{y}\), and incorporating them into the chain with a probability given through \(\alpha\)
+(see algorithm~\ref{alg:mh}).  There exist many MH-based schemes with different properties and
+requirements: from the classical random-walk Metropolis algorithm with Gaussian proposals, over
+Reversible Jump MCMC for varying dimensions \parencite{green1995reversible}, to gradient-informed
+methods like Metropolis Adjusted Langevin and Hamiltonian Monte Carlo (HMC)
+\parencite{betancourt2018conceptual,girolami2011riemann}.
 
 % \begin{algorithm}[t]
 %   \sffamily
@@ -184,31 +189,37 @@ Hamiltonian Monte Carlo (HMC) \parencite{betancourt2018conceptual,girolami2011ri
   \caption{General scheme for the Metropolis-Hastings algorithm.\label{alg:mh}}
 \end{algorithm}
 
-For multi-component structures, of the form \(\Theta = [\Theta_1, \ldots, \Theta_N]\), a good
-proposal distribution can be hard to find, though.  One way to break down the problem is to use a
-family of component-wise updates, given by conditional distributions \(q_{i}\) operating on only one
-component of \(\Theta\), with the others fixed:
+For multi-component structures, where the latent variables have a blocked form
+\(\Theta = [\Theta_1, \ldots, \Theta_M]\), a good proposal distribution can be hard to find, though.
+One way to break down the problem is to use a family of block-wise updates, given by conditional
+kernels \(q_{i}\) operating on only the \(i\)-th block of \(\Theta\), with the others fixed.  Then
+we can use the following modified proposal \(\hat{Y}\) in algorithm~\ref{alg:mh},
 \begin{equation}
   \label{eq:conditional-kernels}
   \begin{aligned}
-    \kth[k]{\hat{Y}}_{-i} &= \kth[k-1]{Y}_{-i} \\
+    \kth[k]{\hat{Y}}_{-i} &= \kth[k-1]{Y}_{-i}, \\
     \kth[k]{\hat{Y}}_{i} &\from q_{i}(\kth[k-1]{Y}_{i}, \cdot \given \kth[k-1]{Y}_{-i})
   \end{aligned}
 \end{equation}
-The components can be scalar or multivariate blocks, and the kernel may itself be any valid
-transition kernel \parencite[chapter 6.6]{vihola2020lectures}.  This allows one to freely mix
-different MCMC methods suitable for each variable in a problem.
+(notable independent of the previous \(\kth[k-1]{y}_{i}\)).  The blocks can be scalar or
+multivariate, the kernels may themselves be any valid transition kernel, and the order of the blocks
+\(i\) can be chosen in different random or determinstic ways under some technical conditions
+\parencite[chapter 6.6]{vihola2020lectures}.  This allows one to freely mix different MCMC methods
+suitable for each variable in a problem.
 
 This so-called \enquote{within-Gibbs} sampler bears its name because it is a generalization of the
-classical \emph{Gibbs sampling} algorithm \parencite{geman1984stochastic}: often, the simplest
-available set of transition kernels is given by the conditional densities
-\(\theta_{i} \mapsto p(\theta_{i} \given \theta_{-i}, x)\). They can directly be used as component
-proposals for a within-Gibbs sampler, leading to a canceling acceptance rate of
-\(\alpha \equiv 1\).  This approach has the advantage of being very algorithmic, which makes it
-rather easy to apply, even by hand, to many models, and simply to express algorithmically.  Hence,
-the method is a popular starting point for general probabilistic programming systems, most
-prominently BUGS \parencite{lunn2000winbugs,lunn2009bugs} and JAGS
-\parencite{plummer2003jags,plummer2017jags}.
+classical \emph{Gibbs sampling} algorithm \parencite{geman1984stochastic}, using as a simple set of
+transition kernels the conditional distributions:
+\begin{equation}
+  \label{eq:gibbs-conditional-kernel}
+  q_{i}(\kth[k-1]{y}_{i}, \dif \kth{y}_{i} \given \kth[k-1]{y}_{-i}) =
+  \Prob{\kth{\Theta}_{i} \in \dif\kth{y}_{i} \given \kth[k-1]{\Theta}_{-i} = \kth[k-1]{y}_{-i}}.
+\end{equation}
+They can directly be used as component proposals for a within-Gibbs sampler, leading to a canceling
+acceptance rate of \(\alpha \equiv 1\).  This approach has the advantage of being very algorithmic,
+which makes it rather easy to apply, even by hand, to many models.  Hence, the method is a popular
+starting point for general probabilistic programming systems, most prominently BUGS
+\parencite{lunn2000winbugs,lunn2009bugs} and JAGS \parencite{plummer2003jags,plummer2017jags}.
 
 In many real-world models, the factorization structure is quite sparse and results in small Markov
 blankets.  Algorithms to derive Gibbs samplers exploit this large independency between variables.
