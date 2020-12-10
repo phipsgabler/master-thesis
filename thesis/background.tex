@@ -73,7 +73,8 @@ on some sort of expectation over the posterior, an integral of the form
   \label{eq:posterior-expectation}
   \Exp{f(\Theta) \given X = x} = \int f(\theta) \prob{\theta \given x} \dif \mu(\theta),
 \end{equation}
-for some (measurable) function \(f\). This in turn involves calculating the marginal
+for some (measurable) function \(f\) (the integral is understood to range over the whole support of
+\(\Theta\)). This in turn involves calculating the marginal
 \begin{equation}
   \label{eq:normalizing}
   \prob{x} = \int \prob{x, \theta} \dif \mu(\theta),
@@ -201,10 +202,11 @@ fixed.  Then we can use the following modified proposal \(\hat{Y}\) in algorithm
     \kth[k]{\hat{Y}}_{i} &\from q_{i}(\kth[k-1]{Y}_{i}, \cdot \given \kth[k-1]{Y}_{-i})
   \end{aligned}
 \end{equation}
-The blocks can be scalar or multivariate, the kernels may themselves be any valid transition kernel,
-and the order of the blocks \(i\) can be chosen in different random or determinstic ways under some
-technical conditions \parencite[chapter 6.6]{vihola2020lectures}.  This allows one to freely mix
-different MCMC methods suitable for each variable in a problem.
+(negative indices denote removal of the indicated entry).  The blocks can be scalar or multivariate,
+the kernels may themselves be any valid transition kernel, and the sampling order of the blocks
+(\(i\)) can be chosen in different random or determinstic ways under some technical conditions
+\parencite[chapter 6.6]{vihola2020lectures}.  This allows one to freely mix different MCMC methods
+suitable for each variable in a problem.
 
 This so-called \enquote{within-Gibbs} sampler bears its name because it is a generalization of the
 classical \emph{Gibbs sampling} algorithm \parencite{geman1984stochastic}, using as a simple set of
@@ -238,13 +240,14 @@ As an example, consider a simple Gaussian mixture model with equal weights, spec
   \end{aligned}
 \end{equation}
 (\(\distr{Categorical}(K)\) is short for a uniform categorical distribution with probabilities
-\(1/K, \ldots, 1/K)\)).  To derive the conditional distribution of \(Z_{n}\) given the remaining
+\(1/K, \ldots, 1/K)\).)  To derive the conditional distribution of \(Z_{n}\) given the remaining
 variables, we start by writing down the factorization of the joint density:
 \begin{equation}
-  p(z_{1:N}, \mu_{1:K}, x_{1:N}) = \prod_{k} p(\mu_{k}) \prod_{n} p(z_{n}) \prod_{n} p(x_{n} | \mu_{z_{n}}).
+  p(z_{1:N}, \mu_{1:K}, x_{1:N}) = \prod_{k} p(\mu_{k}) \prod_{n} p(z_{n}) \prod_{n} p(x_{n} | \mu_{z_{n}})
 \end{equation}
-From this, we can derive an unnormalized density proportional to the conditional by removing all
-factors not including the target variable (which become part of the normalization constant):
+(with \(v_{1:M}\) denoting the combined vector of all \(v_{i}\)). From this, we can derive an
+unnormalized density proportional to the conditional by removing all factors not including the
+target variable (which become part of the normalization constant):
 \begin{equation}
     p(z_{n} \given z_{-n}, \mu_{1:K}, x_{1:N}) \propto p(z_{n}) p(x_{n} | \mu_{z_{n}})
 \end{equation}
@@ -275,8 +278,9 @@ have the form
       \Normal(x_{n} \given \mu_{k}, \sigma) \right)^{\indicator{z_{n} \, = \, k}}
   \end{aligned}
 \end{equation}
-which we recognize as a product of conjugate pairs of normal distributions.  More examples are
-extensively covered in \textcite[chapter 24.2]{murphy2012machine}.
+which we recognize as a product of conjugate pairs of normal distributions (\(\vvmathbb{1}\) being the
+indicator function).  More examples are extensively covered in \textcite[chapter
+24.2]{murphy2012machine}.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Probabilistic Programming}
