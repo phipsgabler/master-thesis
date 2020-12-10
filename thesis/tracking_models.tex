@@ -648,7 +648,7 @@ inference.
 The mixing behaviour of the chains shows a large variation.  With \(10\) and \(25\) observations,
 neither of the altgorithms reaches consistently satisfactory results; the distribution of
 \(\widehat{R}\) values is quite diffuse and suspiciously large (more so for PG), and especially the
-ESS numbers are way too low.  A look at the exemplary autocorrelation plots confirms bad
+ESS numbers are way too low.  A look at the exemplary autocorrelation plots seems to confirm bad
 convergence.  The corresponding chains clearly show random-walk-like or \enquote{lumped} behaviour
 for some combinations.
 
@@ -688,8 +688,9 @@ meaningful difference, as ESS and autocorrelation plots show no sufficiently goo
 
 \subsection*{Hidden Markov Model}
 
-Also for HMM, the same trends in sampling and extraction times is visible, with AG being consistenly
-faster.  The extraction times seem to be quite the same as GMM, even in absolute terms.
+Also for HMM, the same trends in sampling and extraction times as with GMM are visible, with AG
+being consistenly faster.  The extraction times seem to be quite the same as GMM, even in absolute
+terms, as are the outliers of the first function calls.
 
 Mixing behaviour for this model is much better overall.  The chains look less like random walks,
 especially for \(\mu\).  Autocorrelation plots are sometimes quite good, especially for \(s\), and
@@ -727,10 +728,11 @@ to improve over PG on average, although neither of the results is stellar.
 
 Again, similar trends of sampling times and extraction times are noticeable.  Here we can observe
 some larger involved factors, though; both curves grow faster, with PG on \(10\) observations even
-being faster than AG on \(50\) observations (although that still does not scale, of course).
+being faster than AG on \(50\) observations; although still on a significantly higher scale in
+general.
 
-In this case, PG appears to work better on average.  In the chain plots, we can only see a
-noticeable difference for \(\mu\), while the autocorrelation graphs are almost all worse for AG
+In this example, PG appears to work better on average.  In the example chain plots, we can only see
+a noticeable difference for \(\mu\), while the autocorrelation graphs are almost all worse for AG
 (although both algorithms seem to do better than in the GMM test).  ESS is only satisfactory for the
 \(z\) parameters, but PG here shows a much more consistent behaviour of the \(\widehat{R}\)
 distribution.
@@ -753,10 +755,11 @@ distribution.
 \subsection*{Summary}
 
 Whereas the sampling times of Particle Gibbs always grows rather fast, depending on the number of
-observations, the increase seems to be much lower for AutoGibbs.  The growth of these curves appears
-to be superlinear, perhaps quadratic.  For GMM and HMM, the maximal sampling time of AG is always
-below the minimal sampling time of PG; and even in the case of IMM, AG's sampling time with \(50\)
-observations is closest to PG's with only \(10\) particles.
+observations, the rate of growth seems to be much lower for AutoGibbs.  The behaviour of these
+curves appears to be superlinear, perhaps quadratic.  For GMM and HMM, the maximal sampling time of
+AG is always below the minimal sampling time of PG.  Even in the case of IMM, AG's sampling time
+with \(50\) observations is closest to PG's with only \(10\) particles, with the latter still
+obviously rising much faster.
 
 With regard to the extraction times, we can note a pretty clear quadratic run time depending on the
 number of observations.  The first run is always significantly above this trend, due to the impact
@@ -767,9 +770,9 @@ residual compared to the first runs of the larger numbers.
 In terms of convergence, AG and PG deliver quite comparable results, varying with some variation in
 quality depending on model and number of observations.  In most cases, judging by eye through the
 exemplary autocorrelation plots, one or the other seems to slightly beat the other, which is
-buttressed by the distribution of the diagnostic values.  IMM poses a particularly bad application
-for AG, but otherwise, no consistent \enquote{winner} is visible, and variations do not seem to
-follow a consistent pattern.
+buttressed by the distribution of the diagnostic values.  IMM seems poses a particularly bad
+application for AG, but otherwise, no consistent \enquote{winner} is visible, and variations do not
+seem to follow a consistent pattern.
 
 In conclusion, it can be said that for models where both are applicable, AutoGibbs provides a viable
 alternative to PG, delivering comparable results in less time.  Care has to be taken to diagnose
