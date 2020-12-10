@@ -41,7 +41,7 @@ then conditional distribution of the label given an image.  When we have this in
 for example, build a Bayesian classifier, by returning for a newly observed image that label which
 has the highest probability under the posterior.\todo{Bayesian regression?}
 
-In the following, we will mostly assume that the involved random variables have distributions with
+In the following, we will mostly assume that the involved random variables have densities with
 respect to a suitable base measure, generally written as \(\mu\): the counting measure in the
 discrete case, and the Lebesgue measure in the finite-dimensional continuous case
 \parencite{kallenberg2006foundations}.  This allows to conveniently unify summation and integration
@@ -63,7 +63,7 @@ of the likelihood distribution.  Also note that in practice, one might not be in
 the latent variables, but only a marginal; this corresponds to integrating out some parts of
 \(\theta\).
 
-Going beyond simple applications like the example mentioned above, handling the posterior gets
+Going beyond simple applications like the example mentioned above, hand\-ling the posterior gets
 difficult, though.  Simply evaluating the posterior density
 \(\theta \mapsto \prob{\theta \given x}\) at single points is not enough in a Bayesian setting for
 usages such as prediction, certain parameter estimation methods, or exact evaluation of the
@@ -142,7 +142,7 @@ as a left eigen-problem on a stochastic matrix: \(\pi K = \pi\) for \(x\) fixed,
 well to many structurally complex models, and treat densities in a uniform way, without requiring
 special knowledge about the specific distribution in question.  I refer to \textcites[chapter
 6]{vihola2020lectures}{robert1999monte}[chapters 24 and following]{murphy2012machine} as
-introductions to MCMC theory practice.
+introductions to MCMC theory and practice.
 
 \newthought{Fre{q}uently, MCMC methods} are variations of the \emph{Metropolis-Hastings algorithm}
 (MH), which splits the general definition of the transition kernel into two parts: a proposal
@@ -192,8 +192,8 @@ methods like Metropolis Adjusted Langevin and Hamiltonian Monte Carlo (HMC)
 For multi-component structures, where the latent variables have a blocked form
 \(\Theta = [\Theta_1, \ldots, \Theta_M]\), a good proposal distribution can be hard to find, though.
 One way to break down the problem is to use a family of block-wise updates, given by conditional
-kernels \(q_{i}\) operating on only the \(i\)-th block of \(\Theta\), with the others fixed.  Then
-we can use the following modified proposal \(\hat{Y}\) in algorithm~\ref{alg:mh},
+kernels \(q_{i}\) operating only on the single block \(\Theta_i\), with the rest, \(\Theta_{-i}\),
+fixed.  Then we can use the following modified proposal \(\hat{Y}\) in algorithm~\ref{alg:mh},
 \begin{equation}
   \label{eq:conditional-kernels}
   \begin{aligned}
@@ -201,11 +201,10 @@ we can use the following modified proposal \(\hat{Y}\) in algorithm~\ref{alg:mh}
     \kth[k]{\hat{Y}}_{i} &\from q_{i}(\kth[k-1]{Y}_{i}, \cdot \given \kth[k-1]{Y}_{-i})
   \end{aligned}
 \end{equation}
-(notable independent of the previous \(\kth[k-1]{y}_{i}\)).  The blocks can be scalar or
-multivariate, the kernels may themselves be any valid transition kernel, and the order of the blocks
-\(i\) can be chosen in different random or determinstic ways under some technical conditions
-\parencite[chapter 6.6]{vihola2020lectures}.  This allows one to freely mix different MCMC methods
-suitable for each variable in a problem.
+The blocks can be scalar or multivariate, the kernels may themselves be any valid transition kernel,
+and the order of the blocks \(i\) can be chosen in different random or determinstic ways under some
+technical conditions \parencite[chapter 6.6]{vihola2020lectures}.  This allows one to freely mix
+different MCMC methods suitable for each variable in a problem.
 
 This so-called \enquote{within-Gibbs} sampler bears its name because it is a generalization of the
 classical \emph{Gibbs sampling} algorithm \parencite{geman1984stochastic}, using as a simple set of
@@ -213,13 +212,14 @@ transition kernels the conditional distributions:
 \begin{equation}
   \label{eq:gibbs-conditional-kernel}
   q_{i}(\kth[k-1]{y}_{i}, \dif \kth{y}_{i} \given \kth[k-1]{y}_{-i}) =
-  \Prob{\kth{\Theta}_{i} \in \dif\kth{y}_{i} \given \kth[k-1]{\Theta}_{-i} = \kth[k-1]{y}_{-i}}.
+  \Prob{\kth{\Theta}_{i} \in \dif\kth{y}_{i} \given \kth[k-1]{\Theta}_{-i} = \kth[k-1]{y}_{-i}}
 \end{equation}
-They can directly be used as component proposals for a within-Gibbs sampler, leading to a canceling
-acceptance rate of \(\alpha \equiv 1\).  This approach has the advantage of being very algorithmic,
-which makes it rather easy to apply, even by hand, to many models.  Hence, the method is a popular
-starting point for general probabilistic programming systems, most prominently BUGS
-\parencite{lunn2000winbugs,lunn2009bugs} and JAGS \parencite{plummer2003jags,plummer2017jags}.
+(notably independent of the previous \(\kth[k-1]{y}_{i}\)).  They can directly be used as component
+proposals for a within-Gibbs sampler, leading to a canceling acceptance rate of \(\alpha \equiv 1\).
+This approach has the advantage of being very algorithmic, which makes it rather easy to apply, even
+by hand, to many models.  Hence, the method is a popular starting point for general probabilistic
+programming systems, most prominently BUGS \parencite{lunn2000winbugs,lunn2009bugs} and JAGS
+\parencite{plummer2003jags,plummer2017jags}.
 
 In many real-world models, the factorization structure is quite sparse and results in small Markov
 blankets.  Algorithms to derive Gibbs samplers exploit this large independency between variables.
@@ -237,24 +237,25 @@ As an example, consider a simple Gaussian mixture model with equal weights, spec
     X_{n} &\iidfrom \Normal(\mu_{Z_{n}}, \sigma) \quad\text{for } 1 \le n \le N.
   \end{aligned}
 \end{equation}
-To derive the conditional distribution of \(Z_{n}\) given the remaining variables, we start by
-writing down the factorization of the joint density:
+(\(\distr{Categorical}(K)\) is short for a uniform categorical distribution with probabilities
+\(1/K, \ldots, 1/K)\)).  To derive the conditional distribution of \(Z_{n}\) given the remaining
+variables, we start by writing down the factorization of the joint density:
 \begin{equation}
   p(z_{1:N}, \mu_{1:K}, x_{1:N}) = \prod_{k} p(\mu_{k}) \prod_{n} p(z_{n}) \prod_{n} p(x_{n} | \mu_{z_{n}}).
 \end{equation}
 From this, we can derive an unnormalized density proportional to the conditional by removing all
-factors not including the target variable:
+factors not including the target variable (which become part of the normalization constant):
 \begin{equation}
     p(z_{n} \given z_{-n}, \mu_{1:K}, x_{1:N}) \propto p(z_{n}) p(x_{n} | \mu_{z_{n}})
 \end{equation}
 This is equivalent to finding the Markov blanket of \(Z_{n}\): only those conditionals relating the
 target variable to its children and parents remain.  Since the clusters are drawn from a categorical
-distribution, the support is discrete, and we can find the normalization constant by summation:
+distribution, the support is discrete, and we can find the normalization constant \(Z\) by
+summation:
 \begin{equation}
   \setlength{\jot}{0.8\baselineskip}
   \begin{aligned}
-    &p(z_{n} \given z_{-n}, \mu_{1:K}, x_{1:N}) \\
-    % &\quad = p(z_{n}) p(x_{n} | \mu_{z_{n}}) / Z \\
+    &p(z_{n} \given z_{-n}, \mu_{1:K}, x_{1:N}) = p(z_{n}) p(x_{n} | \mu_{z_{n}}) / Z  \\
     &\quad = \dfrac{\distr{Categorical}(z_{n} \given K) \, \Normal(x_{n} \given \mu_{z_{n}}, \sigma)}{
       \sum_{k \in\, \supp(Z_{n})} \distr{Categorical}(k \given K)\, \Normal(x_{n} \given \mu_{k},
       \sigma)}, \\
@@ -281,7 +282,7 @@ extensively covered in \textcite[chapter 24.2]{murphy2012machine}.
 \section{Probabilistic Programming}
 \label{sec:prob-prog}
 
-\begin{lstfloat}
+\begin{lstfloat}[t]
   \begin{lstlisting}[style=lstfloat]
 @model function normal_mixture(x, K, m, s, σ)
     N = length(x)
@@ -307,7 +308,7 @@ end
     equal cluster weights, and all other parameters fixed.\label{lst:normal}}
 \end{lstfloat}
 
-Probabilistic programming is a structured way implementing generative models, as described in the
+Probabilistic programming is a structured way for implementing generative models, as described in the
 previous section, through the syntax of a programming language.  It is beneficial to consider
 probabilistic programs not only as syntactic sugar for denoting the implementation of a joint
 probability density over some set of variables, but as organized objects in their own right: they
@@ -338,7 +339,7 @@ julia> m = normal_mixture(x_observations, K, m, s, σ);
 julia> forward = sample(m, Prior(), 10);
 julia> chain = sample(m, MH(), 1000);
 \end{lstlisting}
-The value of \jlinl{forward} will be an dataframe-like object containing 10 values for each variable
+The value of \jlinl{forward} will be a dataframe-like object containing 10 values for each variable
 sampled from the forward (i.e., joint) distribution, matching the size of \jlinl{x_observations}.
 Similarly, \jlinl{chain} will contain a length 1000 sample from a Markov chain targeting the
 posterior, conditionally on \jlinl{x_observations}, created using the MH algorithm.  If we were to
@@ -361,14 +362,14 @@ function normal_mixture_logpdf(μ, z, x, K, m, s, σ)
     return ℓ
 end
 \end{lstlisting}
-And still, with these, we would lack much of the flexibility that models written in \turingjl: no
-general interface for sampling algorithms to automatically detect all latent and observed variables;
-no possibility for other, nonstandard execution forms as are needed for Variational Inference or
-gradient computation for HMC; no automatic name extraction and dataframe building for chains.  All
-these points highlight the advantages of dedicated probabilistic programming languages (PPLs) over
-hand-written model code.  (Additionally, there is of course a benefit of reducing errors introduced
-by the sampling function not matching the likelihood function, or errors involving
-log-probabilities.)
+And still, with these, we would lack much of the flexibility of models written in a dedicated
+library such as\turingjl: no general interface for sampling algorithms to automatically detect all
+latent and observed variables; no possibility for other, nonstandard execution forms as are needed
+for variational inference or gradient computation for HMC; no automatic name extraction and
+dataframe building for chains.  All these points highlight the advantages of dedicated probabilistic
+programming languages (PPLs) over hand-written model code.  (Additionally, there is of course a
+benefit of reducing errors introduced by the sampling function not matching the likelihood function,
+or errors involving log-probabilities.)
 
 \newthought{Many PPLs are implemented} as external domain-specific languages (DSLs), like Stan
 \parencite{carpenter2017stan}, JAGS \parencite{plummer2003jags}, and BUGS
@@ -383,9 +384,10 @@ sufficient syntactic flexibility, for example \juliapackage{Gen.jl}
 The latter approach is advantageous when one wants to enable the use of regular, general-purpose
 programming constructs or interact with other functionalities of the host language.  There are also
 a variety of further reasons why one would rather describe an inference problem in terms of a
-program than in more \enquote{mathematical} form, like as a graph or likelihood function.  In a good
-probabilistic programming DSL, models will read as close to textbook model specifications as
-possible, while allowing to use the host language to:
+program than in more \enquote{low-level} form, e.g., as a graph or likelihood function.  In a good
+probabilistic programming DSL, models should be expressible very concisely and intuitively, without
+much bookkeeping (e.g., as close to textbook model specifications as possible).  At the same time,
+structures should exist to allow complex behaviour, such as to
 \begin{itemize}
   % \firmlist
 \item define recursive relationships,
@@ -395,15 +397,15 @@ possible, while allowing to use the host language to:
   termination,
 \item use distributions over complex custom data structures, e.g. trees,
 \item perform inference involving complex transformations from other domains, for which
-  implementations already exist, e.g. neural networks or differential equation solvers , or
+  implementations already exist, e.g. neural networks or differential equation solver, or
 \item integrate calls to very complex external systems, e.g. simulators or renderers.
 \end{itemize}
-Depending on the choice of features should be supported, several possibilities for the
+Depending how many of these features should be supported, several possibilities for the
 implementation of such a DSL exist.  All are based on some form of abstract interpretation.  A rough
 distinction can be made between \emph{compilation-based methods}, which statically translate the
 model code to a graph or density function, and \emph{evaluation-based methods}, which dynamically or
 implicitly build such a structure at run-time, by allowing an inference algorithm to interleave the
-execution.  The latter make it easier to include host-language control constructs.  See
+execution.  The latter makes it easier to include host-language control constructs.  See
 \textcite{vandemeent2018introduction} for a general introduction into some common implementation
 approaches for PPLs, and \textcite{goodman2014design} for a detailed overview of the internals of
 one specific, continuation-based implementation called WebPPL (using a Lisp-based syntax).
