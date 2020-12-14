@@ -45,7 +45,7 @@ In the following, we will mostly assume that the involved random variables have 
 respect to a suitable base measure, generally written as \(\mu\): the counting measure in the
 discrete case, and the Lebesgue measure in the finite-dimensional continuous case
 \parencite{kallenberg2006foundations}.  This allows to conveniently unify summation and integration
-under one notation.  See chapter~\ref{ch:measure-theory} in the appendix for more information.
+under one notation.  See appendix~\ref{ch:measure-theory} for more information.
 
 The posterior of the generative model can be expressed as a conditional distribution using Bayes'
 theorem. In terms of densities, we then have\footnote{Note the abuse of notation regarding
@@ -210,11 +210,11 @@ suitable for each variable in a problem.
 
 This so-called \enquote{within-Gibbs} sampler bears its name because it is a generalization of the
 classical \emph{Gibbs sampling} algorithm \parencite{geman1984stochastic}, using as a simple set of
-transition kernels the conditional distributions:
+transition kernels the conditional distributions of the parameters \(\Theta\):
 \begin{equation}
   \label{eq:gibbs-conditional-kernel}
   q_{i}(\kth[k-1]{y}_{i}, \dif \kth{y}_{i} \given \kth[k-1]{y}_{-i}) =
-  \Prob{\kth{\Theta}_{i} \in \dif\kth{y}_{i} \given \kth[k-1]{\Theta}_{-i} = \kth[k-1]{y}_{-i}}
+  \Prob{\kth{\Theta}_{i} \in \dif\kth{y}_{i} \given \kth[k-1]{\Theta}_{-i} = \kth[k-1]{y}_{-i}, X = x}
 \end{equation}
 (notably independent of the previous \(\kth[k-1]{y}_{i}\)).  They can directly be used as component
 proposals for a within-Gibbs sampler, leading to a canceling acceptance rate of \(\alpha \equiv 1\).
@@ -343,12 +343,13 @@ julia> m = normal_mixture(x_observations, K, m, s, σ);
 julia> forward = sample(m, Prior(), 10);
 julia> chain = sample(m, MH(), 1000);
 \end{lstlisting}
-The value of \jlinl{forward} will be a dataframe-like object containing 10 values for each variable
-sampled from the forward (i.e., joint) distribution, matching the size of \jlinl{x_observations}.
-Similarly, \jlinl{chain} will contain a length 1000 sample from a Markov chain targeting the
-posterior, conditionally on \jlinl{x_observations}, created using the MH algorithm.  If we were to
-write out code for these two functionalities manually, in idiomatic Julia, we would end up with at
-least two separate functions needed for the sampler:
+A model instance \jlinl{m} is created first.  The value of \jlinl{forward} will then be a
+dataframe-like object containing 10 values for each variable sampled from the forward (i.e., joint)
+distribution, matching the size of \jlinl{x_observations}.  Similarly, \jlinl{chain} will contain a
+length 1000 sample from a Markov chain targeting the posterior, conditionally on
+\jlinl{x_observations}, created using the MH algorithm.  If we were to write out code for these two
+functionalities manually, in idiomatic Julia, we would end up with at least two separate functions
+needed for the sampler:
 \begin{lstlisting}
 function normal_mixture_sampler(N, K, m, s, σ)
     μ = rand(Normal(m, s), K)
@@ -616,8 +617,8 @@ order to not possibly shadow any variables from the calling scope.)
 3: (%21)
   return %21
 \end{lstlisting}
-  \caption{SSA-form of the lowered form of the method \protect\jlinl{foo(::Vector\{Int\})} as defined
-    defined above, annotated with inferred types (as through
+  \caption{SSA-form of the lowered form of the method \protect\jlinl{foo(::Vector\{Float64\})} as
+    defined defined above, annotated with inferred types (as through
     \protect\jlinl{\@code_warntype}).\label{lst:foo-inferred}}
 \end{lstfloat}
 
@@ -641,17 +642,20 @@ and any subsequent assignments to variables are linearized to a series of defini
 introduced names of the form \jlinl{\%i}.  The remaining control flow statements (e.g., while loops
 and conditionals) are a represented through sequence of labeled \emph{basic blocks}, with (possibly
 conditional) jumps between them.  The sequence of assignments is further processed into \emph{single
-  static assignment (SSA) form} \parencite{singer2018static}, the characteristic property of which
-is that every variable is assigned exactly once, thus giving it a unique, position-independent name
-to each intermediate value.  By introducing this immutability guarantee, the resulting code is, in a
-certain sense, referentially transparent, which facilitates data-flow analysis, and makes many
-transformations easier.  Accordingly, SSA form is widely used in intermediate forms of compiler
-systems, simplifying transformations and optimizations.  The result of the translation of our
-example into into three basic blocks can be found in listing~\ref{lst:foo-inferred}.
+  static assignment (SSA) form} \parencite{rosen1988global,singer2018static}, the characteristic
+property of which is that every variable is assigned exactly once, by giving a unique,
+position-independent name to each intermediate value of an expression.  By introducing this
+immutability guarantee and flattened structure, the resulting code is, in a certain sense,
+referentially transparent, which facilitates program flow analyses, and makes many transformations
+easier \parencite{muchnick1997advanced}.  Accordingly, SSA form is widely used in intermediate forms
+of compiler systems (such as LLVM \parencite{llvmproject2019llvm}, or Swift
+\parencite{apple2020swifta}), simplifying transformations and optimizations.  The result of the
+translation of our example into into three basic blocks can be found in
+listing~\ref{lst:foo-inferred}.
 
 There is one notable complication regarding conversion to SSA form: we need to be able to
-distinguish between assignments of variables arising from \enquote{joined} control flow.  Consider
-the assignment of \jlinl{y} in the following code example:
+distinguish between assignments of variables arising from \enquote{joined} control flow paths.
+Consider the assignment of \jlinl{y} in the following code example:
 \begin{lstlisting}
 x = f()
 if !g()
@@ -775,11 +779,12 @@ So, in a sense, JIT compilation can be seen as a function that returns compiled 
 function and a tuple of types.  Similar to macros, which transform original code, given an
 expression, this process of generating compiled methods from types is customizable in Julia: via
 so-called \emph{generated functions}, there exists a process to dynamically generate code, given
-argument types~-- a form of staged programming
-\parencite{rompf2010lightweight,bolewski2015staged}. Such generated functions, when called, are not
-directly translated into machine code: instead, they emit new code to the compiler, based on the
-types of their arguments.  The new code is then JIT-compiled.  For example, when we have two methods
-of a function \jlinl{f}:
+argument types~-- a form of staged programming \parencite{rompf2010lightweight,bolewski2015staged},
+a paradigm in which code generation is controlled via regular types and functions, instead of
+specially priviledged ones as macros are. Such generated functions, when called, are not directly
+translated into machine code: instead, they emit new code to the compiler, based on the types of
+their arguments.  The new code is then JIT-compiled.  For example, when we have two methods of a
+function \jlinl{f}:
 \begin{lstlisting}
 f(x::Int) = println("Int")
 f(x::String) = println("String")
@@ -805,7 +810,7 @@ to determine the type tuple the generated function has been called with!  The ne
 \jlinl{f_generated} is executed, the function body is \emph{not} executed anymore, but the generated
 code of the the function defined through the expression \jlinl{:(println("Int"))} directly looked
 up\footnote{A caveat: technically, the compiler is still free to call the generating code multiple
-  times~-- which is the reason generated functions should never involve side effects or depend on
+  times~-- which is the reason generated functions must never involve side effects or depend on
   external state.}.  Of course, simply replacing dispatch, as with this example, is not what
 generated functions are used for in practice.  Most applications concern parametric types with
 statically known shape arguments, such as tuples, named tuples, or array ranks.  They can also be
