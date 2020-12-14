@@ -1,28 +1,71 @@
-\chapter{Measure Theory}
+\chapter{Measure Theory in Probability Theory}
 \label{ch:measure-theory}
 
-Measure theoretic notation \parencite{kallenberg2006foundations} allows to treat both discrete and
-continuous probabilities under a generalized form of measure integrals.  Probability theory always
-operates within a \emph{probability space}, a triple \((\Omega, \mathcal{A}, P_X)\), where
-\(\Omega\) is the set of events that we deal with, \(\mathcal{A} \subseteq 2^{\Omega}\) is the
-\(\sigma\)-algebra of \emph{measurable sets}, and \(P_X: \mathcal{A} \to [0, 1]\) is a probability
-measure on \(\Omega, \mathcal{A}\) (i.e., it is countably additive, \(P_X(\Omega) = 1\), and
-\(P_X(\emptyset) = 0\)).
+Measure theory \parencites{tao2011introduction}[section 10.5]{bronstein1995taschenbuch} allows to treat both
+discrete and continuous probabilities under a common, generalized notation, primarily by the
+introduction of integrals over measures.  The basic idea of a measure is to generalize the concept
+of a \enquote{volume function} on sets.
 
-A function is called measurable when every preimage of a measureable set is measurable. \emph{Random
-  variables} \(X\) are measureable functions
-\((\Omega, \mathcal{A}, \mathbb{P}) \to (\Psi, \mathcal{B}, \mu_X)\) from a probability space to another
-one with a \emph{base measure} \(\mu\), such that additionally, \(\mu_X(B) = P(X^{-1}(B))\) for
-\(B \in \mathcal{B}\).  For discrete random variables, the domain space is the given by
-\(\ZZ, 2^{\ZZ}, \kappa\) with \(\kappa\) the counting measure; for finite-dimensional continuous
-variables, it is \(\RR^N, \mathcal{B}^N, \lambda\), the real numbers with the Borel
-\(\sigma\)-algebras and the Lebesgue measure.
+A \emph{measure space} is a triple \((\Omega, \mathcal{A}, \mu)\), where
+\(\mathcal{A} \subseteq 2^{\Omega}\) is a \(\sigma\)-algebra of \emph{measurable sets} (i.e., closed
+under complement, countable union, and countable intersection), and
+\(\mu: \mathcal{A} \to \RR \cup \{\infty\}\) is a \(\sigma\)-additive function:
+\begin{equation}
+  \label{eq:sigma-additivity}
+  \mu\left( \bigcup_{k} A_k \right) = \sum_{k} \mu(A_k)
+\end{equation}
+for all disjoint countable families \((A_k)\) in \(\mathcal{A}\).  Additionally, we require that
+\(\mu(\emptyset) = 0\).  The necessity for \(\mathcal{A}\) and \(\mu\) being defined in such an
+elaborate way, instead of just taking it as \(2^{\Omega}\), is that for uncountable \(\Omega\), it
+is not possible to consistently assign a measure for the complete powerset.  The restriction to
+measurable subsets specifically filters out those pathological cases.
 
-In such a setting, probabilities
+In probability theory \parencite{kallenberg2006foundations}, one always operates within a special
+measure space called \emph{probability space}.  In a probability space \((\Omega, \mathcal{A}, P)\),
+we additionally require that \(P(\Omega) = 1\).  \(\Omega\) is then called the set of
+\emph{events}~-- think of all possible outcomes of some experiment. 
+
+A function between measure spaces, or probability spaces in particular, is called \emph{measurable}
+when every preimage of a measureable set is measurable.  A \emph{random variable} \(X\) is a
+measureable function \((\Omega, \mathcal{A}, P) \to (\Psi, \mathcal{B}, P_X)\) from a probability
+space to another one with a \emph{pushforward} \(P_X\), such that
+\begin{equation}
+  \label{eq:pushforward}
+  P_X(B) = P(X^{-1}(B))
+\end{equation}
+for all \(B \in \mathcal{B}\).  The introduction of random variables allows to consistently convert
+set-theoretic operations on events into \enquote{numerical} ones: think of assigning to each outcome
+of a coin throw a number in \(\{1, 2\}\), or to each measurement of some height a value in
+\(\RR^{+}\).  In practice, this allows us to forget about the underlying event space and think
+solely in terms of the values in the domain of the random variable, with notation like
+\begin{equation}
+  \label{eq:prob-notation}
+  \Prob{\alpha(X)} = P(\{\omega \in \Omega \mid \alpha(X(\omega))\})
+\end{equation}
+where \(\alpha\) is an arbitrary predicate defining a set in the domain of \(X\).
+
+In such a setting, it might the case that there exist some \emph{base measure} \(\mu\), such that
+probability evaluation can be expressed as integral over some \emph{density} with respect to \(\mu\):
 \begin{equation}
   \label{eq:measure-integral}
-  \Prob{X \in A} = \int_{A} \prob{x} \dif\mu(x).
+  \Prob{X \in A} = \int_{A} \prob[X]{x} \dif\mu(x),
 \end{equation}
+for all \(P_X\)-measureable sets \(A\), or in differential notation
+\begin{equation}
+  \label{eq:measure-differential}
+  \Prob{X \in \dif x} = \prob[X]{x} \dif\mu(x).
+\end{equation}
+In this case \(P_X\) is said to be \emph{absolutely continuous} with respect to \(\mu\), written
+\(P_X \ll \mu\).  This statement is equivalent to the existence of a \emph{Radon-Nikodym derivative}
+\begin{equation}
+  \label{eq:radon-nikodym}
+  \frac{\dif P_{X}}{\dif \mu} = p_{X}.
+\end{equation}
+For discrete values, a density always exists with respect to the counting measure, and the random
+variable is also called discrete.  For finite-dimensional continuous values, when a density exists
+with respect the Lebesgue measure, we speak of a continuous random variable. 
+
+
 
 
 
