@@ -16,34 +16,47 @@ terminology that will later be used were taken
 \section{Bayesian Inference and MCMC methods}
 \label{sec:bayes-infer}
 
-Probabilistic modeling is an approach to model phenomena based on the assumption that observable
-data can be fully described through some generative process that involves randomness.  Recovering
-the details of this process, by estimating which one from a class of processes fits observed data
-best, is a form of learning: if we have a good description of how observations are generated, we can
-make summary statements about the whole population (descriptive statistics) or predictions about new
-observations.  For example, learning the specifics a conditional relation between independently
-observed paired data can be used to solve regression or classification problems.
+Probabilistic modeling \parencite{winn2019modelbased} is an approach to model phenomena based on the
+assumption that observable data can be fully described through some generative process that involves
+randomness.  Recovering the details of this process, by estimating which one from a class of
+processes fits observed data best, is a form of learning: if we have a good description of how
+observations are generated, we can make summary statements about the whole population (descriptive
+statistics) or predictions about new observations.  For example, learning the specifics a
+conditional relation between independently observed paired data can be used to solve regression or
+classification problems.
 
-Within the Bayesian framework, we assume that the generative process is specified by random
-variables related through conditional distributions with densities, which describe how the
-observables would be generated: some \emph{latent variables} are generated from \emph{prior
-  distributions}, and the data are generated conditionally on the latent variables.  The goal is to
-learn the \emph{posterior distribution} of the latent variables given the data.  Whereas the
-generative model specifies how we assume data generation to work from latent to observed values in
-\enquote{forward} direction, the posterior estimate allows us to reason \enquote{backwards} from
-given observations to the latent values that have generated them.
+Within the Bayesian framework
+\parencite{bolstad2004introduction,congdon2006bayesian,gelman2020bayesian}, we assume that the
+generative process is specified by random variables related through conditional distributions with
+densities, which describe how the observables would be generated: some \emph{latent variables} are
+generated from \emph{prior distributions}, and the data are generated conditionally on the latent
+variables.  The goal is to learn the \emph{posterior distribution} of the latent variables given the
+data.  Whereas the generative model specifies how we assume data generation to work from latent to
+observed values in \enquote{forward} direction, the posterior estimate allows us to reason
+\enquote{backwards} from given observations to the latent values that have generated them.  This can
+also be described iteratively, as a process of updating prior beliefs through the inclusion of new
+knowledge given by observations.
 
-As an example, consider image classification: if we assume that certain percentages of an image data
-set picture cats and dogs, respectively, the distribution of these labels forms the prior.  Given
-the information which kind of animal is depicted on it, an image can then be generated as a matrix
-of pixels based on a distribution of images conditioned on labels.  The posterior distribution is
-then conditional distribution of the label given an image.  When we have this information, we can,
-for example, build a Bayesian classifier, by returning for a newly observed image that label which
-has the highest probability under the posterior.\todo{Bayesian regression?}
+As an example, consider a linear regression model, where some output depends linearly on an input
+variable, with Gaussian noise:
+\begin{equation}
+  \label{eq:bayes-regression-model}
+  Y \sim \Normal(\theta_0 + x\theta_1, \sigma). 
+\end{equation}
+In a traditional approach, \(\theta\) would be considered fixed, and estimated through least-squares
+optimization given pairs of observations of \(x\) and \(y\).  In a Baysian approach, though, we
+first decide on some prior distribution for the parameters, which are now a thought of as
+realizations of random variable \(\Theta\), and then try to recover the posterior distribution of
+\(\Theta\) given the observed data.  This estimate allows some more applications, compared to the
+single point estimate of least-squares regression.  With the full posterior distribution, more
+complex question can be answered, such as the variance or credibility of the estimation.  We can
+also derive a posterior predictive distribution, that models the probability of future values,
+taking into account the information gained by the values and variation of the already observed
+values \parencite{marin2007bayesian}.
 
-In the following, we will mostly assume that the involved random variables have densities with
-respect to a suitable base measure, generally written as \(\mu\): the counting measure in the
-discrete case, and the Lebesgue measure in the finite-dimensional continuous case
+\newthought{In the following}, we will mostly assume that the involved random variables have
+densities with respect to a suitable base measure, generally written as \(\mu\): the counting
+measure in the discrete case, and the Lebesgue measure in the finite-dimensional continuous case
 \parencite{kallenberg2006foundations}.  This allows to conveniently unify summation and integration
 under one notation.  See appendix~\ref{ch:measure-theory} for more information.
 
