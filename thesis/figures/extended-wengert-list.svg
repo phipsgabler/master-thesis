@@ -9,15 +9,30 @@
    xmlns="http://www.w3.org/2000/svg"
    xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
    xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
-   width="288.86908mm"
+   width="244.15665mm"
    height="188.92343mm"
-   viewBox="0 0 288.86907 188.92343"
+   viewBox="0 0 244.15663 188.92343"
    version="1.1"
    id="svg8"
    inkscape:version="0.92.5 (2060ec1f9f, 2020-04-08)"
-   sodipodi:docname="wengert-list.svg">
+   sodipodi:docname="extended-wengert-list.svg">
   <defs
      id="defs2">
+    <marker
+       inkscape:isstock="true"
+       style="overflow:visible"
+       id="marker1452"
+       refX="0"
+       refY="0"
+       orient="auto"
+       inkscape:stockid="Arrow2Lstart">
+      <path
+         inkscape:connector-curvature="0"
+         transform="matrix(1.1,0,0,1.1,1.1,0)"
+         d="M 8.7185878,4.0337352 -2.2072895,0.01601326 8.7185884,-4.0017078 c -1.7454984,2.3720609 -1.7354408,5.6174519 -6e-7,8.035443 z"
+         style="fill:#ffffff;fill-opacity:1;fill-rule:evenodd;stroke:#ffffff;stroke-width:0.625;stroke-linejoin:round;stroke-opacity:1"
+         id="path1450" />
+    </marker>
     <marker
        inkscape:isstock="true"
        style="overflow:visible"
@@ -667,7 +682,8 @@
        refX="0"
        id="marker6334"
        style="overflow:visible"
-       inkscape:isstock="true">
+       inkscape:isstock="true"
+       inkscape:collect="always">
       <path
          id="path6332"
          style="fill:#6c6c6c;fill-opacity:1;fill-rule:evenodd;stroke:#6c6c6c;stroke-width:0.625;stroke-linejoin:round;stroke-opacity:1"
@@ -822,9 +838,9 @@
      borderopacity="1.0"
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
-     inkscape:zoom="0.5"
-     inkscape:cx="517.54646"
-     inkscape:cy="515.4421"
+     inkscape:zoom="1"
+     inkscape:cx="332.16635"
+     inkscape:cy="440.68507"
      inkscape:document-units="mm"
      inkscape:current-layer="layer1"
      showgrid="false"
@@ -841,7 +857,7 @@
      inkscape:window-y="25"
      inkscape:window-maximized="1">
     <sodipodi:guide
-       position="71.517272,162.49197"
+       position="69.136023,162.49197"
        orientation="1,0"
        id="guide12976"
        inkscape:locked="false" />
@@ -862,69 +878,7 @@
      inkscape:label="Layer 1"
      inkscape:groupmode="layer"
      id="layer1"
-     transform="translate(54.308727,-28.03928)">
-    <g
-       id="g5136"
-       transform="translate(7.8577241)">
-      <text
-         id="text4589"
-         y="97.225868"
-         x="-58.208336"
-         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:4.23333311px;line-height:1.25;font-family:Inconsolatazi4;-inkscape-font-specification:Inconsolatazi4;font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:start;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.26458332"
-         xml:space="preserve"><tspan
-           style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:4.23333311px;font-family:Inconsolatazi4;-inkscape-font-specification:Inconsolatazi4;font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:start;writing-mode:lr-tb;text-anchor:start;stroke-width:0.26458332"
-           y="97.225868"
-           x="-58.208336"
-           id="tspan4587"
-           sodipodi:role="line">1: (%1, %2, %3)</tspan><tspan
-           id="tspan4591"
-           style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:4.23333311px;font-family:Inconsolatazi4;-inkscape-font-specification:Inconsolatazi4;font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:start;writing-mode:lr-tb;text-anchor:start;stroke-width:0.26458332"
-           y="102.51753"
-           x="-58.208336"
-           sodipodi:role="line">  %4 = Main.rand()</tspan><tspan
-           id="tspan4593"
-           style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:4.23333311px;font-family:Inconsolatazi4;-inkscape-font-specification:Inconsolatazi4;font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:start;writing-mode:lr-tb;text-anchor:start;stroke-width:0.26458332"
-           y="107.8092"
-           x="-58.208336"
-           sodipodi:role="line">  %5 = %4 &lt; %3</tspan><tspan
-           id="tspan4595"
-           style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:4.23333311px;font-family:Inconsolatazi4;-inkscape-font-specification:Inconsolatazi4;font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:start;writing-mode:lr-tb;text-anchor:start;stroke-width:0.26458332"
-           y="113.10087"
-           x="-58.208336"
-           sodipodi:role="line">  br 2 unless %5</tspan><tspan
-           id="tspan4597"
-           style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:4.23333311px;font-family:Inconsolatazi4;-inkscape-font-specification:Inconsolatazi4;font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:start;writing-mode:lr-tb;text-anchor:start;stroke-width:0.26458332"
-           y="118.39253"
-           x="-58.208336"
-           sodipodi:role="line">  return %2</tspan><tspan
-           id="tspan4599"
-           style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:4.23333311px;font-family:Inconsolatazi4;-inkscape-font-specification:Inconsolatazi4;font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:start;writing-mode:lr-tb;text-anchor:start;stroke-width:0.26458332"
-           y="123.6842"
-           x="-58.208336"
-           sodipodi:role="line">2:</tspan><tspan
-           id="tspan4601"
-           style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:4.23333311px;font-family:Inconsolatazi4;-inkscape-font-specification:Inconsolatazi4;font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:start;writing-mode:lr-tb;text-anchor:start;stroke-width:0.26458332"
-           y="128.97586"
-           x="-58.208336"
-           sodipodi:role="line">  %6 = %2 + 1</tspan><tspan
-           id="tspan4603"
-           style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:4.23333311px;font-family:Inconsolatazi4;-inkscape-font-specification:Inconsolatazi4;font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:start;writing-mode:lr-tb;text-anchor:start;stroke-width:0.26458332"
-           y="134.26753"
-           x="-58.208336"
-           sodipodi:role="line">  %7 = Main.geom(%6, %3)</tspan><tspan
-           id="tspan4605"
-           style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:4.23333311px;font-family:Inconsolatazi4;-inkscape-font-specification:Inconsolatazi4;font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:start;writing-mode:lr-tb;text-anchor:start;stroke-width:0.26458332"
-           y="139.5592"
-           x="-58.208336"
-           sodipodi:role="line">  return %7</tspan></text>
-      <rect
-         style="opacity:1;vector-effect:none;fill:none;fill-opacity:1;stroke:#030303;stroke-width:0.26499999;stroke-linecap:round;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
-         id="rect5057"
-         width="58.246323"
-         height="57.990849"
-         x="-62.033951"
-         y="84.796593" />
-    </g>
+     transform="translate(51.927477,-28.03928)">
     <g
        id="g5123">
       <text
@@ -957,7 +911,7 @@
            style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:4.23333311px;font-family:Inconsolatazi4;-inkscape-font-specification:Inconsolatazi4;font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:start;writing-mode:lr-tb;text-anchor:start;stroke-width:0.26458332"
            y="63.729351"
            x="14.741063"
-           sodipodi:role="line">  @4: [§1:%4] ⟨rand⟩(, ()...) → 0.7475910247520039::Float64</tspan><tspan
+           sodipodi:role="line">  @4: [§1:%4] ⟨rand⟩(, ()...) → 0.74::Float64</tspan><tspan
            id="tspan827"
            style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:4.23333311px;font-family:Inconsolatazi4;-inkscape-font-specification:Inconsolatazi4;font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:start;writing-mode:lr-tb;text-anchor:start;stroke-width:0.26458332"
            y="69.191345"
@@ -967,17 +921,17 @@
            style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:4.23333311px;font-family:Inconsolatazi4;-inkscape-font-specification:Inconsolatazi4;font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:start;writing-mode:lr-tb;text-anchor:start;stroke-width:0.26458332"
            y="74.483009"
            x="14.741063"
-           sodipodi:role="line">    @2: [§1:%2] ⟨Random.default_rng⟩() → Random.MersenneTwister(...)</tspan><tspan
+           sodipodi:role="line">    @2: [§1:%2] ⟨default_rng⟩() → (...)</tspan><tspan
            id="tspan831"
            style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:4.23333311px;font-family:Inconsolatazi4;-inkscape-font-specification:Inconsolatazi4;font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:start;writing-mode:lr-tb;text-anchor:start;stroke-width:0.26458332"
            y="79.945"
            x="14.741063"
-           sodipodi:role="line">    @3: [§1:%3] @1(@2, ⟨Float64⟩) → 0.7475910247520039::Float64</tspan><tspan
+           sodipodi:role="line">    @3: [§1:%3] @1(@2, ⟨Float64⟩) → 0.74::Float64</tspan><tspan
            id="tspan833"
            style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:4.23333311px;font-family:Inconsolatazi4;-inkscape-font-specification:Inconsolatazi4;font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:start;writing-mode:lr-tb;text-anchor:start;stroke-width:0.26458332"
            y="85.40699"
            x="14.741063"
-           sodipodi:role="line">    @4: [§1:&amp;1] return @3 → 0.7475910247520039::Float64</tspan><tspan
+           sodipodi:role="line">    @4: [§1:&amp;1] return @3 → 0.74::Float64</tspan><tspan
            id="tspan835"
            style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:4.23333311px;font-family:Inconsolatazi4;-inkscape-font-specification:Inconsolatazi4;font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:start;writing-mode:lr-tb;text-anchor:start;stroke-width:0.26458332"
            y="90.698662"
@@ -992,7 +946,7 @@
            style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:4.23333311px;font-family:Inconsolatazi4;-inkscape-font-specification:Inconsolatazi4;font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:start;writing-mode:lr-tb;text-anchor:start;stroke-width:0.26458332"
            y="101.45232"
            x="14.741063"
-           sodipodi:role="line">    @2: [Arg:§1:%2] @5#2 → 0.7475910247520039::Float64</tspan><tspan
+           sodipodi:role="line">    @2: [Arg:§1:%2] @5#2 → 0.74::Float64</tspan><tspan
            id="tspan841"
            style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:4.23333311px;font-family:Inconsolatazi4;-inkscape-font-specification:Inconsolatazi4;font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:start;writing-mode:lr-tb;text-anchor:start;stroke-width:0.26458332"
            y="106.74399"
@@ -1067,7 +1021,7 @@
            style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:4.23333311px;font-family:Inconsolatazi4;-inkscape-font-specification:Inconsolatazi4;font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:start;writing-mode:lr-tb;text-anchor:start;stroke-width:0.26458332"
            y="181.50862"
            x="14.741063"
-           sodipodi:role="line">    @4: [§1:%4] ⟨rand⟩() → 0.9988109756295449::Float64</tspan><tspan
+           sodipodi:role="line">    @4: [§1:%4] ⟨rand⟩() → 0.99::Float64</tspan><tspan
            id="tspan871"
            style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:4.23333311px;font-family:Inconsolatazi4;-inkscape-font-specification:Inconsolatazi4;font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:start;writing-mode:lr-tb;text-anchor:start;stroke-width:0.26458332"
            y="186.97061"
@@ -1102,278 +1056,263 @@
          y="35.911907"
          x="12.064845"
          height="180.9183"
-         width="149.33098"
+         width="108.91983"
          id="rect5055"
-         style="opacity:1;vector-effect:none;fill:none;fill-opacity:1;stroke:#030303;stroke-width:0.265;stroke-linecap:round;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1" />
+         style="opacity:1;vector-effect:none;fill:none;fill-opacity:1;stroke:#030303;stroke-width:0.26499999;stroke-linecap:round;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1" />
     </g>
-    <text
-       xml:space="preserve"
-       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:4.15771294px;line-height:1.25;font-family:Inconsolatazi4;-inkscape-font-specification:Inconsolatazi4;font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:start;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.26458332"
-       x="175.22449"
-       y="132.72151"
-       id="text4627"
-       transform="scale(0.98213698,1.0181879)"><tspan
-         sodipodi:role="line"
-         id="tspan4625"
-         x="175.22449"
-         y="132.72151"
-         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:4.15771294px;font-family:Inconsolatazi4;-inkscape-font-specification:Inconsolatazi4;font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:start;writing-mode:lr-tb;text-anchor:start;stroke-width:0.26458332">1: (%1, %2, %3)</tspan><tspan
-         sodipodi:role="line"
-         x="175.22449"
-         y="137.91866"
-         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:4.15771294px;font-family:Inconsolatazi4;-inkscape-font-specification:Inconsolatazi4;font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:start;writing-mode:lr-tb;text-anchor:start;stroke-width:0.26458332"
-         id="tspan4629">  %4 = Base.add_int(%2, %3)</tspan><tspan
-         sodipodi:role="line"
-         x="175.22449"
-         y="143.1158"
-         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:4.15771294px;font-family:Inconsolatazi4;-inkscape-font-specification:Inconsolatazi4;font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:start;writing-mode:lr-tb;text-anchor:start;stroke-width:0.26458332"
-         id="tspan4631">  return %4</tspan><tspan
-         sodipodi:role="line"
-         x="175.22449"
-         y="148.31294"
-         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:4.15771294px;font-family:Inconsolatazi4;-inkscape-font-specification:Inconsolatazi4;font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:start;writing-mode:lr-tb;text-anchor:start;stroke-width:0.26458332"
-         id="tspan4633" /></text>
-    <rect
-       style="opacity:1;vector-effect:none;fill:none;fill-opacity:1;stroke:#000000;stroke-width:0.26499999;stroke-linecap:round;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
-       id="rect5063"
-       width="65.474861"
-       height="24.274315"
-       x="168.95299"
-       y="124.90726" />
-    <text
-       xml:space="preserve"
-       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:4.15753651px;line-height:1.25;font-family:Inconsolatazi4;-inkscape-font-specification:Inconsolatazi4;font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:start;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.26458332"
-       x="175.23164"
-       y="103.14449"
-       id="text4619"
-       transform="scale(0.98209531,1.0182311)"><tspan
-         sodipodi:role="line"
-         id="tspan4617"
-         x="175.23164"
-         y="103.14449"
-         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:4.15753651px;font-family:Inconsolatazi4;-inkscape-font-specification:Inconsolatazi4;font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:start;writing-mode:lr-tb;text-anchor:start;stroke-width:0.26458332">1: (%1, %2, %3)</tspan><tspan
-         sodipodi:role="line"
-         x="175.23164"
-         y="108.34142"
-         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:4.15753651px;font-family:Inconsolatazi4;-inkscape-font-specification:Inconsolatazi4;font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:start;writing-mode:lr-tb;text-anchor:start;stroke-width:0.26458332"
-         id="tspan4621">  %4 = Base.lt_float(%2, %3)</tspan><tspan
-         sodipodi:role="line"
-         x="175.23164"
-         y="113.53834"
-         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:4.15753651px;font-family:Inconsolatazi4;-inkscape-font-specification:Inconsolatazi4;font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:start;writing-mode:lr-tb;text-anchor:start;stroke-width:0.26458332"
-         id="tspan4623">  return %4</tspan></text>
-    <rect
-       y="94.16024"
-       x="168.95299"
-       height="25.085234"
-       width="65.469307"
-       id="rect5061"
-       style="opacity:1;vector-effect:none;fill:none;fill-opacity:1;stroke:#000000;stroke-width:0.26499996;stroke-linecap:round;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1" />
-    <rect
-       style="opacity:1;vector-effect:none;fill:none;fill-opacity:1;stroke:#000000;stroke-width:0.26499999;stroke-linecap:round;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
-       id="rect5059"
-       width="65.466309"
-       height="28.95153"
-       x="168.95514"
-       y="59.177834" />
     <path
        style="fill:none;stroke:#cb3c33;stroke-width:0.26499999;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;marker-start:url(#marker8608);marker-end:url(#DotM)"
-       d="M -40.280068,93.796098 C -31.661916,73.198066 -18.7091,52.426676 17.114055,46.438738"
+       d="M -37.898818,93.266931 C -29.280666,72.668899 -18.7091,52.426676 17.114055,46.438738"
        id="path8604"
        inkscape:connector-curvature="0"
        sodipodi:nodetypes="cc" />
     <path
        style="fill:none;stroke:#cb3c33;stroke-width:0.26499999;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;marker-start:url(#marker11116);marker-end:url(#marker11192)"
-       d="M -31.090267,93.628071 C -24.581679,72.608126 -18.903399,58.081758 17.208549,52.151579"
+       d="m -28.709017,93.363488 c 6.508588,-21.019945 9.805618,-35.28173 45.917566,-41.211909"
        id="path11112"
        inkscape:connector-curvature="0"
        sodipodi:nodetypes="cc" />
     <text
        xml:space="preserve"
        style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:4.63938046px;line-height:1.25;font-family:Inconsolatazi4;-inkscape-font-specification:'Inconsolatazi4, Bold';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:start;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.26458332"
-       x="25.455944"
+       x="5.250371"
        y="31.170862"
        id="text4637"><tspan
          sodipodi:role="line"
          id="tspan4635"
-         x="25.455944"
+         x="5.250371"
          y="31.170862"
          style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:4.63938046px;font-family:Inconsolatazi4;-inkscape-font-specification:'Inconsolatazi4, Bold';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:start;writing-mode:lr-tb;text-anchor:start;stroke-width:0.26458332">geom(n, beta) = rand() &lt; beta ? n : geom(n + 1, beta)</tspan></text>
     <text
        xml:space="preserve"
        style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:4.23333311px;line-height:1.25;font-family:'Linux Biolinum O';-inkscape-font-specification:'Linux Biolinum O, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:start;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:start;fill:#6c6c6c;fill-opacity:1;stroke:none;stroke-width:0.26458332"
-       x="171.89938"
-       y="34.50779"
+       x="144.51501"
+       y="38.211956"
        id="text4641"><tspan
          sodipodi:role="line"
          id="tspan4639"
-         x="171.89938"
-         y="34.50779"
+         x="144.51501"
+         y="38.211956"
          style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:4.23333311px;font-family:'Linux Biolinum O';-inkscape-font-specification:'Linux Biolinum O, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:start;writing-mode:lr-tb;text-anchor:start;fill:#6c6c6c;fill-opacity:1;stroke-width:0.26458332">Original function definition</tspan></text>
     <path
        style="fill:none;stroke:#6c6c6c;stroke-width:0.26499999;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;marker-start:url(#Arrow2Lstart)"
-       d="m 151.27366,29.957542 c 8.7868,0.212791 10.55789,0.200622 19.15998,2.377785"
+       d="m 129.31325,30.751292 c 4.95034,0.87425 9.35282,1.284406 14.51534,4.387612"
        id="path4643"
        inkscape:connector-curvature="0"
        sodipodi:nodetypes="cc" />
+    <rect
+       style="opacity:1;vector-effect:none;fill:none;fill-opacity:1;stroke:#000000;stroke-width:0.26499999;stroke-linecap:round;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
+       id="rect5059"
+       width="65.466309"
+       height="28.95153"
+       x="126.62181"
+       y="57.533924" />
     <path
        sodipodi:nodetypes="cc"
        inkscape:connector-curvature="0"
        id="path5934"
-       d="m 193.34334,75.140651 c 3.02162,-4.07573 4.92766,-6.662462 5.46067,-18.915056"
+       d="m 151.01001,73.496741 c 3.02162,-4.07573 22.25787,-5.868712 22.79088,-18.121306"
        style="fill:none;stroke:#6c6c6c;stroke-width:0.26499999;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;marker-start:url(#marker5938)" />
     <text
        id="text49584"
-       y="68.539024"
-       x="172.21213"
+       y="66.895111"
+       x="129.8788"
        style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:4.23333311px;line-height:1.25;font-family:Inconsolatazi4;-inkscape-font-specification:Inconsolatazi4;font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:start;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;stroke:#fefafa;stroke-width:0.26499999;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
        xml:space="preserve"><tspan
          style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:4.23333311px;font-family:Inconsolatazi4;-inkscape-font-specification:Inconsolatazi4;font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:start;writing-mode:lr-tb;text-anchor:start;stroke:#fefafa;stroke-width:0.26499999;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
-         y="68.539024"
-         x="172.21213"
+         y="66.895111"
+         x="129.8788"
          id="tspan49576"
          sodipodi:role="line">1: (%1)</tspan><tspan
          id="tspan49578"
          style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:4.23333311px;font-family:Inconsolatazi4;-inkscape-font-specification:Inconsolatazi4;font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:start;writing-mode:lr-tb;text-anchor:start;stroke:#fefafa;stroke-width:0.26499999;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
-         y="73.830688"
-         x="172.21213"
+         y="72.186775"
+         x="129.8788"
          sodipodi:role="line">  %2 = Random.default_rng()</tspan><tspan
          id="tspan49580"
          style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:4.23333311px;font-family:Inconsolatazi4;-inkscape-font-specification:Inconsolatazi4;font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:start;writing-mode:lr-tb;text-anchor:start;stroke:#fefafa;stroke-width:0.26499999;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
-         y="79.12236"
-         x="172.21213"
+         y="77.478447"
+         x="129.8788"
          sodipodi:role="line">  %3 = (%1)(%2, Float64)</tspan><tspan
          id="tspan49582"
          style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:4.23333311px;font-family:Inconsolatazi4;-inkscape-font-specification:Inconsolatazi4;font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:start;writing-mode:lr-tb;text-anchor:start;stroke:#fefafa;stroke-width:0.26499999;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
-         y="84.414024"
-         x="172.21213"
+         y="82.770111"
+         x="129.8788"
          sodipodi:role="line">  return %3</tspan></text>
     <text
        xml:space="preserve"
        style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:4.23333311px;line-height:1.25;font-family:Inconsolatazi4;-inkscape-font-specification:Inconsolatazi4;font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:start;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.26458332"
-       x="172.21213"
-       y="68.539024"
+       x="129.8788"
+       y="66.895111"
        id="text4609"><tspan
          sodipodi:role="line"
          id="tspan4607"
-         x="172.21213"
-         y="68.539024"
+         x="129.8788"
+         y="66.895111"
          style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:4.23333311px;font-family:Inconsolatazi4;-inkscape-font-specification:Inconsolatazi4;font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:start;writing-mode:lr-tb;text-anchor:start;stroke-width:0.26458332">1: (%1)</tspan><tspan
          sodipodi:role="line"
-         x="172.21213"
-         y="73.830688"
+         x="129.8788"
+         y="72.186775"
          style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:4.23333311px;font-family:Inconsolatazi4;-inkscape-font-specification:Inconsolatazi4;font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:start;writing-mode:lr-tb;text-anchor:start;stroke-width:0.26458332"
          id="tspan4611">  %2 = Random.default_rng()</tspan><tspan
          sodipodi:role="line"
-         x="172.21213"
-         y="79.12236"
+         x="129.8788"
+         y="77.478447"
          style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:4.23333311px;font-family:Inconsolatazi4;-inkscape-font-specification:Inconsolatazi4;font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:start;writing-mode:lr-tb;text-anchor:start;stroke-width:0.26458332"
          id="tspan4613">  %3 = (%1)(%2, Float64)</tspan><tspan
          sodipodi:role="line"
-         x="172.21213"
-         y="84.414024"
+         x="129.8788"
+         y="82.770111"
          style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:4.23333311px;font-family:Inconsolatazi4;-inkscape-font-specification:Inconsolatazi4;font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:start;writing-mode:lr-tb;text-anchor:start;stroke-width:0.26458332"
          id="tspan4615">  return %3</tspan></text>
     <text
-       id="text5146"
-       y="157.50916"
-       x="-40.701244"
-       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:4.23333311px;line-height:1.25;font-family:'Linux Biolinum O';-inkscape-font-specification:'Linux Biolinum O, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:start;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:start;fill:#6c6c6c;fill-opacity:1;stroke:none;stroke-width:0.26458332"
-       xml:space="preserve"><tspan
-         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:4.23333311px;font-family:'Linux Biolinum O';-inkscape-font-specification:'Linux Biolinum O, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:start;writing-mode:lr-tb;text-anchor:start;fill:#6c6c6c;fill-opacity:1;stroke-width:0.26458332"
-         y="157.50916"
-         x="-40.701244"
-         id="tspan5144"
-         sodipodi:role="line">Original IR</tspan></text>
-    <path
-       sodipodi:nodetypes="cc"
-       inkscape:connector-curvature="0"
-       id="path5148"
-       d="m -33.434031,144.11373 2.79549,9.35214"
-       style="fill:none;stroke:#6c6c6c;stroke-width:0.26499999;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;marker-start:url(#marker5152)" />
-    <text
-       xml:space="preserve"
-       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:4.23333311px;line-height:1.25;font-family:'Linux Biolinum O';-inkscape-font-specification:'Linux Biolinum O, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:start;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:start;fill:#6c6c6c;fill-opacity:1;stroke:none;stroke-width:0.26458332"
-       x="200.04428"
-       y="156.47737"
-       id="text5882"><tspan
-         sodipodi:role="line"
-         x="200.04428"
-         y="156.47737"
-         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:4.23333311px;font-family:'Linux Biolinum O';-inkscape-font-specification:'Linux Biolinum O, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:start;writing-mode:lr-tb;text-anchor:start;fill:#6c6c6c;fill-opacity:1;stroke-width:0.26458332"
-         id="tspan5886">Primitive function</tspan></text>
-    <path
-       style="fill:none;stroke:#6c6c6c;stroke-width:0.26499999;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;marker-start:url(#marker5892)"
-       d="m 204.77244,142.21333 c 2.17313,3.42254 4.99889,6.35558 5.86909,10.75531"
-       id="path5884"
-       inkscape:connector-curvature="0"
-       sodipodi:nodetypes="cc" />
-    <text
        id="text5932"
-       y="50.176701"
-       x="184.63081"
+       y="49.842411"
+       x="161.19894"
        style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:4.23333311px;line-height:1;font-family:'Linux Biolinum O';-inkscape-font-specification:'Linux Biolinum O, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:start;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:start;fill:#6c6c6c;fill-opacity:1;stroke:none;stroke-width:0.26458332"
        xml:space="preserve"><tspan
          id="tspan5930"
          style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:4.23333311px;line-height:1;font-family:'Linux Biolinum O';-inkscape-font-specification:'Linux Biolinum O, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:start;writing-mode:lr-tb;text-anchor:start;fill:#6c6c6c;fill-opacity:1;stroke-width:0.26458332"
-         y="50.176701"
-         x="184.63081"
+         y="49.842411"
+         x="161.19894"
          sodipodi:role="line">First argument is </tspan><tspan
          style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:4.23333311px;line-height:1;font-family:'Linux Biolinum O';-inkscape-font-specification:'Linux Biolinum O, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:start;writing-mode:lr-tb;text-anchor:start;fill:#6c6c6c;fill-opacity:1;stroke-width:0.26458332"
-         y="54.410034"
-         x="184.63081"
+         y="54.075745"
+         x="161.19894"
          sodipodi:role="line"
          id="tspan7602">function itself</tspan></text>
-    <path
-       style="fill:none;stroke:#6c6c6c;stroke-width:0.26499999;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;marker-start:url(#marker6334)"
-       d="m 185.99343,64.44987 c 4.72226,-6.48193 5.99304,-6.062807 9.33608,-8.62518"
-       id="path6330"
-       inkscape:connector-curvature="0"
-       sodipodi:nodetypes="cc" />
     <text
        id="text58604"
-       y="63.547741"
-       x="195.39757"
+       y="61.903831"
+       x="153.06424"
        style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:4.23333311px;line-height:1.25;font-family:Inconsolatazi4;-inkscape-font-specification:'Inconsolatazi4, Bold';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:start;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;stroke:#ffffff;stroke-width:0.26499999;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
        xml:space="preserve"><tspan
          style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:4.23333311px;font-family:Inconsolatazi4;-inkscape-font-specification:'Inconsolatazi4, Bold';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:start;writing-mode:lr-tb;text-anchor:start;stroke:#ffffff;stroke-width:0.26499999;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
-         y="63.547741"
-         x="195.39757"
+         y="61.903831"
+         x="153.06424"
          id="tspan58602"
          sodipodi:role="line">rand()</tspan></text>
     <text
        xml:space="preserve"
        style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:4.23333311px;line-height:1.25;font-family:Inconsolatazi4;-inkscape-font-specification:'Inconsolatazi4, Bold';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:start;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.26458332"
-       x="195.39757"
-       y="63.547741"
+       x="153.06424"
+       y="61.903831"
        id="text6854"><tspan
          sodipodi:role="line"
          id="tspan6852"
-         x="195.39757"
-         y="63.547741"
+         x="153.06424"
+         y="61.903831"
          style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:4.23333311px;font-family:Inconsolatazi4;-inkscape-font-specification:'Inconsolatazi4, Bold';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:start;writing-mode:lr-tb;text-anchor:start;stroke-width:0.26458332">rand()</tspan></text>
-    <text
-       id="text6858"
-       y="99.203621"
-       x="177.52663"
-       style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:4.23333311px;line-height:1.25;font-family:Inconsolatazi4;-inkscape-font-specification:'Inconsolatazi4, Bold';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:start;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.26458332"
-       xml:space="preserve"><tspan
-         style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:4.23333311px;font-family:Inconsolatazi4;-inkscape-font-specification:'Inconsolatazi4, Bold';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:start;writing-mode:lr-tb;text-anchor:start;stroke-width:0.26458332"
-         y="99.203621"
-         x="177.52663"
-         id="tspan6856"
-         sodipodi:role="line">&lt;(::Float64, ::Float64)</tspan></text>
-    <text
-       xml:space="preserve"
-       style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:4.23333311px;line-height:1.25;font-family:Inconsolatazi4;-inkscape-font-specification:'Inconsolatazi4, Bold';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:start;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.26458332"
-       x="185.97421"
-       y="129.68088"
-       id="text6862"><tspan
-         sodipodi:role="line"
-         id="tspan6860"
-         x="185.97421"
-         y="129.68088"
-         style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:4.23333311px;font-family:Inconsolatazi4;-inkscape-font-specification:'Inconsolatazi4, Bold';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:start;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;stroke-width:0.26458332">+(::Int, ::Int)</tspan></text>
+    <g
+       id="g1372"
+       transform="translate(-16.931182,-0.3342894)">
+      <text
+         transform="scale(0.98209532,1.0182311)"
+         id="text4619"
+         y="111.19972"
+         x="149.36856"
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:4.15753651px;line-height:1.25;font-family:Inconsolatazi4;-inkscape-font-specification:Inconsolatazi4;font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:start;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.26458332"
+         xml:space="preserve"><tspan
+           style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:4.15753651px;font-family:Inconsolatazi4;-inkscape-font-specification:Inconsolatazi4;font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:start;writing-mode:lr-tb;text-anchor:start;stroke-width:0.26458332"
+           y="111.19972"
+           x="149.36856"
+           id="tspan4617"
+           sodipodi:role="line">1: (%1, %2, %3)</tspan><tspan
+           id="tspan4621"
+           style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:4.15753651px;font-family:Inconsolatazi4;-inkscape-font-specification:Inconsolatazi4;font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:start;writing-mode:lr-tb;text-anchor:start;stroke-width:0.26458332"
+           y="116.39664"
+           x="149.36856"
+           sodipodi:role="line">  %4 = Base.lt_float(%2, %3)</tspan><tspan
+           id="tspan4623"
+           style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:4.15753651px;font-family:Inconsolatazi4;-inkscape-font-specification:Inconsolatazi4;font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:start;writing-mode:lr-tb;text-anchor:start;stroke-width:0.26458332"
+           y="121.59357"
+           x="149.36856"
+           sodipodi:role="line">  return %4</tspan></text>
+      <rect
+         style="opacity:1;vector-effect:none;fill:none;fill-opacity:1;stroke:#000000;stroke-width:0.26499996;stroke-linecap:round;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
+         id="rect5061"
+         width="65.469307"
+         height="25.085234"
+         x="143.55299"
+         y="102.36232" />
+      <text
+         xml:space="preserve"
+         style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:4.23333311px;line-height:1.25;font-family:Inconsolatazi4;-inkscape-font-specification:'Inconsolatazi4, Bold';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:start;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.26458332"
+         x="152.12663"
+         y="107.4057"
+         id="text6858"><tspan
+           sodipodi:role="line"
+           id="tspan6856"
+           x="152.12663"
+           y="107.4057"
+           style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:4.23333311px;font-family:Inconsolatazi4;-inkscape-font-specification:'Inconsolatazi4, Bold';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:start;writing-mode:lr-tb;text-anchor:start;stroke-width:0.26458332">&lt;(::Float64, ::Float64)</tspan></text>
+    </g>
+    <g
+       id="g1407"
+       transform="translate(-21.164504,-20.539866)">
+      <text
+         transform="scale(0.98213699,1.0181879)"
+         id="text4627"
+         y="178.1965"
+         x="153.67285"
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:4.15771294px;line-height:1.25;font-family:Inconsolatazi4;-inkscape-font-specification:Inconsolatazi4;font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:start;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.26458332"
+         xml:space="preserve"><tspan
+           style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:4.15771294px;font-family:Inconsolatazi4;-inkscape-font-specification:Inconsolatazi4;font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:start;writing-mode:lr-tb;text-anchor:start;stroke-width:0.26458332"
+           y="178.1965"
+           x="153.67285"
+           id="tspan4625"
+           sodipodi:role="line">1: (%1, %2, %3)</tspan><tspan
+           id="tspan4629"
+           style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:4.15771294px;font-family:Inconsolatazi4;-inkscape-font-specification:Inconsolatazi4;font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:start;writing-mode:lr-tb;text-anchor:start;stroke-width:0.26458332"
+           y="183.39365"
+           x="153.67285"
+           sodipodi:role="line">  %4 = Base.add_int(%2, %3)</tspan><tspan
+           id="tspan4631"
+           style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:4.15771294px;font-family:Inconsolatazi4;-inkscape-font-specification:Inconsolatazi4;font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:start;writing-mode:lr-tb;text-anchor:start;stroke-width:0.26458332"
+           y="188.59079"
+           x="153.67285"
+           sodipodi:role="line">  return %4</tspan><tspan
+           id="tspan4633"
+           style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:4.15771294px;font-family:Inconsolatazi4;-inkscape-font-specification:Inconsolatazi4;font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:start;writing-mode:lr-tb;text-anchor:start;stroke-width:0.26458332"
+           y="193.78793"
+           x="153.67285"
+           sodipodi:role="line" /></text>
+      <rect
+         y="171.20934"
+         x="147.78632"
+         height="24.274315"
+         width="65.474861"
+         id="rect5063"
+         style="opacity:1;vector-effect:none;fill:none;fill-opacity:1;stroke:#000000;stroke-width:0.26499999;stroke-linecap:round;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1" />
+      <text
+         id="text5882"
+         y="202.77945"
+         x="178.87761"
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:4.23333311px;line-height:1.25;font-family:'Linux Biolinum O';-inkscape-font-specification:'Linux Biolinum O, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:start;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:start;fill:#6c6c6c;fill-opacity:1;stroke:none;stroke-width:0.26458332"
+         xml:space="preserve"><tspan
+           id="tspan5886"
+           style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:4.23333311px;font-family:'Linux Biolinum O';-inkscape-font-specification:'Linux Biolinum O, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:start;writing-mode:lr-tb;text-anchor:start;fill:#6c6c6c;fill-opacity:1;stroke-width:0.26458332"
+           y="202.77945"
+           x="178.87761"
+           sodipodi:role="line">Primitive function</tspan></text>
+      <path
+         sodipodi:nodetypes="cc"
+         inkscape:connector-curvature="0"
+         id="path5884"
+         d="m 183.60578,188.51542 c 2.17313,3.42254 4.99889,6.35558 5.86909,10.75531"
+         style="fill:none;stroke:#6c6c6c;stroke-width:0.26499999;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;marker-start:url(#marker5892)" />
+      <text
+         id="text6862"
+         y="175.98296"
+         x="164.80754"
+         style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:4.23333311px;line-height:1.25;font-family:Inconsolatazi4;-inkscape-font-specification:'Inconsolatazi4, Bold';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:start;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.26458332"
+         xml:space="preserve"><tspan
+           style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:4.23333311px;font-family:Inconsolatazi4;-inkscape-font-specification:'Inconsolatazi4, Bold';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:start;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;stroke-width:0.26458332"
+           y="175.98296"
+           x="164.80754"
+           id="tspan6860"
+           sodipodi:role="line">+(::Int, ::Int)</tspan></text>
+    </g>
     <text
        id="text38759"
        y="89.982819"
@@ -1385,26 +1324,109 @@
          x="-48.156399"
          id="tspan38757"
          sodipodi:role="line">geom(::Int, ::Float64)</tspan></text>
-    <text
-       xml:space="preserve"
-       style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:4.23333311px;line-height:1.25;font-family:Inconsolatazi4;-inkscape-font-specification:'Inconsolatazi4, Bold';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:start;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.26458332"
-       x="-48.156399"
-       y="89.982819"
-       id="text8596"><tspan
-         sodipodi:role="line"
-         id="tspan8594"
-         x="-48.156399"
+    <g
+       id="g1496"
+       transform="translate(2.38125)">
+      <g
+         transform="translate(7.8577241)"
+         id="g5136">
+        <text
+           xml:space="preserve"
+           style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:4.23333311px;line-height:1.25;font-family:Inconsolatazi4;-inkscape-font-specification:Inconsolatazi4;font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:start;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.26458332"
+           x="-58.208336"
+           y="97.225868"
+           id="text4589"><tspan
+             sodipodi:role="line"
+             id="tspan4587"
+             x="-58.208336"
+             y="97.225868"
+             style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:4.23333311px;font-family:Inconsolatazi4;-inkscape-font-specification:Inconsolatazi4;font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:start;writing-mode:lr-tb;text-anchor:start;stroke-width:0.26458332">1: (%1, %2, %3)</tspan><tspan
+             sodipodi:role="line"
+             x="-58.208336"
+             y="102.51753"
+             style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:4.23333311px;font-family:Inconsolatazi4;-inkscape-font-specification:Inconsolatazi4;font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:start;writing-mode:lr-tb;text-anchor:start;stroke-width:0.26458332"
+             id="tspan4591">  %4 = Main.rand()</tspan><tspan
+             sodipodi:role="line"
+             x="-58.208336"
+             y="107.8092"
+             style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:4.23333311px;font-family:Inconsolatazi4;-inkscape-font-specification:Inconsolatazi4;font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:start;writing-mode:lr-tb;text-anchor:start;stroke-width:0.26458332"
+             id="tspan4593">  %5 = %4 &lt; %3</tspan><tspan
+             sodipodi:role="line"
+             x="-58.208336"
+             y="113.10087"
+             style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:4.23333311px;font-family:Inconsolatazi4;-inkscape-font-specification:Inconsolatazi4;font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:start;writing-mode:lr-tb;text-anchor:start;stroke-width:0.26458332"
+             id="tspan4595">  br 2 unless %5</tspan><tspan
+             sodipodi:role="line"
+             x="-58.208336"
+             y="118.39253"
+             style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:4.23333311px;font-family:Inconsolatazi4;-inkscape-font-specification:Inconsolatazi4;font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:start;writing-mode:lr-tb;text-anchor:start;stroke-width:0.26458332"
+             id="tspan4597">  return %2</tspan><tspan
+             sodipodi:role="line"
+             x="-58.208336"
+             y="123.6842"
+             style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:4.23333311px;font-family:Inconsolatazi4;-inkscape-font-specification:Inconsolatazi4;font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:start;writing-mode:lr-tb;text-anchor:start;stroke-width:0.26458332"
+             id="tspan4599">2:</tspan><tspan
+             sodipodi:role="line"
+             x="-58.208336"
+             y="128.97586"
+             style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:4.23333311px;font-family:Inconsolatazi4;-inkscape-font-specification:Inconsolatazi4;font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:start;writing-mode:lr-tb;text-anchor:start;stroke-width:0.26458332"
+             id="tspan4601">  %6 = %2 + 1</tspan><tspan
+             sodipodi:role="line"
+             x="-58.208336"
+             y="134.26753"
+             style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:4.23333311px;font-family:Inconsolatazi4;-inkscape-font-specification:Inconsolatazi4;font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:start;writing-mode:lr-tb;text-anchor:start;stroke-width:0.26458332"
+             id="tspan4603">  %7 = Main.geom(%6, %3)</tspan><tspan
+             sodipodi:role="line"
+             x="-58.208336"
+             y="139.5592"
+             style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:4.23333311px;font-family:Inconsolatazi4;-inkscape-font-specification:Inconsolatazi4;font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:start;writing-mode:lr-tb;text-anchor:start;stroke-width:0.26458332"
+             id="tspan4605">  return %7</tspan></text>
+        <rect
+           y="84.796593"
+           x="-62.033951"
+           height="57.990849"
+           width="58.246323"
+           id="rect5057"
+           style="opacity:1;vector-effect:none;fill:none;fill-opacity:1;stroke:#030303;stroke-width:0.26499999;stroke-linecap:round;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1" />
+      </g>
+      <text
+         xml:space="preserve"
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:4.23333311px;line-height:1.25;font-family:'Linux Biolinum O';-inkscape-font-specification:'Linux Biolinum O, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:start;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:start;fill:#6c6c6c;fill-opacity:1;stroke:none;stroke-width:0.26458332"
+         x="-40.701244"
+         y="157.50916"
+         id="text5146"><tspan
+           sodipodi:role="line"
+           id="tspan5144"
+           x="-40.701244"
+           y="157.50916"
+           style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:4.23333311px;font-family:'Linux Biolinum O';-inkscape-font-specification:'Linux Biolinum O, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:start;writing-mode:lr-tb;text-anchor:start;fill:#6c6c6c;fill-opacity:1;stroke-width:0.26458332">Original IR</tspan></text>
+      <path
+         style="fill:none;stroke:#6c6c6c;stroke-width:0.26499999;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;marker-start:url(#marker5152)"
+         d="m -33.434031,144.11373 2.79549,9.35214"
+         id="path5148"
+         inkscape:connector-curvature="0"
+         sodipodi:nodetypes="cc" />
+      <text
+         id="text8596"
          y="89.982819"
-         style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:4.23333311px;font-family:Inconsolatazi4;-inkscape-font-specification:'Inconsolatazi4, Bold';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:start;writing-mode:lr-tb;text-anchor:start;stroke-width:0.26458332">geom(::Int, ::Float64)</tspan></text>
+         x="-48.156399"
+         style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:4.23333311px;line-height:1.25;font-family:Inconsolatazi4;-inkscape-font-specification:'Inconsolatazi4, Bold';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:start;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.26458332"
+         xml:space="preserve"><tspan
+           style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:4.23333311px;font-family:Inconsolatazi4;-inkscape-font-specification:'Inconsolatazi4, Bold';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:start;writing-mode:lr-tb;text-anchor:start;stroke-width:0.26458332"
+           y="89.982819"
+           x="-48.156399"
+           id="tspan8594"
+           sodipodi:role="line">geom(::Int, ::Float64)</tspan></text>
+    </g>
     <path
        sodipodi:nodetypes="cc"
        inkscape:connector-curvature="0"
        id="path10964"
-       d="m -22.443586,93.768392 c 8.618152,-20.598037 3.82898,-30.904173 39.652135,-36.892111"
+       d="M -20.194628,93.371517 C -11.576476,72.77348 -18.614606,62.864219 17.208549,56.876281"
        style="fill:none;stroke:#cb3c33;stroke-width:0.26499999;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;marker-start:url(#marker10968);marker-end:url(#marker11032)" />
     <path
        style="fill:none;stroke:#cb3c33;stroke-width:0.26499999;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;marker-start:url(#marker14014);marker-end:url(#marker14102)"
-       d="M -11.445446,101.21185 C 6.4163863,88.473345 11.633012,80.610447 17.208549,62.756211"
+       d="M -9.064196,101.21185 C 8.7976363,88.473345 11.633012,80.610447 17.208549,62.756211"
        id="path14010"
        inkscape:connector-curvature="0"
        sodipodi:nodetypes="cc" />
@@ -1412,23 +1434,23 @@
        sodipodi:nodetypes="cc"
        inkscape:connector-curvature="0"
        id="path16762"
-       d="M -18.848812,106.50379 C -3.3924046,105.39151 1.931129,102.95418 17.208549,89.884068"
+       d="M -17.261312,106.63608 C -1.8049046,105.5238 1.931129,102.95418 17.208549,89.884068"
        style="fill:none;stroke:#cb3c33;stroke-width:0.26499999;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;marker-start:url(#marker16766);marker-end:url(#marker16866)" />
     <path
        style="fill:none;stroke:#cb3c33;stroke-width:0.26499999;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;marker-start:url(#marker18546);marker-end:url(#marker18658)"
-       d="m -15.100727,111.79573 c 15.05305055,0.34339 23.640708,3.02957 32.309276,10.02705"
+       d="m -13.116352,111.79573 c 15.0530506,0.34339 21.656333,3.02957 30.324901,10.02705"
        id="path18542"
        inkscape:connector-curvature="0"
        sodipodi:nodetypes="cc" />
     <path
        style="fill:none;stroke:#cb3c33;stroke-width:0.26499999;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;marker-start:url(#marker21806);marker-end:url(#marker21942)"
-       d="m -21.525941,127.56598 c 16.92639,-0.57774 25.1943228,-0.4239 38.73449,-0.53144"
+       d="m -19.409274,127.43369 c 16.9263897,-0.57774 23.0776558,-0.29161 36.617823,-0.39915"
        id="path21802"
        inkscape:connector-curvature="0"
        sodipodi:nodetypes="cc" />
     <path
        style="fill:none;stroke:#cb3c33;stroke-width:0.26499999;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;marker-start:url(#marker22110);marker-end:url(#marker22258)"
-       d="m 1.5928731,133.38171 c 11.0464599,5.65586 5.411005,20.36838 15.6156759,25.65343"
+       d="m 3.3126648,133.64629 c 11.0464602,5.65586 3.6912133,20.1038 13.8958842,25.38885"
        id="path22106"
        inkscape:connector-curvature="0"
        sodipodi:nodetypes="cc" />
@@ -1436,17 +1458,17 @@
        sodipodi:nodetypes="cc"
        inkscape:connector-curvature="0"
        id="path23754"
-       d="m -25.665932,138.32889 c 14.921868,3.9186 20.5144193,55.87829 42.874481,74.29379"
+       d="m -23.94614,138.72577 c 14.9218677,3.9186 18.7946273,55.48141 41.154689,73.89691"
        style="fill:none;stroke:#cb3c33;stroke-width:0.26499999;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;marker-start:url(#marker23758);marker-end:url(#marker23918)" />
     <path
        sodipodi:nodetypes="cc"
        inkscape:connector-curvature="0"
        id="path25426"
-       d="m 175.2131,72.450792 c -9.57648,-0.577739 -12.81532,0.780162 -16.33287,1.207162"
+       d="m 132.93523,71.047628 c -13.82904,0.752742 -31.87828,2.041965 -34.948191,2.610326"
        style="fill:none;stroke:#cb3c33;stroke-width:0.26499999;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;marker-start:url(#marker25430);marker-end:url(#marker25602)" />
     <path
        style="fill:none;stroke:#cb3c33;stroke-width:0.26499999;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;marker-start:url(#marker28098);marker-end:url(#marker28282)"
-       d="m 174.27766,78.330722 c -9.57648,-0.577739 -22.03612,0.111988 -25.55367,0.538988"
+       d="m 132.6546,76.179202 c -10.76975,2.149731 -6.99474,1.225096 -13.29936,2.690508"
        id="path28094"
        inkscape:connector-curvature="0"
        sodipodi:nodetypes="cc" />
@@ -1454,11 +1476,11 @@
        sodipodi:nodetypes="cc"
        inkscape:connector-curvature="0"
        id="path29382"
-       d="m 174.8122,83.542478 c -9.71012,1.025878 -34.33052,1.715605 -41.45621,0.672623"
+       d="m 133.0956,81.85868 c -9.71012,1.025878 -19.73761,2.276871 -29.10836,2.356421"
        style="fill:none;stroke:#cb3c33;stroke-width:0.26499999;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;marker-start:url(#marker29386);marker-end:url(#marker29582)" />
     <path
        style="fill:none;stroke:#cb3c33;stroke-width:0.26499999;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;marker-start:url(#marker30842);marker-end:url(#marker31050)"
-       d="m 174.24524,109.62283 c -9.71012,1.02588 -48.50463,1.9046 -55.63032,0.86162"
+       d="m 128.78269,111.77435 c -6.24898,0.46462 -9.87082,-0.6211 -12.03866,-1.2899"
        id="path30838"
        inkscape:connector-curvature="0"
        sodipodi:nodetypes="cc" />
@@ -1466,11 +1488,11 @@
        sodipodi:nodetypes="cc"
        inkscape:connector-curvature="0"
        id="path32378"
-       d="m 174.24524,114.9145 c -9.71012,1.02588 -67.40344,2.47156 -74.52913,1.42858"
+       d="m 132.43092,117.15957 c -10.55202,0.6517 -26.52456,0.41358 -33.650253,-0.6294"
        style="fill:none;stroke:#cb3c33;stroke-width:0.26499999;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;marker-start:url(#marker32382);marker-end:url(#marker32602)" />
     <path
        style="fill:none;stroke:#cb3c33;stroke-width:0.26499999;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;marker-start:url(#marker33557);marker-end:url(#marker33789)"
-       d="m 173.48929,139.10498 c -17.45863,0.45891 -50.20552,4.17245 -64.70175,8.9881"
+       d="m 132.35151,164.84832 c -15.4942,-4.59248 -8.60002,-11.74873 -23.56397,-16.75524"
        id="path33553"
        inkscape:connector-curvature="0"
        sodipodi:nodetypes="cc" />
@@ -1478,39 +1500,39 @@
        sodipodi:nodetypes="cc"
        inkscape:connector-curvature="0"
        id="path35825"
-       d="m 174.62322,144.58563 c -17.45863,0.45891 -53.79629,3.4165 -81.332704,9.36608"
+       d="m 133.09371,170.38821 c -17.58341,-0.22736 -9.06248,-18.4199 -39.803194,-16.4365"
        style="fill:none;stroke:#cb3c33;stroke-width:0.26499999;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;marker-start:url(#marker35829);marker-end:url(#marker36073)" />
     <text
        id="text39997"
-       y="137.50124"
-       x="107.43539"
+       y="147.24153"
+       x="126.07445"
        style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:4.23333311px;line-height:1.25;font-family:'Linux Biolinum O';-inkscape-font-specification:'Linux Biolinum O, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:start;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:start;fill:#6c6c6c;fill-opacity:1;stroke:none;stroke-width:0.26458332"
        xml:space="preserve"><tspan
          id="tspan39995"
          style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:4.23333311px;font-family:'Linux Biolinum O';-inkscape-font-specification:'Linux Biolinum O, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:start;writing-mode:lr-tb;text-anchor:start;fill:#6c6c6c;fill-opacity:1;stroke-width:0.26458332"
-         y="137.50124"
-         x="107.43539"
+         y="147.24153"
+         x="126.07445"
          sodipodi:role="line">Nested argument</tspan></text>
     <path
        sodipodi:nodetypes="cc"
        inkscape:connector-curvature="0"
        id="path39999"
-       d="m 66.327203,135.59711 c 10.857702,-2.84869 29.073602,0.98003 39.780587,0.80975"
+       d="m 66.327203,135.59711 c 41.727337,-1.91325 51.510947,6.26002 58.967717,9.99704"
        style="fill:none;stroke:#6c6c6c;stroke-width:0.26499999;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;marker-start:url(#marker40003)" />
     <text
        xml:space="preserve"
        style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:4.23333311px;line-height:1.25;font-family:'Linux Biolinum O';-inkscape-font-specification:'Linux Biolinum O, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:start;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:start;fill:#6c6c6c;fill-opacity:1;stroke:none;stroke-width:0.26458332"
-       x="116.92551"
-       y="126.97795"
+       x="126.42581"
+       y="139.58286"
        id="text42731"><tspan
          sodipodi:role="line"
          id="tspan42729"
-         x="116.92551"
-         y="126.97795"
+         x="126.42581"
+         y="139.58286"
          style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:4.23333311px;font-family:'Linux Biolinum O';-inkscape-font-specification:'Linux Biolinum O, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:start;writing-mode:lr-tb;text-anchor:start;fill:#6c6c6c;fill-opacity:1;stroke-width:0.26458332">Typed return value</tspan></text>
     <path
        style="fill:none;stroke:#6c6c6c;stroke-width:0.26499999;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;marker-start:url(#marker42737)"
-       d="m 107.84139,126.59359 7.36352,-0.21919"
+       d="m 107.84139,126.59359 c 5.75974,1.85012 10.19427,8.17585 17.85815,11.79047"
        id="path42733"
        inkscape:connector-curvature="0"
        sodipodi:nodetypes="cc" />
@@ -1545,17 +1567,17 @@
        sodipodi:nodetypes="cc"
        inkscape:connector-curvature="0"
        id="path46929"
-       d="m 91.01022,41.050461 7.348377,-0.520459"
+       d="m 91.01022,41.050461 c 10.5403,0.209877 22.28467,0.188758 34.20359,3.845166"
        style="fill:none;stroke:#6c6c6c;stroke-width:0.26499999;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;marker-start:url(#marker46933)" />
     <text
        id="text47627"
-       y="41.66552"
-       x="100.08754"
+       y="46.303516"
+       x="126.42581"
        style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:4.23333311px;line-height:1.25;font-family:'Linux Biolinum O';-inkscape-font-specification:'Linux Biolinum O, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:start;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:start;fill:#6c6c6c;fill-opacity:1;stroke:none;stroke-width:0.26458332"
        xml:space="preserve"><tspan
          style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:4.23333311px;font-family:'Linux Biolinum O';-inkscape-font-specification:'Linux Biolinum O, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:start;writing-mode:lr-tb;text-anchor:start;fill:#6c6c6c;fill-opacity:1;stroke-width:0.26458332"
-         y="41.66552"
-         x="100.08754"
+         y="46.303516"
+         x="126.42581"
          id="tspan47625"
          sodipodi:role="line">Top-level call</tspan></text>
     <g
@@ -1577,68 +1599,78 @@
     </g>
     <text
        xml:space="preserve"
-       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:4.23333311px;line-height:1.25;font-family:'Linux Biolinum O';-inkscape-font-specification:'Linux Biolinum O, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:start;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:start;fill:#6c6c6c;fill-opacity:1;stroke:none;stroke-width:0.26458332"
-       x="97.00058"
-       y="52.890839"
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:4.23333311px;line-height:1;font-family:'Linux Biolinum O';-inkscape-font-specification:'Linux Biolinum O, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:start;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:start;fill:#6c6c6c;fill-opacity:1;stroke:none;stroke-width:0.26458332"
+       x="96.391365"
+       y="50.653564"
        id="text48158"><tspan
          sodipodi:role="line"
          id="tspan48156"
-         x="97.00058"
-         y="52.890839"
-         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:4.23333311px;font-family:'Linux Biolinum O';-inkscape-font-specification:'Linux Biolinum O, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:start;writing-mode:lr-tb;text-anchor:start;fill:#6c6c6c;fill-opacity:1;stroke-width:0.26458332">Argument values</tspan></text>
+         x="96.391365"
+         y="50.653564"
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:4.23333311px;line-height:1;font-family:'Linux Biolinum O';-inkscape-font-specification:'Linux Biolinum O, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:start;writing-mode:lr-tb;text-anchor:start;fill:#6c6c6c;fill-opacity:1;stroke-width:0.26458332">Argument</tspan><tspan
+         sodipodi:role="line"
+         x="96.391365"
+         y="54.886898"
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:4.23333311px;line-height:1;font-family:'Linux Biolinum O';-inkscape-font-specification:'Linux Biolinum O, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:start;writing-mode:lr-tb;text-anchor:start;fill:#6c6c6c;fill-opacity:1;stroke-width:0.26458332"
+         id="tspan1458">values</tspan></text>
     <text
        id="text48168"
-       y="91.352798"
-       x="123.58951"
+       y="93.180573"
+       x="126.05376"
        style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:4.23333311px;line-height:1;font-family:'Linux Biolinum O';-inkscape-font-specification:'Linux Biolinum O, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:start;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:start;fill:#6c6c6c;fill-opacity:1;stroke:none;stroke-width:0.26458332"
        xml:space="preserve"><tspan
          style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:4.23333311px;line-height:1;font-family:'Linux Biolinum O';-inkscape-font-specification:'Linux Biolinum O, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:start;writing-mode:lr-tb;text-anchor:start;fill:#6c6c6c;fill-opacity:1;stroke-width:0.26458332"
-         y="91.352798"
-         x="123.58951"
+         y="93.180573"
+         x="126.05376"
          sodipodi:role="line"
          id="tspan50824">Nested call to a non-</tspan><tspan
          style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:4.23333311px;line-height:1;font-family:'Linux Biolinum O';-inkscape-font-specification:'Linux Biolinum O, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:start;writing-mode:lr-tb;text-anchor:start;fill:#6c6c6c;fill-opacity:1;stroke-width:0.26458332"
-         y="95.586128"
-         x="123.58951"
+         y="97.413902"
+         x="126.05376"
          sodipodi:role="line"
          id="tspan51274">primitive function</tspan></text>
     <path
        sodipodi:nodetypes="cc"
        inkscape:connector-curvature="0"
        id="path48170"
-       d="m 112.62431,89.644384 c 4.08385,0.553048 5.29525,1.717103 10.50319,2.673231"
+       d="m 112.62431,89.644384 c 4.82746,1.136299 6.29994,1.066677 12.56117,4.357029"
        style="fill:none;stroke:#6c6c6c;stroke-width:0.26499999;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;marker-start:url(#marker48174)" />
     <text
        id="text48892"
-       y="121.83302"
-       x="107.29044"
+       y="132.40468"
+       x="126.26918"
        style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:4.23333311px;line-height:1.25;font-family:'Linux Biolinum O';-inkscape-font-specification:'Linux Biolinum O, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:start;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:start;fill:#6c6c6c;fill-opacity:1;stroke:none;stroke-width:0.26458332"
        xml:space="preserve"><tspan
          style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:4.23333311px;font-family:'Linux Biolinum O';-inkscape-font-specification:'Linux Biolinum O, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:start;writing-mode:lr-tb;text-anchor:start;fill:#6c6c6c;fill-opacity:1;stroke-width:0.26458332"
-         y="121.83302"
-         x="107.29044"
+         y="132.40468"
+         x="126.26918"
          id="tspan48890"
          sodipodi:role="line">Conditional branch taken</tspan></text>
     <path
        sodipodi:nodetypes="cc"
        inkscape:connector-curvature="0"
        id="path48900"
-       d="m 99.141767,121.72929 7.363523,-0.78046"
+       d="m 99.141767,121.72929 c 12.081543,0.38848 15.081763,4.83617 26.666893,8.69961"
        style="fill:none;stroke:#6c6c6c;stroke-width:0.26499999;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;marker-start:url(#marker48904)" />
     <text
        id="text49550"
-       y="185.18251"
-       x="134.57143"
+       y="182.75035"
+       x="121.8494"
        style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:4.23333311px;line-height:1;font-family:'Linux Biolinum O';-inkscape-font-specification:'Linux Biolinum O, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:start;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:start;fill:#6c6c6c;fill-opacity:1;stroke:none;stroke-width:0.26458332"
        xml:space="preserve"><tspan
          style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:4.23333311px;line-height:1;font-family:'Linux Biolinum O';-inkscape-font-specification:'Linux Biolinum O, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:start;writing-mode:lr-tb;text-anchor:start;fill:#6c6c6c;fill-opacity:1;stroke-width:0.26458332"
-         y="185.18251"
-         x="134.57143"
+         y="182.75035"
+         x="121.8494"
          id="tspan49548"
-         sodipodi:role="line">Nested trace</tspan><tspan
+         sodipodi:role="line">Nested </tspan><tspan
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:4.23333311px;line-height:1;font-family:'Linux Biolinum O';-inkscape-font-specification:'Linux Biolinum O, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:start;writing-mode:lr-tb;text-anchor:start;fill:#6c6c6c;fill-opacity:1;stroke-width:0.26458332"
+         y="186.98369"
+         x="121.8494"
+         sodipodi:role="line"
+         id="tspan1363">trace</tspan><tspan
          style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:4.23333311px;line-height:1;font-family:Inconsolatazi4;-inkscape-font-specification:Inconsolatazi4;font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:start;writing-mode:lr-tb;text-anchor:start;fill:#6c6c6c;fill-opacity:1;stroke-width:0.26458332"
-         y="189.48268"
-         x="134.57143"
+         y="191.28386"
+         x="121.8494"
          sodipodi:role="line"
          id="tspan49566"
          dx="0 0 0.92604166"><tspan
@@ -1646,7 +1678,7 @@
    id="tspan49568">of</tspan>geom </tspan></text>
     <g
        id="g49564"
-       transform="translate(0,0.66145833)">
+       transform="translate(-13.470384,0.66145833)">
       <path
          style="opacity:1;vector-effect:none;fill:none;fill-opacity:1;stroke:#6c6c6c;stroke-width:0.26899999;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
          d="m 132.90451,185.46405 c -2.74605,0.009 -0.50802,-22.7693 -3.20907,-22.80504"
@@ -1659,6 +1691,21 @@
          id="path49560"
          d="m 132.90451,185.46405 c -2.74605,-0.009 -0.50802,22.7693 -3.20907,22.80504"
          style="opacity:1;vector-effect:none;fill:none;fill-opacity:1;stroke:#6c6c6c;stroke-width:0.26899999;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1" />
+    </g>
+    <g
+       id="g1456">
+      <path
+         style="fill:none;stroke:#ffffff;stroke-width:0.565;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+         d="m 143.6601,62.80596 c 4.72226,-6.48193 11.61544,-10.163849 17.14129,-11.734035"
+         id="path1448"
+         inkscape:connector-curvature="0"
+         sodipodi:nodetypes="cc" />
+      <path
+         sodipodi:nodetypes="cc"
+         inkscape:connector-curvature="0"
+         id="path6330"
+         d="m 143.6601,62.80596 c 4.72226,-6.48193 11.61544,-10.163849 17.14129,-11.734035"
+         style="fill:none;stroke:#6c6c6c;stroke-width:0.26499999;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;marker-start:url(#marker6334)" />
     </g>
   </g>
 </svg>

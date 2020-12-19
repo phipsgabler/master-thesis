@@ -535,30 +535,33 @@ this representation.
 \section{Compilation and Metaprogramming in Julia}
 \label{sec:comp-metapr-julia}
 
+To better explain the inner workings of \turingjl{} models and the program transformations
+introduced later, we will now turn to an overview of Julia's evaluation, compilation, and
+metaprogramming techniques.
+
 Julia \parencite{bezanson2017julia} is a programming language with a strong, dynamic type system
 with nominal, parametric subtyping and elaborate multiple dispatch.  It uses LLVM
 \parencite{llvmproject2019llvm} for JIT-compilation and while it is dynamically typed, a combination
 of method specialization and type inference allows it to produce very optimized, fast machine code
-\parencite{bezanson2018julia}.  The language is syntactically designed to bear a certain resemblance
-to Matlab, Python, or Ruby, but contrary to them, it is its own compiler, and not primarily the
-reliance on libraries calling foreign functions (e.g., Numpy), which is intrinsically enabling
-C-like speed.  Although Julia does rely on, e.g., BLAS and LAPACK for numerical algebra, there is
-nothing that fundamentally prevents implementing their functions: true array types, fast loops, and
-various optimizations are available, as opposed to languages like Python, which are fundamentally
-limited by to their dynamic interpretation.  This advantage carries over to domains outside of
-numeric computation, of course.
+\parencite{bezanson2018julia}.  The language syntactically draws on a certain resemblance to Matlab,
+Python, or Ruby.  Contrary to them, it is designed to utilize a compiler, and not primarily rely on
+libraries calling foreign functions (e.g., Numpy), to achieve C-like speed.  Although Julia does
+use, e.g., BLAS and LAPACK for numerical algebra, there is nothing that fundamentally prevents
+implementing their functions: true array types, fast loops, and various optimizations are available,
+as opposed to languages like Python, which are fundamentally limited by to their dynamic
+interpretation.  This advantage carries over to domains outside of numeric computation, of course.
 
 On top of that, the language is built on a very open compilation model.  Underlying the surface
-syntax is an abstract syntax tree (AST), that is used internally to the compiler, but also exposed
-to the programmer through macros, which allow to transform pieces of code at compile time.  These
-macros resemble proper hygienic, LISP-style code transformations \parencite[cf.][]{hoyte2008let},
+syntax is an abstract syntax tree (AST), that is used in the initial stages of compilation, but also
+exposed to the programmer through macros, which allow to transform pieces of code at compile time.
+Julia macros are proper hygienic, LISP-style code transformations \parencite[cf.][]{hoyte2008let},
 not simple text-substitutions as C preprocessor macros.  As an example, look at the following
 method\footnote{The terminology of Julia uses \emph{function} for a callable object, which can have
   multiple \emph{methods} for different combinations of argument types.  This is what allows
   multiple dispatch: when a function is applied, the types of the arguments are determined, and the
   most specific matching methods selected and called.  For example, the \protect\jlinl{+} function
-  has many methods for adding integers, floats, arrays, etc.}  that sums up the \jlinl{sin} values of a
-list of numbers:
+  has many methods for adding integers, floats, arrays, etc.}  that sums up the \jlinl{sin} values
+of a list of numbers:
 \begin{lstlisting}
 function foo(x)
     y = zero(eltype(x))
@@ -653,18 +656,19 @@ end
 Consequently, all nested expressions are split apart, so that only simple, unnested calls remain,
 and any subsequent assignments to variables are linearized to a series of definitions, with newly
 introduced names of the form \jlinl{\%i}.  The remaining control flow statements (e.g., while loops
-and conditionals) are a represented through sequence of labeled \emph{basic blocks}, with (possibly
-conditional) jumps between them.  The sequence of assignments is further processed into \emph{single
-  static assignment (SSA) form} \parencite{rosen1988global,singer2018static}, the characteristic
-property of which is that every variable is assigned exactly once, by giving a unique,
-position-independent name to each intermediate value of an expression.  By introducing this
-immutability guarantee and flattened structure, the resulting code is, in a certain sense,
-referentially transparent, which facilitates program flow analyses, and makes many transformations
-easier \parencite{muchnick1997advanced}.  Accordingly, SSA form is widely used in intermediate forms
-of compiler systems (such as LLVM \parencite{llvmproject2019llvm}, or Swift
+and conditionals) are represented through a sequence of labeled \emph{basic blocks}, with (possibly
+conditional) branches between them (with return statements forming a special kind of branch without
+a block target).  The sequence of assignments is further processed into \emph{single static
+  assignment (SSA) form} \parencite{rosen1988global,singer2018static}, the characteristic property
+of which is that every variable is assigned exactly once, by giving a unique, position-independent
+name to each intermediate value of an expression.  By introducing this immutability guarantee and
+flattened structure, the resulting code is, in a certain sense, referentially transparent, which
+facilitates program flow analyses, and makes many transformations easier
+\parencite{muchnick1997advanced}.  Accordingly, SSA form is widely used in intermediate forms of
+compiler systems (such as LLVM \parencite{llvmproject2019llvm}, or Swift
 \parencite{apple2020swifta}), simplifying transformations and optimizations.  The result of the
-translation of our example into into three basic blocks can be found in
-listing~\ref{lst:foo-inferred}.
+translation of our example into three basic blocks can be found in
+listing~\ref{lst:foo-inferred}.\todo{explain listing}
 
 There is one notable complication regarding conversion to SSA form: we need to be able to
 distinguish between assignments of variables arising from \enquote{joined} control flow paths.
@@ -682,9 +686,9 @@ Here, the value of \jlinl{h(y)} depends on two possible locations of \jlinl{y}~-
 simply rename every variable in a naive way.  Instead, in the variant of SSA form used in this text
 and most of Julia, values of variables that are assigned in multiple parent blocks are passed on as
 \emph{block arguments}, as in figure~\ref{fig:ssa-phi} on the right, and subsequently in this work.
-This makes basic blocks resemble local function, in a way, and cleanly resolves the problem of joins
-just like functions handle variable inputs.  The traditional, functionally equivalent alternative is
-to introduce \emph{\(\phi\)-functions} \parencite{rosen1988global}, which are defined ad-hoc to
+This makes basic blocks resemble local functions, and cleanly resolves the problem of joins just
+like functions handle variable inputs.  The traditional, functionally equivalent alternative is to
+introduce \emph{\(\phi\)-functions} \parencite{rosen1988global}, which are defined ad-hoc to
 distinguish between several values depending on the control path taken before.  This form is shown
 in the same figure on the left.
 
@@ -702,12 +706,14 @@ in the same figure on the left.
   \label{fig:ssa-phi}
 \end{figure}
 
-Note that until now, the operations involved were purely syntactic in nature, and could be performed
-by solely taking into account the code of the function \jlinl{foo}.  As soon as \jlinl{foo} is
-called on a concrete type during evaluation, though, the most specific method fitting to the
-argument types will be selected, and type inference on its body be applied.  If we go on and call
+In the next step, type inference is applied.  Until now, the operations involved were purely
+syntactic in nature, and could be performed by solely transforming the code of the function
+\jlinl{foo}, without taking into account semantic information.  As soon as \jlinl{foo} is called on
+a concrete type during evaluation, though, a specific overload, called a \emph{method}, must be
+chosen.  To apply type inference on the body of a given function, the most specific method fitting
+to the argument types of each call will be selecte.  If we go with the example and and consider
 \jlinl{foo([1.0])}, with \jlinl{Vector\{Int\}} as the sole argument type, the types as annotated in
-the same listing will be inferred.
+listing~\ref{lst:foo-inferred} will be inferred.
 
 \begin{lstfloat}[p]
   \begin{lstlisting}[style=lstfloat]
@@ -769,35 +775,36 @@ the same listing will be inferred.
     \protect\jlinl{CodeInfo}).\label{lst:foo-typed}}
 \end{lstfloat}
 
-The last step of compilation within Julia consists of inlining and optimizing the typed intermediate
-code, resulting in the form shown in listing~\ref{lst:foo-typed}.  There, several called methods
-have been inlined, and concrete argument types to invoke been inferred.  This is in true,
-traditional SSA form, with all variable slots eliminated, and block arguments converted to the
-mentioned \(\phi\)-functions.  Finally, this representation will be translated and sent to LLVM for
-compilation, where further optimization can happen, and machine code will be generated and executed,
-as well as stored for later usage as part of the just-in-time compilation mechanism.
+The last step of compilation happening within Julia consists of inlining and optimizing the typed
+intermediate code, resulting in the form shown in listing~\ref{lst:foo-typed}\todo{explain listing
+  more}.  There, several method calls have been inlined, and concrete argument types to invoke been
+inferred.  This is in true, traditional SSA form, with all variable slots eliminated, and block
+arguments converted to the mentioned \(\phi\)-functions.  Finally, this representation will be
+translated and sent to LLVM, where further optimization can happen, and machine code will be
+generated and executed, as well as stored for later usage as part of the just-in-time compilation
+mechanism.
 
 \newthought{A key principle} in Julia's compilation model is type specialization
-\parencite{bezanson2018julia}.  As we have seen, whenever a function call is evaluated, the types of
-the arguments are first determined, and then the most specific method selected and called.  This
-automatically gives the language dynamic semantics: an implementation can perform evaluation at
-every call.  In practice, however, at this point multiple dispatch and JIT compilation combine into
-one of the main principles of optimization.  Instead of evaluating the same code over and over
-again, methods are JIT-compiled the first time they are called.  The compiled code is then cached in
-the method table.  Method compilation does not happen recursively at once, though.  Only when the
-body of a compiled method is then executed with concrete arguments, the same process is performed
-again, for each invoked method.
+\parencite{bezanson2018julia}.  As we have seen, whenever a function call is reached during
+evaluation, the concrete types of the arguments are first determined, and then the most specific
+method selected.  This automatically gives the language dynamic semantics: a Julia implementation
+can theoretically perform type-based dynamic dispatch at every call.  In reality, the Julia compiler
+at this point combines multiple dispatch and JIT compilation into one of the main principles of
+optimization.  Instead of dynamically evaluating the code of a function at every call, methods are
+JIT-compiled the first time they are used.  Their compiled code is then cached in a method table,
+which is used for lookup at subsequent calls.  Note that method compilation does not happen
+recursively at once: only when the body of a compiled method is actually executed with concrete
+arguments, the same process is performed again, for each invoked method.
 
 So, in a sense, JIT compilation can be seen as a function that returns compiled code, given a
 function and a tuple of types.  Similar to macros, which transform original code, given an
-expression, this process of generating compiled methods from types is customizable in Julia: via
-so-called \emph{generated functions}, there exists a process to dynamically generate code, given
-argument types~-- a form of staged programming \parencite{rompf2010lightweight,bolewski2015staged},
-a paradigm in which code generation is controlled via regular types and functions, instead of
-specially priviledged ones as macros are. Such generated functions, when called, are not directly
-translated into machine code: instead, they emit new code to the compiler, based on the types of
-their arguments.  The new code is then JIT-compiled.  For example, when we have two methods of a
-function \jlinl{f}:
+expression, the process of generating compiled methods from argument types is customizable in Julia:
+via so-called \emph{generated functions}.  These are a form of staged programming
+\parencite{rompf2010lightweight,bolewski2015staged}, a paradigm in which code generation is
+controlled via regular types and functions, instead of specially priviledged ones as macros
+are. Such generated functions, when called, are not directly translated into machine code: instead,
+they emit new code to the compiler based on the types of their arguments.  The new code is then
+JIT-compiled.  For example, when we have two methods of a function \jlinl{f}:
 \begin{lstlisting}
 f(x::Int) = println("Int")
 f(x::String) = println("String")
@@ -816,26 +823,26 @@ end
 \end{lstlisting}
 Calling \jlinl{f_generated(1)} will then determine the argument type (\jlinl{typeof(1) == Int}), and
 pass it to the function body of \jlinl{f_generated}.  There, the conditional will select the first
-branch, and the expression \jlinl{:(println("Int"))} be returned.  This is now passed back to the
-compiler, which will lower the code and compile the method for \jlinl{Int} arguments, and store the
-result in the method table.  The stored code can then be executed~-- on the arguments that were used
-to determine the type tuple the generated function has been called with!  The next time
+branch, and the expression \jlinl{:(println("Int"))} will be returned.  This is now passed back to
+the compiler, which will lower the code and compile the method for \jlinl{Int} arguments, and store
+the result in the method table.  The stored code can then be executed~-- on the arguments that were
+used to determine the type tuple the generated function has been called with!  The next time
 \jlinl{f_generated} is executed, the function body is \emph{not} executed anymore, but the generated
-code of the the function defined through the expression \jlinl{:(println("Int"))} directly looked
+code of the function defined through the expression \jlinl{:(println("Int"))} directly looked
 up\footnote{A caveat: technically, the compiler is still free to call the generating code multiple
   times~-- which is the reason generated functions must never involve side effects or depend on
   external state.}.  Of course, simply replacing dispatch, as with this example, is not what
 generated functions are used for in practice.  Most applications concern parametric types with
 statically known shape arguments, such as tuples, named tuples, or array ranks.  They can also be
-used for type-level computations on values that become known only known at run-time, through
-singleton types such as \jlinl{Val}.
+used for type-level computations on values that become known only at run-time, through singleton
+types such as \jlinl{Val}.
 
 The direct generation of code, given argument types, is however not the furthest we can go.  For
 one, generated functions are not only allowed to return \jlinl{Expr} objects~-- the internal
 representation of the surface AST~-- but also \jlinl{CodeInfo} objects, which are the internal
 representation of lowered code in (almost) SSA form.  This, on its own, would not be of much use
-most times, but there is a second, more interesting feature: it is possible to query the
-\jlinl{CodeInfo} of a method by reflection, given a function and an argument type tuple.  Combining
+most times, but there is a second, more interesting feature: it is possible to retrieve the lowered
+representation of a method programmatically, given a function and an argument type tuple.  Combining
 these two, we now have all the tools to implement IR-level code transformations as follows:
 \begin{enumerate}
   \firmlist
@@ -865,14 +872,14 @@ Through this, several abstract interpretation algorithms can be realized, by ext
 data path with additional metadata (such as automatic differentiation, or other forms of information
 propagation analysis \parencite[part II]{singer2018static}), or non-standard execution be
 implemented (e.g., continuation-passing style transformations).  There exist already two Julia
-packages with the goal of simplify working with this kind of transformation:
+packages with the goal of simplifying this kind of transformations:
 \juliapackage{Cassette.jl}\footnote{\protect\url{https://github.com/jrevels/Cassette.jl}}, which
 provides overloadable function application by a so-called \enquote{overdubbing} mechanism,
 abstracting out some common patterns; and
 \juliapackage{IRTools.jl}\footnote{\protect\url{https://github.com/FluxML/IRTools.jl}}, which has a
 more user-friendly alternative to \jlinl{CodeInfo}, and a macro similar to \jlinl{@generated} that
-makes writing recursive functional IR-transformation using this data structure easier.  The latter is
-what the work of this thesis builds on.
+makes writing recursive IR-transformation easier by directly using this data structure.  The latter
+is what the work of this thesis builds on.
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -1264,7 +1271,7 @@ on directly differentiating the LLVM intermediate representation, by extending t
 with a differentiation pass that comes after all language-specific and high-level optimizations
 \parencite{moses2020instead}.  Furthermore, there are applications that use the same techniques for
 other purposes, like sparsity detection \parencite{gowda2019sparsity} or concolic execution
-\parencite{churavy2019vchuravy}.
+\parencite{churavy2019vchuravy} (cf. discussion in section~\ref{sec:irtracker-eval}).
 
 Internal source-based methods can therefore be composable, extensible, and more user-friendly, since
 no special treatment of programs to be differentiated is required: primal functions can be
