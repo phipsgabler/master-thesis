@@ -2,37 +2,37 @@
 \label{cha:discussion}
 
 The history of this project forms a large arc, starting from a general problem in \turingjl{}, over
-a digression into compiler technology and automatic differentiation, back the the implementation of
-a proof of concept in the form of a very specific inference method.  As we have seen, two separate
+a digression into compiler technology and automatic differentiation, back the implementation of a
+proof of concept in the form of a very specific inference method.  As we have seen, two separate
 pieces of software have emerged from it: \irtrackerjl{} and \autogibbsjl{}.  On its own, the latter
 is indeed an improvement over the previous situation: Gibbs conditional samplers can be
-significantly faster, thus allowing longer chains, than particle-based samplers, the go-to
-instrument for discrete variables in \turingjl{} so far, while delivering comparable inference
-results.  Already the addition of a \enquote{manual} Gibbs conditional sampler in \turingjl{} allows
-to directly implement many models from the literature, for which conditionals are often provided
-analytically.  Automatic derivation allows to generalize this to a large class of models that have
-been found useful in other systems such as JAGS.  The underlying issue~-- that \turingjl{} lacks a
-structural representation of models~-- is not at all resolved by the implementation, unfortunately.
-This makes \autogibbsjl{} not completely satisfactory, since the recursion and branch tracking
-features of \irtrackerjl{} cannot be applied in a useful way.
+significantly faster than particle-based samplers, the go-to instrument for discrete variables in
+\turingjl{} so far, while delivering comparable inference results.  Already the addition of a
+\enquote{manual} Gibbs conditional sampler in \turingjl{} allows to directly implement many models
+from the literature, for which conditionals are often provided analytically.  Automatic derivation
+allows to generalize this to a large class of models that have been found useful in other systems
+such as JAGS.  However, the underlying issue~-- that \turingjl{} lacks a structural representation
+of models~-- is not resolved by the implementation.  This makes \autogibbsjl{} not
+completely satisfactory, since the recursion and branch tracking features of \irtrackerjl{} cannot
+be applied in a useful way.
 
-But the real difficulty is that dynamic models cannot be satisfactorily handled through
-snapshot-like slices in the form of traces.  Systems trying to achieve this either become
-restrictive in their expressibility, or very complex in some aspects, up to practical limitation
-(see \textcite{mansinghka2014venture} and \textcite{goodman2012church}).  Furthermore, during
-implementation of the work, the two main practical difficulties were matching of variable names
-(e.g., subsuming \jlinl{x[1:10]} under \jlinl{x[1:3][2]}), and the correct handling of mutations
-that shadow actual data dependencies (e.g., when one has an array \jlinl{x}, samples \jlinl{x[1]},
-writes it to \jlinl{x} with \jlinl{setindex!}, and then uses \jlinl{getindex(x, i)} somewhere
-downstream).  These cannot be really solved using external tooling, in the way that has been
-demonstrated.  A more versatile dictionary structure for variable name keys could improve the
-situation for variable names, but wouldn't solve all of the underlying issues.
+The real difficulty is that dynamic models cannot be satisfactorily handled through snapshot-like
+slices in the form of traces.  Systems trying to achieve this either become restrictive in their
+expressibility, or very complex in some aspects, up to practical limitation (see
+\textcite{mansinghka2014venture} and \textcite{goodman2012church}).  Furthermore, during
+implementation of the work, the two main practical difficulties were matching of variable names,
+e.g., subsuming \jlinl{x[1:10]} under \jlinl{x[1:3][2]}, and the correct handling of mutations that
+shadow actual data dependencies.  The latter occurs in cases where one has, for example, an array
+\jlinl{x}, samples a value \jlinl{x[1]}, writes that to \jlinl{x} with \jlinl{setindex!}, and then
+uses \jlinl{getindex(x, 1)} somewhere downstream.  A more versatile dictionary structure for
+variable name keys could improve the situation for variable names, but wouldn't solve all of the
+underlying issues.
 
 There is also a fragility problem: Julia IR, while being publicly documented, is a rather internal
 feature of the language, and may change between compiler versions.  The \juliapackage{IRTools.jl}
 package provides a good mid-layer mitigating this, but still there's lot of reasons why a custom IR
-would be nicer.  From the other side, also the structure of \dppljl{}'s model representations is not
-stable, and actually an implementation detail that should not be relied on from the outside~--
+would be nicer.  From the other side, the internal structure of \dppljl{}'s model representations
+might change, and is an implementation detail that should not be relied on from the outside~--
 especially not by an important feature such as dependency extraction.  In a certain sense, the whole
 approach is misguided: why rely on external tracking for a framework that is really under ones own
 control, using such heavy machinery as IR transformations?  This is illuminated by following very
@@ -46,52 +46,52 @@ telling comment about similar tendencies (\juliapackage{Cassette.jl} is a packag
     communication on \protect\url{https://julialang.slack.com}.}
 \end{quote}
 
-In conclusion, the dynamic graph tracking system of \irtrackerjl{} has turned out to be an
-interesting idea with some application possibilities.  But the analysis of dynamic probabilistic
-models could not be definitely solved.  In the course of development, though, various techniques
-have been tried or ruled out, challenges identified, and other alternatives explored.  This
-knowledge has lead me to a better understanding of the domain and some more advanced ideas for the
-future, some of which are laid out in the following section.
+In conclusion, even though it has enabled the implementation of \autogibbsjl{}, the dynamic graph
+tracking system of \irtrackerjl{} does not solve the underlying problem of analysis of dynamic
+probabilistic models.  In the course of development, various techniques have been tried or ruled
+out, challenges identified, and other alternatives explored.  This knowledge has lead me to a better
+understanding of the domain and some more advanced ideas for the future, some of which are laid out
+in the following section.
 
 \section{Future Work}
 \label{sec:future-work}
 
 While \irtrackerjl{} is quite a satisfying and complete system, the approach that \autogibbsjl{}
 takes provides only an ad-hoc solution to a major shortcoming of \turingjl{}: the lack a structural
-model representation that is open to analysis and transformations.  This has make me consider
+model representation that is open to analysis and transformations.  This has made me consider
 alternatives, approaching the representation problem for probabilistic programming languages on a
-more fundamental level.  Most of the following ideas I have already informally described
-online\footnote{\protect\url{https://github.com/phipsgabler/probability-ir}}.
+more fundamental level.\footnote{The following ideas are based on a previous informal collection at
+  \protect\url{https://github.com/phipsgabler/probability-ir}}.
 
 Let us review the important features of a universal, flexible PPL as mentioned in
 section~\ref{sec:prob-prog}.  Its DSL should allow general recursion and nesting, support for all
 language constructs and custom types and extensions, and be able to delegate to other samplers or
-complex programs; and the internal representation should be such that multiple forms of analysis,
-optimization, non-standard execution, and transformation can be performed.  Currently, \turingjl{}
-is very primitive in this respect: one data structure (\jlinl{VarInfo}) contains a map from variable
-names to values, the accumulated log-likelihood, and some other (mutable!) sampling
+complex programs.  In addition, the internal representation should be such that multiple forms of
+analysis, optimization, non-standard execution, and transformation can be performed.  Currently,
+\turingjl{} is following a rather simple approach: one data structure (\jlinl{VarInfo}) contains a
+map from variable names to values, the accumulated log-likelihood, and some other sampling
 metadata. \autogibbsjl{}' solution consists of retrofitting some more structure onto this
 representation~-- which is not ideal, and for proper analysis, it would be desirable to begin with a
-better representation from the start, at least for the reasons mentioned above.
+better representation from the start.
 
 From difficulties described above, which became apparent during the implementation of the Gibbs
 conditional extraction, together with the knowledge about \dppljl{}'s internals, I developed an
-understanding of what an more advanced representation of probabilistic models, with a focus on
-transformation and analysis, could be, from a metaprogramming and static analysis perspective,
-employing ideas from functional programming language design.  The idealized goal would be for
-variable names and dependency graphs in general probabilistic programs to behave nicely as abstract
-data structures, and to be part of a closed, elegant, high-level language.  Many successful
-approaches to PPL design probably come from the perspective of efficient and general inference
-algorithm, putting the language design problem second to such a desire.  But it should be possible
-to approach the field from a linguistic perspective as well.  A further goal would be to close the
-gap between practical inference systems and the mostly theoretical, functional-programming-based
-approaches of just formalizing probabilistic programs (such as probabilistic lambda calculi, or
-type-theoretic formulations; see
+understanding of what a more advanced representation of probabilistic models, with a focus on
+transformation and analysis, could be, from a metaprogramming and static analysis, and language
+design perspective.  The idealized goal would be for variable names and dependency graphs in general
+probabilistic programs to behave more conveniently as abstract data structures, and to be part of a
+closed, elegant, high-level language.  Many successful approaches to PPL design probably come from
+the perspective of efficient and general inference algorithm, putting the language design problem
+second to such a desire~-- but it should be possible to approach the field from a more
+\enquote{linguistic} perspective as well.  A further goal would be to close the gap between
+practical inference systems and the mostly theoretical, functional-programming-based approaches of
+just formalizing probabilistic programs (such as probabilistic lambda calculi, or type-theoretic
+formulations; see
 \textcite{ramsey2002stochastic,heunen2017convenient,bhat2012type,scibior2015practical})
 
 \newthought{Universal PPLs} have as their goal to let the user write down every model the language
 allows, and still be able to do inference on it.  Of course, at the boundary of the space of
-\enquote{reasonable} programs, trade-offs need to be made to still be able to do this.  It seem
+\enquote{reasonable} programs, trade-offs need to be made to still be able to do this.  It seems
 advantageous to split up this conjunction: by creating a format in which one can denote every
 possible model of a very large class, without a priori having to deal with the restrictions of
 inference.  Then for each model, suitable transformations and analyses can be performed in a uniform
@@ -101,21 +101,21 @@ fragment of the model language used.
 What I propose is a \enquote{probabilistic intermediate representation}, that turns around how
 things are currently construed in most of the approaches.  Instead of starting from a model as a
 \enquote{sampling function}, which is evaluated to extract graphs or other symbolic representations
-from it, one should begin from a representation that already is general, yet richly structured, and
+from it, one would begin from a representation that already is general, yet richly structured, and
 derive inference programs from it.  Viewed from the opposite direction, in contrast to PPLs that are
 built on top of a DSL representation, such an representation should be backend-agnostic, and instead
 allow all kinds of models to be specified in a uniform syntax, without being constraint by the
-demands of a specific sampling algorithm or inference technique.  And furthermore, it shouldn't
-matter whether the model is complicated, nonparametric, dynamic~-- the object that is worked with is
-always a fixed, full program in a specified syntax, with an intuitive denotation.
+demands of a specific sampling algorithm or inference technique.  Furthermore, it shouldn't matter
+whether the model is complicated, nonparametric, dynamic~-- the object that is worked with is always
+a fixed, full program in a specified syntax, with an intuitive denotation.
 
 This separation between the a \enquote{specification abstraction} in form of a general
 representation and \enquote{evaluator abstractions} provided by interfaces to multiple sampler
 implementations seems novel.  The closest correspondence would be the formalization attempts of
 probabilistic models through monads and type systems; but that is more semantic than syntactic.
-There are some domain-specific \enquote{linguae frankae} like the syntax of Stan and JAGS, but they
-are, too, somewhat restricted, and not independently defined and maintained~-- the systems coming
-later just chose to take over the same kind of input format for their own implementation.
+There exist some domain-specific \enquote{linguae frankae} like the syntax of Stan and JAGS, but
+they are, too, somewhat restricted, and not independently defined and maintained~-- the systems
+coming later just chose to take over the same kind of input format for their own implementation.
 \juliapackage{Gen.jl} \parencite{cusumano-towner2020gen} provides an extensibel interface for the
 class of models it supports, but this is still quite tightly bound to its inference system.  All
 these approaches could rather be abstracted out into a model specification formalism in its own
