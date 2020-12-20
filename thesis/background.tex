@@ -887,20 +887,18 @@ is what the work of this thesis builds on.
   Computation Graphs}
 \label{sec:cg-ad}
 
-This section may appear as an outlier from the original topic; in fact, the mathematics developed
-here are not even used later.  However, it is important to explain the interrelations between
-automatic differentiation (AD), computation graphs, and IR transformations, to be able to understand
-how SSA-form representation is a natural structure for extracting and analyzing computation graphs,
-and how the necessary transformations arise in practice.  To appreciate how the form of the
-computation graphs interacts with the mathematics, some foundations need to be introduced first.
+This section will explain some of the interrelations between automatic differentiation, computation
+graphs, and IR transformations, to be able to understand how SSA-form representation is a natural
+structure for extracting and analyzing computation graphs, and how the necessary transformations
+arise in practice.  To appreciate how the form of the computation graphs interacts with the
+mathematics, some foundations need to be introduced first.
 
-\newthought{Many algorithms in machine learning} and other domains can be expressed as an
-optimization problem over a multivariate function with scalar output~-- typically a loss function
-over a parameter space, which measures how far a model prediction is form the true target values.
-The optimal model is then just that one for which the parameters minimize the loss function.  When
-the loss function is (sub-)differentiable, there exist a variety of gradient-based optimization
-methods to find this optimum (or, in the non-convex case, at least a practically sufficient local
-minimum).
+\newthought{Many algorithms in machine learning} and other domains can be expressed as optimization
+problems over a multivariate function with scalar output~-- typically a loss function over a
+parameter space, which measures the performance of a model for a specific task.  The parameters
+minimizing the loss function then define the optimal model.  When the loss function is
+(sub-)differentiable, there exist a variety of gradient-based optimization methods to minimize the
+loss (at least in terms of a practically sufficient local minimum).
 
 While in some cases the loss function is simple enough to find the gradient by hand, in general, the
 model, and therefore the loss function, may be specified in terms of rather complicated programs,
@@ -922,129 +920,32 @@ blow-up of the size of the generated expressions; additionally, it requires the 
 expressed in a custom representation, different from normal functions or programs
 \parencite{baydin2018automatic}.
 
-\newthought{Automatic differentiation}, the third category, is perhaps unfortunately named~-- it
-does not signify much at first sight.  The relevant idea is to not start from functions as black-box
-or symbolic objects, but from programs.  Then the perturbation that makes up the value of the
-derivative at a point is propagated through the steps of the program.  For this to work, there needs
-to exist an explicit representation of the computation graph at  the evaluation at a point, which
-is what makes the topic relevant for this thesis.  In contrast to the former two methods, AD relies
-on numeric, not symbolic evaluation, but is (up to the floating point errors already present in the
-input function) exact~-- no discretization error, as in finite differences, is introduced.  For a
-more detailed treatment, I refer to \textcite{griewank2008evaluating}, the standard work on the
-topic, and the survey by \textcite{baydin2018automatic}, which includes a comparison of
+\newthought{Automatic differentiation} or AD, the third category, is perhaps unfortunately named~--
+it does not signify much at first sight.  The relevant idea is to not start from functions as
+black-box or symbolic objects, but from programs.  Then the perturbation that makes up the value of
+the derivative at a point is propagated through the steps of the program.  For this to work, there
+needs to exist an explicit representation of the computation graph at the evaluation at a point,
+which is what makes the topic relevant for this thesis.  In contrast to the former two methods, AD
+relies on numeric, not symbolic evaluation, but is (up to the floating point errors already present
+in the input function) exact~-- no discretization error, as in finite differences, is introduced.
+For a more detailed treatment, I refer to \textcite{griewank2008evaluating}, the standard work on
+the topic, and the survey by \textcite{baydin2018automatic}, which includes a comparison of
 state-of-the-art implementations.  There are many works on the formalization of AD in programming
 language theory; see, for example, \textcite{abadi2020simple}.
 
-To understand how AD works, let us first start with the mathematics.  What is a derivative, really?
-When we talk about gradients, which is what we really need in a gradient algorithm, this is usually
-a rather informal term for \enquote{the vector of partial derivatives}, which then points into an
-ascent direction.  This is however not the most natural form to work with in a compositional
-approach.  Instead of starting with a limit of tangent slopes, more insight is provided by viewing
-derivatives as best-approximating linear operators.  One of the most general definitions is provided
-through the \emph{Fréchet derivative} \parencite[p. 463]{bronstein1995taschenbuch}, essentially a
-generalization of the total differential.  Let \(X\) and \(Y\) be normed spaces.  A function
-\(f: U \subseteq X \to Y\) is Fréchet differentiable at a point \(x \in U\) if there exists a
-bounded linear operator \(A: X \to Y\) such that
-\begin{equation}
-  \label{eq:frechet}
-  \lim_{\enVert{\Delta}_X \to 0} \frac{\enVert{f(x + \Delta) - f(x) -
-      A(\Delta)}_Y}{\enVert{\Delta}_X} = 0.
-\end{equation}
-When such an \(A\) does exist, it is unique, and we may call it \emph{the} derivative of \(f\) at
-\(x\), writing \(\Dif f(x) = A\).  When the derivative exists for all \(x\), we can use \(\Dif\) as
-a well-defined higher-order function on its own; we will assume this in the following.\footnote{In
-  in practical cases, functions are often only piecewise differentiable due to branches, failing
-  this definition on a countable set of points.  Fortunately, the formalism of AD remains the same
-  under weaker notions of differentiability.  Additionally, such points usually behave well enough
-  to admit a subdifferential, from which we can just choose an arbitrary subgradient; this does not
-  necessary lead to a descent direction, but still allows minimization under reasonable conditions
-  \parencites[see][section 6.1]{pock2017convex}[][chapter
-  14]{griewank2008evaluating}{abadi2020simple}.}
-
-The important fact here is that \(\Dif f(x)\) is still a function: specifically, a linear function
-approximating how \(f\) reacts to an input perturbation, \(\Delta\), around \(x\).  Or, in other
-words:
-\begin{equation}
-  f(x + \Delta) = f(x) + \Dif f(x)(\Delta) + o\left(\enVert{\Delta}\right).
-\end{equation}
-This fact allows one to propagate differential values through composed functions, by the chain rule,
-which we write in the following compositional form:
-\begin{equation}
-  \Dif(\phi \circ \psi)(x) = \Dif\phi(\psi(x)) \circ \Dif\psi(x).
-\end{equation}
-In the one-dimensional case, we simply have
-\begin{equation}
-  \Dif \phi(x) = \Delta \mapsto \partial_1 \phi(x) \, \Delta,
-\end{equation}
-where \(\partial_1 \phi(x)\) denotes the standard \enquote{primitive} derivative, since linear maps
-are exactly multiplications by a scalar.  Therefore, we can recover the chain rule
-\begin{equation}
-  \begin{aligned}
-    \Dif(\phi \circ \psi)(x)(\Delta) &=
-    \left( \Dif\phi(\psi(x)) \circ \Dif\psi(x) \right)(\Delta) \\
-    % &= \Dif\phi(\psi(x))\left( \Dif\psi(x)(\Delta) \right) \\
-    % &= \Dif\phi(\psi(x))\left( \partial_1 \psi(x) \, \Delta \right) \\
-    % &= \partial_1\phi(\psi(x)) \, \partial_1 \psi(x) \, \Delta \\
-    &= \left( \partial_1\phi(\psi(x)) \, \partial_1 \psi(x) \right) \, \Delta,
-  \end{aligned}
-\end{equation}
-as we know it from calculus.  Here, the product in the resulting expression arises from the fact
-that we propagated through \(\partial_1 \psi(x) \Delta\) as the input value of
-\(\Dif\phi(\psi(x))\).  It is, however, remarkable that this formula is not entirely compositional:
-to construct \(\Dif(\phi \circ \psi)\), it is not only necessary to know \(\Dif\phi\) and
-\(\Dif\psi\), but also \(\psi\) \parencite{elliott2018simple}.  Still, this is not as bad as it may
-seem: as I will now explain, AD algorithms evaluate both \((\phi \circ \psi)(x)\) and
-\(\Dif(\phi \circ \psi)(x)\) at once, in lockstep fashion, so that the intermediate values of the
-former can be reused in calculation of the latter.
-
-Consider the specific case of \(f(x, y) = sin(x) - y\). For simpler notation, let
-\(g = (x, y) \mapsto x - y\) replace the infix subtraction operator, with a derivative of
-\(\Dif g(x)(\Delta_1, \Delta_2) = \Delta_1 - \Delta_2\).  By composition, we have:
-\begin{equation}
-  \begin{aligned}
-    \Dif f(x, y) &= \Dif(g \circ (\sin \otimes \ident))(x, y) \\
-    &= \Dif g\left( (\sin \otimes \ident)(x, y) \right) \circ \Dif(\sin \otimes \ident)(x, y) \\
-    % &= \left( (\Delta_1, \Delta_2) \mapsto \Delta_1 - \Delta_2 \right) \circ \left( \Dif\sin(x)
-      % \otimes \Dif \ident(y) \right) \\
-    % &= (\Delta_1, \Delta_2) \mapsto \partial_1\sin(x) \, \Delta_1 - 1 \Delta_2 \\
-    &= (\Delta_1, \Delta_2) \mapsto \cos(x) \, \Delta_1 - \Delta_2.
-  \end{aligned}
-\end{equation}
-In order to calculate this algorithmically, let us expand the computation of \(f\) into a sequence
-of intermediate, primitive calculations, as we would have in a programmatical representation:
-\begin{equation}
-  \label{eq:ad-primal}
-  \begin{aligned}
-    x &= \operatorname{?}, \\
-    y &= \operatorname{?}, \\
-    z &= \sin(x), \\
-    \Omega &= g(z, y).
-  \end{aligned}
-\end{equation}
-We have given the final result the name \(\Omega\), and and introduced an intermediate value \(z\).
-This is known as the \emph{forward}, or \emph{primal} function in AD terminology.  The relations of
-these values can be expressed as the black computation graph in figure~\ref{fig:comp-graph-fw}.
-Following the graph, or equivalently, following the equations in ~\eqref{eq:ad-primal}, the
-composition of the derivative operators can be built up incrementally, as shown in the blue part of
-that figure, by calculating the following \emph{tangent values}:
-\begin{equation}
-  \label{eq:ad-forward}
-  \begin{aligned}
-    \dot{x} &= \Delta_1, \\
-    \dot{y} &= \Delta_2, \\
-    \dot{z} &= \Dif\sin(x)(\dot{x}) \\
-    &= \cos(x) \, \Delta_1, \\
-    \dot{\Omega} &= \Dif g(z, y)(\dot{z}, \dot{y}) \\
-    &= \cos(x) \, \Delta_1 - \Delta_2.
-  \end{aligned}
-\end{equation}
-The tangent values of input variables \(x\) and \(y\) become the input perturbations \(\Delta_i\).
-For every subsequent tangent value, we apply the derivative at the corresponding primal variable
-(depending on the primal parents) to the tangent values of the parents~-- this way, the composition
-of the derivative operators follows the chain rule.  This algorithm, called \emph{forward-mode AD},
-can now be applied practically not only on symbolic functions, but on programs, by always jointly
-computing \((v, \dot{v})\) for every variable \(v\), given its parents in the graph.  This requires
-a form of non-standard execution, which will be explained in more detail below.
+The appendix~\ref{ch:ad-details} contains a more formal introduction of the underlying concepts.  In
+short, we treat a program as the composition of functions, and derivatives as equally-shaped
+compositions of the linear operators they represent.  Since composition is associative, there are
+many possible orders for evaluation of these composed derivatives.  The two main fashions of AD,
+\emph{forward mode} and \emph{backward mode}, correspond to evaluation aligning with the original
+function evalution order, and its reverse.  These composition orders naturally can be described
+through the computation graphs of functions, and transformations on them.  This is illustrated in
+figure~\ref{fig:comp-graph}, where we see the computation graph of a simple expression
+\jlinl{g(sin(x), y)}, with input variables \jlinl{x} and \jlinl{y} and output \jlinl{Ω}.  There, the
+graphs of the corresponding forward-mode (left) and backward-mode (right) calculations are related
+to the computation graphs.  The dotted (\(\dot{x}\)) and barred (\(\bar{x}\)) values are the
+perturbation values propagated through the derivative graphs, corresponding to intermediate
+variables in the original.
 
 \begin{figure}[t]
   \centering
@@ -1055,154 +956,38 @@ a form of non-standard execution, which will be explained in more detail below.
     \includegraphics[]{figures/comp-graph-backward}}
   \caption{Computation graph and intermediate expressions of the expression \protect\jlinl{g(sin(x),
       y)}, together with the derivative graphs in forward- and backward mode.  Dashed arrows
-    indicate re-use of primal values in the derivative graph.}
+    indicate re-use of forward values in the derivative graph.}
   \label{fig:comp-graph}
 \end{figure}
 
-\newthought{Recovering the full gradient} of a function \(\phi: U \subseteq \RR^N \to \RR\) (which
-is generally the form of loss functions for parametric models) requires to evaluate \(\Dif \phi(x)\)
-\(N\) times, however.  This is because individual partial derivatives can only be extracted from
-\(\Dif \phi(x)\) by calculating the sensitivities to unit input perturbations in coordinate
-directions, for each of the input variables:
-\begin{equation}
-  \nabla \phi(x) = \begin{pmatrix}
-    \Dif \phi(x)(1, 0, \ldots, 0)  \\
-    \vdots \\
-    \Dif \phi(x)(0, \ldots, 0, 1)
-  \end{pmatrix} = \begin{pmatrix}
-    \partial_1 \phi(x) \\
-    \vdots \\
-    \partial_N \phi(x)
-  \end{pmatrix},
-\end{equation}
-which is really a special case of taking directional derivatives (which can be recovered generally
-by application of the differential to any vector with unit norm.)
+In this setting, forward-mode AD is simply an efficient way to calculate the \emph{Jacobian-vector
+  product} \(J(x) \Delta\), or equivalently the total derivative at \(x\) for a fixed perturbation
+\(\Delta\), avoiding full matrix multiplication.  Appling this to all all basis vectors, we get back
+the gradient.  Backward mode, on the other hand, calculates the product of the Jacobian with a dual
+vector.  This, in fact, is nothing else than a \emph{vector-Jacobian product} with the transposed
+Jacobian.  Recovering the (transposed) gradient of a loss function of type \(\RR^N \to \RR\) then
+reduces to evaluating it at a constant scalar output perturbation of \(1\).  Notably, this in
+involves only one pass over the graph, while in forward mode, \(N\) passes are required.  For this
+reason, backward mode enjoys a much more prominent role in gradient-based machine learning.
 
-In order to overcome the increase of complexity with the number of input dimensions, we can
-reformulate the compositional equation.  Let us introduce \(\CoDif \phi(x)\), the \emph{adjoint
-  operator} of \(\Dif \phi(x)\), whose defining property is that in \enquote{inverts} the order of
-the perturbation application: instead of calculating a primal sensitivity with respect to an input
-perturbation (\(\Delta\)), it maps a linear output perturbation (\(\mathfrak{d}\)) to an operator
-that applies this to the primal sensitivity:
-\begin{equation}
-  \CoDif \phi(x)(\mathfrak{d}) = \Delta \mapsto \mathfrak{d}(\Dif \phi(x)(\Delta)).
-\end{equation}
-The adjoint differential is therefore an object of the double dual space.  This becomes more
-readable when we fix a basis to represent the derivative.  Doing so, in the finite-dimensional case,
-the derivative \(\Dif \phi(x)\) is the Jacobian matrix at \(x\), \(J_{\phi}(x)\).  In this setting,
-forward-mode AD is simply an efficient way to calculate the \emph{Jacobian-vector-product}
-\(J_{\phi}(x) \Delta\), or equivalently the total derivative for a fixed perturbation, avoiding full
-matrix multiplication~-- which is the reason we have to apply it to the basis vectors to get back
-the gradient.  Backward mode, on the other hand, calculates the product of the Jacobian with the
-operator that should be applied to the result, but does not yet apply it to the input
-perturbation~-- therefore, it returns a matrix:
-\begin{equation}
-  \begin{aligned}
-    \mathfrak{d} (\Dif \phi(x)(\Delta)) &= \transpose{d} J_{\phi}(x) \Delta \\
-    &= \transpose{\left( \transpose{J_{\phi}(x)} d \right)} \Delta \\
-    &= \CoDif \phi(x)(\mathfrak{d})(\Delta),
-  \end{aligned}
-\end{equation}
-where we assume \(\mathfrak{d}\) to be represented by the co-vector \(\transpose{d}\).  Since the
-unapplied \(\CoDif \phi(x)(\mathfrak{d})\) is itself an object in the dual space, it is also
-represented as a co-vector~-- and in fact, nothing else than a transformation of the transposed
-Jacobian.  Recovering the gradient of a loss function then reduces to evaluating it at a constant
-scalar output perturbation of \(1\), which is equivalent to the application of the primal
-differential to the matrix of basis vectors.
+\newthought{The practical implementation} of AD in programming languages opens up another set of
+possible choices.  One way is to use an external, compiler-based system that transforms a complete
+program in a subset of a standard programming language (e.g., Tapenade, which transpiles Fortran and
+C code \parencite{tapenadedevelopers2019tapenade}) or in a custom specification, as is done in Stan
+\parencite{carpenter2015stan}.  But both of these examples are really applied in niche cases: large
+numeric simulations, and log-densities in a probabilistic model.  Moreover, these systems lack
+flexibility in programming, especially concerning abstractions and interaction with other libraries,
+and require external tooling besides a main programming language.  Recently, the Swift for
+TensorFlow project \parencite{tensorflowdevelopers2018swift,hong2018graph} introduced a modern
+variant of this by extending the compiler of the Swift programming language with facilities to
+perform automatic differentiation internally, and some features to simplify graph operations
+required by TensorFlow.
 
-Note that due to this relation to the transpose, the adjoint operator inverses the order of
-composition in the chain rule:
-\begin{equation}
-  \begin{aligned}
-    \CoDif (\phi \circ \psi)(x)(\mathfrak{d}) &= \transpose{d} J_{\phi}(\psi(x)) J_{\psi}(x) \\
-    &=  \transpose{\left( \transpose{J_{\psi}(x)} \transpose{J_{\phi}(\psi(x))} d \right)} \\
-    &= \left( \CoDif\psi(x) \circ \CoDif\phi(\psi(x)) \right)(\mathfrak{d}).
-  \end{aligned}
-\end{equation}
-For our example function \(f\), this gives the same structural form of the result as the forward
-mode~-- only that now, the value is a vector:
-\begin{equation}
-  \begin{aligned}
-    \CoDif f(x, y) &= \CoDif (g \circ (\sin \otimes \ident))(x, y) \\
-    &= \CoDif(\sin \otimes \ident) \circ \CoDif g((\sin \otimes \ident)(x, y)) \\
-    % &= (\CoDif\sin \otimes \CoDif\ident) \circ (\delta \mapsto \transpose{[\delta, -\delta]}) \\
-    % &= (\partial_1 \sin(x) \otimes 1) \circ (\delta \mapsto \transpose{[\delta, -\delta]}) \\
-    % &= \delta \mapsto \transpose{[\partial_1\sin(x)\delta, -1 \delta]} \\
-    &= \delta \mapsto \transpose{[\cos(x)\delta, -\delta]}.
-  \end{aligned}
-\end{equation}
-In this form, starting with an output perturbation \(\delta = 1\), we get back the gradient tuple
-through just one evaluation.  Incidentally, this is nothing else than the back-propagation
-\enquote{trick} \parencite{bishop2006pattern}!  Furthermore, applying this result to
-\([\Delta_1, \Delta_2]\) gives back the linear combination of the forward mode result.
-
-In programmatic terms, we can proceed similar to above, only this time introducing \emph{adjoint}
-intermediate values \(\bar{v}\).  For the values in equation~\eqref{eq:ad-primal}, we get
-\begin{equation}
-  \label{eq:ad-backward}
-  \begin{aligned}
-    \bar{x} &= \bar{z}_2 = -\delta, \\
-    \bar{y} &= \CoDif\sin(x) \, \bar{z}_1 \\
-    &= \cos(x) \, \delta\\
-    \bar{z} &= \CoDif g(x, y)(\bar{\Omega}) \\
-    &= [\delta, -\delta] \\
-    \bar{\Omega} &= \delta,
-  \end{aligned}
-\end{equation}
-which is displayed in the red graph in \ref{fig:comp-graph-bw}.  Note that now, the back-propagated
-values can not be computed in parallel with forward evaluation; hence the equations are stated in
-reverse order.  Instead, the intermediate primal values have to be remembered and reused in a
-second, backward pass.
-
-Finally, it has to be noted that the two described modes of automatic differentiation are only two
-extremes of a spectrum.  Forward and backward calculations can really be interleaved in arbitrary
-order, just as it is possible to multiply Jacobians and their transposes in different order.  One
-frequent use case of this \emph{mixed-mode AD} is when loss functions, differentiated using backward
-mode, contain broadcasting functions; for example, nonlinearities in neural network.  These have a
-shape of \(\RR^N \to \RR^N\), but only involve a linear number of operations, so forward mode pays
-off\footnote{As a rule of thumb in Julia, for \(f: \RR^M \to \RR^N\), forward mode typically
-  performs better when \(M \ll N\) or as long as \(M \lessapprox 100\).  This folklore should always
-  be confirmed by benchmarking, though.  See
-  \url{https://github.com/JuliaDiff/ReverseDiff.jl\#should-i-use-reversediff-or-forwarddiff}.}.
-Similar properties hold for second order derivatives: the calculation of Hessians is often fastest
-by using forward-over-reverse composed differentiation.  In general, unfortunately, determining the
-optimal order of derivative evaluation is hard~-- this so-called \emph{optimal Jacobian
-  accumulation} problem is known to be NP-complete \parencite{naumann2007optimal}.
-
-\newthought{The practical implementation} of automatic differentiation in programming languages
-opens up another set of possible choices.  One way is to use an external, compiler-based system that
-transforms a complete program in a subset of a standard programming language (e.g., Tapenade, which
-transpiles Fortran and C code \parencite{tapenadedevelopers2019tapenade}) or in a custom
-specification, as is done in Stan \parencite{carpenter2015stan}.  But both of these examples are
-really applied in niche cases: large numeric simulations, and log-densities in a probabilistic
-model.  These systems lack flexibility in programming, especially concerning abstractions and
-interaction with other libraries, and require external tooling besides a main programming language.
-Recently, the Swift for TensorFlow project \parencite{tensorflowdevelopers2018swift,hong2018graph}
-introduced a modern variant of this by extending the compiler of the Swift programming language with
-facilities to perform automatic differentiation internally, and some features to simplify graph
-operations required by TensorFlow.
-
-The second possibility is \emph{operator overloading}.  Forward mode can be recast in mathematically
-equivalent form by using dual numbers \parencite[see][section 3.1.1]{baydin2018automatic}.  These
-consist of two parts, similar to complex numbers: \(z = x + y\epsilon\).  However, contrary to the
-imaginary unit, the infinitesimal unit \(\epsilon\) vanishes under multiplication with itself:
-\(\epsilon^2 = 0\).  The consequence of this is that functions can naturally be extended to dual
-numbers by nonstandard interpretation as truncated Taylor series:
-\begin{equation}
-  \phi(x + \epsilon) = \phi(x) + \partial_1\phi(x)\epsilon + \underbrace{\frac{\partial^2_1\phi(x)}{2}\epsilon^2
-  + \ldots}_{\epsilon^2 (\ldots) = 0}
-\end{equation}
-Since the higher order terms vanish, this is exactly the tuple of primal and tangent value that is
-calculated during the lockstep evaluation in forward mode:
-\begin{equation}
-  (z, \dot{z}) = (\phi(x), \Dif\phi(x)(\dot{x})) \quad\Leftrightarrow\quad z + \dot{z}\epsilon = \phi(x + \dot{x}\epsilon).
-\end{equation}
-(generalization to higher dimensions, as well as higher derivatives in form of hyper-dual numbers,
-follow equally naturally.)
-
-Dual numbers can rather easily be added to an existing programming language that has a sufficiently
-extensible system for overloading mathematical operators.  This can be done using traits or type
-classes, like in Haskell, or by dynamic dispatch, which is what is used in Python and Julia.  The
+The second possibility is \emph{operator overloading}.  Forward mode can rather easily be added to
+any existing programming language which has a sufficiently extensible system for overloading
+mathematical operators by implementing dual numbers (see section~\ref{sec:dual-numbers}).  This can
+be done using ad-hoc polymorphism with traits \parencite{amin2016dependent} or type classes
+\parencite{wadler1989how}, or by dynamic dispatch, which is what is used in Python and Julia.  The
 latter is especially versatile in this respect, since every function can be extended to a new type
 of dual numbers by simply adding a method; unlike in Python, where only certain operators are open
 to extension~-- a fundamental limitation of its single dispatch, object oriented approach.
@@ -1220,8 +1005,9 @@ to extension~-- a fundamental limitation of its single dispatch, object oriented
 Backward-mode AD can be implemented using operator overloading as well, but this requires more
 effort.  Since adjoint values cannot be simply threaded through in parallel to forward evaluation,
 one needs to build up a data structure during the forward pass, which can at the end be traced back
-in reverse order.  One possibility of doing this is to use closures, but the usage of many higher
-order function might lead to unwanted heap allocation and makes understanding harder.
+in reverse order.  One possibility of doing this is to use closures (function objects capturing an
+environment), but the usage of many higher order functions might lead to unwanted heap allocation
+and makes understanding harder.
 
 The alternative is to use a tape structure, or \emph{Wengert list} \parencite[][section
 3]{baydin2018automatic}.  On such a list, the computation graph is stored as by pointers between
@@ -1233,12 +1019,12 @@ these, the programmer interacts with a library mirroring the usual numerical fun
 operating on a special \enquote{variable} or \enquote{tensor} type.  These operations are overloaded
 so that function calls, in addition to performing the primal calculations, are stored either
 explicitly on a global Wengert list structure, or implicitly in the constructed expression objects.
-Then, one can start a backward pass from any leaf variable to propagate back derivatives to the
-roots of the computation graph, by following the edges and summing up adjoint values in parent
-nodes' metadata.  JAX \parencite{bradbury2018jax} carries the idea further and allows general
-composable source transformations to implement not only differentiation, but also vectorization,
-parallelization, and other syntactic abstractions over functional programs written in Python, over a
-unified intermediate representation that is recovered from an original function by tracing.
+Then, one can start a backward pass from any leaf to propagate back derivatives to the roots of the
+computation graph, by following the edges and summing up adjoint values in parent nodes' metadata.
+JAX \parencite{bradbury2018jax} carries the idea further and allows general composable source
+transformations to implement not only differentiation, but also vectorization, parallelization, and
+other syntactic abstractions over functional programs written in Python, over a unified intermediate
+representation that is recovered from an original function by tracing.
 
 This style of implementation has limitations, though: it requires building up many objects at
 run-time, and is completely oblivious of control structures.  Additionally, the code expressing
@@ -1247,23 +1033,24 @@ preventing the usage of third-party functions and language features, and forcing
 to certain semantic constraints that cannot be verified statically by the host language.  TensorFlow
 in graph mode addresses some of these points.  It builds up a complete expression graph, which is
 differentiated symbolically, and is therefore somewhat in the middle between operator overloading
-(since the graph is still a run-time data structure) and a static transformation (the resulting graph
-is not interpreted in the host language, but converted to run on an \enquote{accelerator}, which can
-one of several kinds of processing unit~-- CPU, GPU, TPU,\ldots).  It still requires to stick to the
-provided expression types and library functions, though.
+(since the graph is still a run-time data structure) and a static transformation (the resulting
+graph is not interpreted in the host language, but converted to run on an \enquote{accelerator},
+which can one of several kinds of processing device~-- CPU, GPU, TPU,\ldots).  It still requires to
+stick to the provided expression types and library functions, though.
 
 Efforts to overcome these limitations lead to the third kind of approach: language-internal
-\emph{source transformation}.  Recent work in Julia \parencite{innes2018don} has shown that through
-the available metaprogramming mechanisms (described in section~\ref{sec:comp-metapr-julia}) allow to
-systematically derive \enquote{adjoint programs} for arbitrary user-provided Julia functions, given
-only an extensible set of \emph{primitive adjoints}.  This approach works purely structurally on the
-Julia IR, employing generated functions to analyze functions' code and transform them completely,
-including third-party functions and data types, and control flow.  The key insight here is that
-SSA-form IR already resembles the structure of Wengert lists, extended by branches.  As in building
-up reverse computation graphs, the adjoint code will therefore invert the control flow of the basic
-blocks in the primal function, taking into account that data flow may involve dynamic dependencies.
-Differentiation through data types and closures is supported via a unified treatment of them in a
-tuple-like form, with constructors and accessors (inspired by cons-cells in Lisp).
+\emph{source transformation}.  Recent work in Julia \parencite{innes2018don} has shown that the
+available metaprogramming mechanisms (described in section~\ref{sec:comp-metapr-julia}) allow to
+systematically derive \enquote{adjoint programs} for arbitrary user-provided Julia programs, given
+only a set of \emph{primitive adjoints} (such as derivatives of built-in functions).  This approach
+works purely structurally on the Julia IR, employing generated functions to analyze functions' code
+and transform them completely, including third-party functions and data types, and control flow.
+The key insight here is that SSA-form IR already resembles the structure of Wengert lists, extended
+by branches.  As in building up reverse computation graphs, the adjoint code will therefore invert
+the control flow of the basic blocks in the primal function, taking into account that data flow may
+involve dynamic dependencies.  Differentiation through data types and closures is supported via a
+unified treatment of them in a tuple-like form, with constructors and accessors (inspired by
+cons-cells in Lisp).
 
 An implementation of this principle has been released as the \juliapackage{Zygote.jl}
 package\footnote{\url{https://github.com/FluxML/Zygote.jl}}.  In similar spirit, there is also work
@@ -1285,8 +1072,8 @@ only a special case of message passing algorithms in computation graphs
 \parencite{minka2019automatic}.  Other learning methods that can be described as message passing are
 optimization algorithms \parencite{ruozzi2011message,dauwels2005steepest} and a variety of
 variational approximations \parencite{winn2005variational,minka2005divergence}.  Hence, it is no
-surprise that computation graphs play a large role as the foundation of other learning algorithms in
-Bayesian methods, such as described below.
+surprise that computation graphs play a large role as the foundation of other learning algorithms
+for probabilistic models, such as described below.
 
 %%% Local Variables: 
 %%% TeX-master: "main"
