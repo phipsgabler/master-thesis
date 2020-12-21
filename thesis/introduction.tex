@@ -25,8 +25,8 @@ more low-level application programming interface (API).  Alternatively, there ar
 like PyTorch \parencite{paszke2017automatic} or AutoGrad \parencite{maclaurin2015autograd}, where
 the graphs are defined implicitely from a forward program written in more declarative style
 (TensorFlow \parencite{abadi2015tensorflow} is somewhere between these).  Such APIs are called
-\emph{operator overloading} in AD language, because they extend existing operations to additionally
-track the computation graph at run-time on so-called tapes or Wengert lists
+\emph{operator overloading} in AD terminology, because they extend existing operations to
+additionally track the computation graph at run-time on so-called tapes or Wengert lists
 \parencite{bartholomew-biggs2000automatic}.  This kind of tracking is dynamic, in the sense that a
 new tape is recorded for every execution.  However, being implemented on a library level, it usually
 requires the programmer to use non-native constructs instead of language primitives, leading to
@@ -146,7 +146,7 @@ already exists a proof-of-concept implementation of a concolic fuzzer in Julia
 \parencite{churavy2019vchuravy}, which applies the same kind IR-based transformations as
 \juliapackage{Zygote.jl}.
 
-These information propagatino methods, most of which find recursive solutions to equations defined
+These information propagation methods, most of which find recursive solutions to equations defined
 over program structure, can in turn be seen as a form of message passing, under which not only a
 variety of learning algorithms can be summarized \parencite{minka2005divergence}, but also automatic
 differentiation \parencite{minka2019automatic} and gradient based optimization

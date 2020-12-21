@@ -247,9 +247,9 @@ As an example, consider a simple Gaussian mixture model with equal weights, spec
 \begin{equation}
   \label{eq:normal-mixture-1}
   \begin{aligned}
-    \mu_{k} &\iidfrom \Normal(m, s) \quad\text{for } 1 \le k \le K, \\
-    Z_{n} &\iidfrom \distr{Categorical}(K) \quad\text{for } 1 \le n \le N, \\
-    X_{n} &\iidfrom \Normal(\mu_{Z_{n}}, \sigma) \quad\text{for } 1 \le n \le N.
+    \mu_{k} &\from \Normal(m, s) \quad\text{for } 1 \le k \le K, \\
+    Z_{n} &\from \distr{Categorical}(K) \quad\text{for } 1 \le n \le N, \\
+    X_{n} &\from \Normal(\mu_{Z_{n}}, \sigma) \quad\text{for } 1 \le n \le N.
   \end{aligned}
 \end{equation}
 (\(\distr{Categorical}(K)\) is short for a uniform categorical distribution with probabilities
@@ -1009,21 +1009,21 @@ environment), but the usage of many higher order functions might lead to unwante
 and makes understanding harder.
 
 The alternative is to use a tape structure, or \emph{Wengert list} \parencites[][section
-3]{baydin2018automatic}.  On such a list, the computation graph is stored as by pointers between
-elements, as shown in figure~\ref{fig:wengert-list}.  The Wengert list can also be constructed
-through an operator overloading approach, which is exactly what graph-based machine learning
-frameworks do: PyTorch \parencite{paszke2017automatic}, TensorFlow \parencite{abadi2015tensorflow}
-in eager mode, DyNet \parencite{neubig2017dynet}, and Chainer \parencite{tokui2015chainer}.  In
-these, the programmer interacts with a library mirroring the usual numerical functions, but
-operating on a special \enquote{variable} or \enquote{tensor} type.  These operations are overloaded
-so that function calls, in addition to performing the primal calculations, are stored either
-explicitly on a global Wengert list structure, or implicitly in the constructed expression objects.
-Then, one can start a backward pass from any leaf to propagate back derivatives to the roots of the
-computation graph, by following the edges and summing up adjoint values in parent nodes' metadata.
-JAX \parencite{bradbury2018jax} carries the idea further and allows general composable source
-transformations to implement not only differentiation, but also vectorization, parallelization, and
-other syntactic abstractions over functional programs written in Python, over a unified intermediate
-representation that is recovered from an original function by tracing.
+3]{baydin2018automatic}.  On such a list, the computation graph is stored in topological order with
+pointers between elements, as shown in figure~\ref{fig:wengert-list}.  The Wengert list can also be
+constructed through an operator overloading approach, which is exactly what graph-based machine
+learning frameworks do: PyTorch \parencite{paszke2017automatic}, TensorFlow
+\parencite{abadi2015tensorflow} in eager mode, DyNet \parencite{neubig2017dynet}, and Chainer
+\parencite{tokui2015chainer}.  In these, the programmer interacts with a library mirroring the usual
+numerical functions, but operating on a special \enquote{variable} or \enquote{tensor} type.  These
+operations are overloaded so that function calls, in addition to performing the primal calculations,
+are stored either explicitly on a global Wengert list structure, or implicitly in the constructed
+expression objects.  Then, one can start a backward pass from any leaf to propagate back derivatives
+to the roots of the computation graph, by following the edges and summing up adjoint values in
+parent nodes' metadata.  JAX \parencite{bradbury2018jax} carries the idea further and allows general
+composable source transformations to implement not only differentiation, but also vectorization,
+parallelization, and other syntactic abstractions over functional programs written in Python, over a
+unified intermediate representation that is recovered from an original function by tracing.
 
 This style of implementation has limitations, though: it requires building up many objects at
 run-time, and is completely oblivious of control structures.  Additionally, the code expressing
