@@ -40,12 +40,11 @@ of a coin throw a number in \(\{1, 2\}\), or to each measurement of some height 
 solely in terms of the values in the domain of the random variable, with notation like
 \begin{equation}
   \label{eq:prob-notation}
-  \Prob{\alpha(X)} = P(\{\omega \in \Omega \mid \alpha(X(\omega))\})
+  \Prob{\alpha(X)} = P(\{\omega \in \Omega \mid \alpha(X(\omega))\}),
 \end{equation}
-where \(\alpha\) is an arbitrary predicate defining a set in the domain of \(X\).
-
-In such a setting, it might the case that there exist some \emph{base measure} \(\mu\), such that
-probability evaluation can be expressed as integral over some \emph{density} with respect to \(\mu\):
+where \(\alpha\) is an arbitrary predicate defining a set in the domain of \(X\).  In such a
+setting, it might the case that there exist some \emph{base measure} \(\mu\), such that probability
+evaluation can be expressed as integral over some \emph{density} with respect to \(\mu\):
 \begin{equation}
   \label{eq:measure-integral}
   \Prob{X \in A} = \int_{A} \prob[X]{x} \dif\mu(x),
@@ -61,9 +60,9 @@ In this case \(P_X\) is said to be \emph{absolutely continuous} with respect to 
   \label{eq:radon-nikodym}
   \frac{\dif P_{X}}{\dif \mu} = p_{X}.
 \end{equation}
-For discrete values, a density always exists with respect to the counting measure, and the random
-variable is also called discrete.  For finite-dimensional continuous values, when a density exists
-with respect the Lebesgue measure, we speak of a continuous random variable. 
+For countably supported distributions, a density always exists with respect to the counting measure,
+and the random variable is then called discrete.  For finite-dimensional continuous values, when a
+density exists with respect the Lebesgue measure, we speak of a continuous random variable.
 
 
 
@@ -185,8 +184,8 @@ that figure, by calculating the following \emph{tangent values}:
     &= \cos(x) \, \Delta_1 - \Delta_2.
   \end{aligned}
 \end{equation}
-The tangent values of input variables \(x\) and \(y\) become the input perturbations \(\Delta_1\),
-\(\Delta_2\).  For every subsequent tangent value, we apply the derivative at the corresponding
+The tangent values of input variables \(x\) and \(y\) become the input perturbations \(\Delta_1\)
+and \(\Delta_2\).  For every subsequent tangent value, we apply the derivative at the corresponding
 primal variable (depending on the primal parents) to the tangent values of the parents~-- this way,
 the composition of the derivative operators follows the chain rule.  This algorithm, called
 \emph{forward-mode AD}, can now be applied practically not only on symbolic functions, but on
@@ -208,9 +207,9 @@ in the graph.  This requires a form of non-standard execution.
 
 \newthought{Recovering the full gradient} of a multivariate function
 \(\phi: U \subseteq \RR^N \to \RR\) (which is generally the form of loss functions for parametric
-models) requires to evaluate \(\Dif \phi(x)\) \(N\) times, however.  This is because individual
-partial derivatives can only be extracted from \(\Dif \phi(x)\) by calculating the sensitivities to
-unit input perturbations in coordinate directions, for each of the input variables:
+models) requires to evaluate \(\Dif \phi(x)\) for \(N\) times.  This is because individual partial
+derivatives can only be extracted from \(\Dif \phi(x)\) by calculating the sensitivities to unit
+input perturbations in coordinate directions, for each of the input variables:
 \begin{equation}
   \nabla \phi(x) = \begin{pmatrix}
     \Dif \phi(x)(1, 0, \ldots, 0)  \\
@@ -320,7 +319,7 @@ optimal order of derivative evaluation is hard~-- this so-called \emph{optimal J
 \label{sec:dual-numbers}
 
 Forward mode can be recast in mathematically equivalent form by using dual numbers
-\parencite[see][section 3.1.1]{baydin2018automatic}{deakin1966functions}.  These consist of two
+\parencites[see][section 3.1.1]{baydin2018automatic}{deakin1966functions}.  These consist of two
 parts, similar to complex numbers: \(z = x + y\epsilon\).  However, contrary to the imaginary unit,
 the infinitesimal unit \(\epsilon\) vanishes under multiplication with itself: \(\epsilon^2 = 0\).
 The consequence of this is that functions can naturally be extended to dual numbers by nonstandard

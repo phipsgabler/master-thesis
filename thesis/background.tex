@@ -513,7 +513,7 @@ the purpose of density evaluation, in which no new values need to be produced; t
 needed for probability queries, or density-based algorithms (which might additionally use automatic
 differentiation on the density evaluation procedure).  All shared information for external usage is
 thereby conventionally stored in the \jlinl{VarInfo} object, which resembles a dictionary from
-variable names\footnote{These \jlinl{VarName} objects, constructed by the macro \jlinl{@varname},
+variable names\footnote{These \texttt{VarName} objects, constructed by the macro \texttt{@varname},
   simply represent an indexed variable through a symbol and a tuple of integers.}  to values
 (internal sampler state can also be stored in the \jlinl{sampler} object).  Through the
 \jlinl{sample} interface, the resulting values are then stored in a \jlinl{Chains} object, a data
@@ -635,7 +635,7 @@ order to not possibly shadow any variables from the calling scope.)
 \end{lstlisting}
   \caption{SSA-form of the lowered form of the method \protect\jlinl{foo(::Vector\{Float64\})} as
     defined defined above, annotated with inferred types (as through
-    \protect\jlinl{\@code_warntype}).\label{lst:foo-inferred}}
+    \texttt{@code\_warntype}).\label{lst:foo-inferred}}
 \end{lstfloat}
 
 After macro expansion, the code of the method is \emph{lowered} into an intermediate
@@ -666,9 +666,16 @@ flattened structure, the resulting code is, in a certain sense, referentially tr
 facilitates program flow analyses, and makes many transformations easier
 \parencite{muchnick1997advanced}.  Accordingly, SSA form is widely used in intermediate forms of
 compiler systems (such as LLVM \parencite{llvmproject2019llvm}, or Swift
-\parencite{apple2020swifta}), simplifying transformations and optimizations.  The result of the
-translation of our example into three basic blocks can be found in
-listing~\ref{lst:foo-inferred}.\todo{explain listing}
+\parencite{apple2020swifta}), simplifying transformations and optimizations.
+
+The result of the translation of our example into three basic blocks can be found in
+listing~\ref{lst:foo-inferred}: the first block contains the logic before the \texttt{for}-loop,
+including the test condition and the desugared \jlinl{iterate} primitive.  In the second block, we
+see the lowered form of array indexing with \jlinl{getindex}, and the logic that the \jlinl{@show}
+macro was expanded to.  The block has two block arguments, \jlinl{\%9} and \jlinl{\%10}, which are
+used to pass forward the updated iteration state \jlinl{\%18} and incremented value \jlinl{\%15}.
+The branches are the same as in the first block.  Finally, the third block is used to break out of
+the loop; it receives the final summed up value and returns it.
 
 There is one notable complication regarding conversion to SSA form: we need to be able to
 distinguish between assignments of variables arising from \enquote{joined} control flow paths.
@@ -776,13 +783,16 @@ listing~\ref{lst:foo-inferred} will be inferred.
 \end{lstfloat}
 
 The last step of compilation happening within Julia consists of inlining and optimizing the typed
-intermediate code, resulting in the form shown in listing~\ref{lst:foo-typed}\todo{explain listing
-  more}.  There, several method calls have been inlined, and concrete argument types to invoke been
-inferred.  This is in true, traditional SSA form, with all variable slots eliminated, and block
-arguments converted to the mentioned \(\phi\)-functions.  Finally, this representation will be
-translated and sent to LLVM, where further optimization can happen, and machine code will be
-generated and executed, as well as stored for later usage as part of the just-in-time compilation
-mechanism.
+intermediate code, resulting in the form shown in listing~\ref{lst:foo-typed}.  Logically, this is
+equivalent to \ref{lst:foo-inferred}, but now all function calls are either lowered to intrinsic
+functions (\jlinl{arraysize}, \jlinl{sle_int}), or converted to typed \jlinl{invoke} primitives.
+Several method calls have been inlined, e.g., the \jlinl{+}, which has become an \jlinl{add_int}
+intrinsic.  The many empty blocks and branches, and some spurious constants, are left-overs from the
+optimization processes.  This code is in true, traditional SSA form, with all variable slots
+eliminated, and block arguments converted to the mentioned \(\phi\)-functions.  Finally, this
+representation will be translated and sent to LLVM, where further optimization can happen, and
+machine code will be generated and executed, as well as stored for later usage as part of the
+just-in-time compilation mechanism.
 
 \newthought{A key principle} in Julia's compilation model is type specialization
 \parencite{bezanson2018julia}.  As we have seen, whenever a function call is reached during
