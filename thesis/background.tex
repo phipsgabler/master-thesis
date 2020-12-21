@@ -856,14 +856,14 @@ Importantly, unlike macros, such transformations can be performed \emph{recursiv
 inserts the same generated function to inner function calls during the transformation in step 3.
 Since the transformation operates not during parsing, the function to be transformed needs not be
 known beforehand, and not be present literally in the code~-- the generated function can be called
-on every available callable object, at any time during run-time.  This makes it possible to transform
-even functions from other libraries, internally calling yet other functions.  One particular example
-of this principle is source-to-source automatic differentiation, as shown in the next chapter: a
-call to a function \jlinl{gradient(f, x, y)} will obtain the IR of the method for \jlinl{f} on
-\jlinl{typeof(x)} and \jlinl{typeof(y)}, produce differentiated code, and call the result on
-\jlinl{x} and \jlinl{y}.  Naturally, differentiating \jlinl{f} involves recursively differentiating
-the other, unknown functions within it, too (down to \enquote{primitive} functions, whose derivative
-is known), and combining the results using the chain rule.
+on every available callable object, at any time during run-time.  This makes it possible to
+transform even functions from other libraries, internally calling yet other functions.  One
+particular example of this principle is source-to-source automatic differentiation, as shown in the
+next section: a call to a function \jlinl{gradient(f, x, y)} can obtain the IR of the method for
+\jlinl{f} on \jlinl{typeof(x)} and \jlinl{typeof(y)}, produce differentiated code, and call the
+result on \jlinl{x} and \jlinl{y}.  Naturally, differentiating \jlinl{f} involves recursively
+differentiating the other, unknown functions within it, too (down to \enquote{primitive} functions,
+whose derivative is known), and combining the results using the chain rule.
 
 This metaprogramming pattern is extremely powerful, and becoming more and more popular.  It allows
 to change evaluation semantics in more profound ways than multiple dispatch can: by rewriting the
@@ -930,8 +930,7 @@ relies on numeric, not symbolic evaluation, but is (up to the floating point err
 in the input function) exact~-- no discretization error, as in finite differences, is introduced.
 For a more detailed treatment, I refer to \textcite{griewank2008evaluating}, the standard work on
 the topic, and the survey by \textcite{baydin2018automatic}, which includes a comparison of
-state-of-the-art implementations.  There are many works on the formalization of AD in programming
-language theory; see, for example, \textcite{abadi2020simple}.
+state-of-the-art implementations.
 
 The appendix~\ref{ch:ad-details} contains a more formal introduction of the underlying concepts.  In
 short, we treat a program as the composition of functions, and derivatives as equally-shaped
@@ -1009,7 +1008,7 @@ in reverse order.  One possibility of doing this is to use closures (function ob
 environment), but the usage of many higher order functions might lead to unwanted heap allocation
 and makes understanding harder.
 
-The alternative is to use a tape structure, or \emph{Wengert list} \parencite[][section
+The alternative is to use a tape structure, or \emph{Wengert list} \parencites[][section
 3]{baydin2018automatic}.  On such a list, the computation graph is stored as by pointers between
 elements, as shown in figure~\ref{fig:wengert-list}.  The Wengert list can also be constructed
 through an operator overloading approach, which is exactly what graph-based machine learning
@@ -1056,9 +1055,11 @@ An implementation of this principle has been released as the \juliapackage{Zygot
 package\footnote{\url{https://github.com/FluxML/Zygote.jl}}.  In similar spirit, there is also work
 on directly differentiating the LLVM intermediate representation, by extending the compiler pipeline
 with a differentiation pass that comes after all language-specific and high-level optimizations
-\parencite{moses2020instead}.  Furthermore, there are applications that use the same techniques for
-other purposes, like sparsity detection \parencite{gowda2019sparsity} or concolic execution
-\parencite{churavy2019vchuravy} (cf. discussion in section~\ref{sec:irtracker-eval}).
+\parencite{moses2020instead}, released as the Enzyme
+project\footnote{\protect\url{https://enzyme.mit.edu/}}.  Furthermore, there are applications that
+use the same techniques for other purposes, like sparsity detection \parencite{gowda2019sparsity} or
+concolic execution \parencite{churavy2019vchuravy} (cf. discussion in
+section~\ref{sec:irtracker-eval}).
 
 Internal source-based methods can therefore be composable, extensible, and more user-friendly, since
 no special treatment of programs to be differentiated is required: primal functions can be
