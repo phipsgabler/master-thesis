@@ -450,7 +450,7 @@ priors over cluster centers, weights, and assignments \parencite[section 6.2]{ma
     w &\from \distr{Dirichlet(K)}, \\
     z_{n} &\from \distr{Categorical}([1, \ldots, K], w), \quad\text{for } 1 \le n \le N, \\
     \mu_{k} &\from \Normal(0, \sigma_{1}), \quad\text{for } 1 \le k \le K, \\
-    x_{n} &\from \Normal(\mu_{z_{n}}, \sigma_{1}), \quad\text{for } 1 \le n \le N;,
+    x_{n} &\from \Normal(\mu_{z_{n}}, \sigma_{1}), \quad\text{for } 1 \le n \le N;
   \end{aligned}
 \end{equation}
 a hidden Markov model
@@ -537,16 +537,16 @@ autocorrelation functions of the same chains are given, which are a way to evalu
 speed by eye.  The functions should vanish quickly (indicated by the gray significance bar around
 the abscissa); uncorrelated samples would have zero autocorrelation except for the first lag.
 
-Lastly, two diagnostic values are plotted for each combination and chain.  The\todo{corner plots}
+Lastly, two diagnostic values are plotted for each combination and chain.  The
 \enquote{scale-reduction} \(\widehat{\mathrm{R}}\), after \textcite{gelman1992inference}, estimates
 the factor by which the scale of the current distribution might be reduced if the simulations were
 continued \parencite[see][p. 285]{gelman2020bayesian}.  It should be close to one for indicating
-good convergence; as a rule of thumb, a value of more than \(1.1\) is suspicious\todo{add line in
-  plots}.  The effective sample size (ESS) arises in the estimation of the asymptotic variance of
-Markov chains \parencite[][section 7.2]{vihola2020lectures}, where it is formally analogous to the
-sample size in the variance estimator for \iid{} variables.  The ESS can also be interpreted as a
-one-point summary of the autocorrelation estimate, normalized by chain length.  It should be close
-to the actual number of samples, or at least of the same order of magnitude.\todo{add line in plots}
+good convergence; as a rule of thumb, a value of more than \(1.1\) is suspicious.  The effective
+sample size (ESS) arises in the estimation of the asymptotic variance of Markov chains
+\parencite[][section 7.2]{vihola2020lectures}, where it is formally analogous to the sample size in
+the variance estimator for \iid{} variables.  The ESS can also be interpreted as a one-point summary
+of the autocorrelation estimate, normalized by chain length.  It should be close to the actual
+number of samples, or at least of the same order of magnitude.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -620,15 +620,13 @@ end
 \FloatBlock
 
 \newcommand{\leftplotcaption}[1]{%
-  Sampling and extraction times for #1, factored by algorithm and number
-  of observations.  Points are jittered horizontally to increase readability.  A quadratic curve is
-  fitted to the extraction times.
-}
-\newcommand{\rightplotcaption}[1]{%
+  Sampling and extraction times for #1, factored by algorithm and number of observations.  Points
+  are jittered horizontally to increase readability.  A quadratic curve is fitted to the extraction
+  times.  } \newcommand{\rightplotcaption}[1]{%
   Diagnostics, factored by algorithm, number of observations, and a selection of model parameters.
   \(\widehat{\mathrm{R}}\) and ESS point estimates are jittered horizontally for better readability.
-  For chain plots and autocorrelation, the first chain of the respective combination has been used.
-}
+  A horizontal line marks the reference value of \(1.1\) in the \(\widehat{\mathrm{R}}\) plot.  For
+  chain plots and autocorrelation, the third chain of the respective combination has been used.  }
 
 \begin{figure}[t!]
   \centering
