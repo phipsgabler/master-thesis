@@ -116,9 +116,9 @@ Julia could be added in future extensions.  Furthermore, broadcasting tilde stat
 supported in \dppljl{}, are not supported by \autogibbsjl{} at the moment.
 
 \newthought{To illustrate} the extracted dependency graphs obtained by \autogibbsjl{}, we will
-examine the two simple models shown in listing~\ref{lst:dependency-examples}.  The pretty-printed
-\jlinl{Graph} objects resulting from each of the models are shown in
-listing~\ref{lst:trace-examples} on the bottom.  We can see that the model arguments for
+examine the two simple models shown in listing~\ref{lst:dependency-examples}\todo{fix caption
+  alignment}.  The pretty-printed \jlinl{Graph} objects resulting from each of the models are shown
+below them, in listing~\ref{lst:trace-examples}.  We can see that the model arguments for
 observations occur as constant values, and all of the intermediate transformation visible in the
 original model definitions are observed.  From this structure, \autogibbsjl{} can construct output
 in the Dot graph format and visualized using GraphViz \parencite{gansner2000open}.  The visual
@@ -288,12 +288,12 @@ round, and the \autogibbsjl{} sampler has, in generalized form, been added to \t
   \label{fig:continuations}
 \end{figure}
 
-Step 1, the symbolic extraction of likelihood functions, is implemented by first converting the full
-trace into a symbolic joint log-density.  The expression of each node in the dependency graph is
-therefore associated with a corresponding symbolic representation of a function of the
-\enquote{trace dictionary} \jlinl{θ}, which contains all values of the random variables by name
-(which is to view the probabilistic model as a joint density over trace dictionaries).  This is done
-in the following simple fashion:
+The initial step, the symbolic extraction of likelihood functions, is implemented by first
+converting the full trace into a symbolic joint log-density.  The expression of each node in the
+dependency graph is therefore associated with a corresponding symbolic representation of a function
+of the \enquote{trace dictionary} \jlinl{θ}, which contains all values of the random variables by
+name (which is to view the probabilistic model as a joint density over trace dictionaries).  This is
+done in the following simple fashion:
 \begin{itemize}
   \firmlist
 \item References to call nodes or constant nodes (\jlinl{⟨i⟩ = x}) are inlined.

@@ -362,7 +362,7 @@ distribution, matching the size of \jlinl{x_observations}.  Similarly, \jlinl{ch
 length 1000 sample from a Markov chain targeting the posterior, conditionally on
 \jlinl{x_observations}, created using the MH algorithm.  If we were to write out code for these two
 functionalities manually, in idiomatic Julia, we would end up with at least two separate functions
-needed for the sampler:
+needed for the sampler:\todo{page break}
 \begin{lstlisting}
 function normal_mixture_sampler(N, K, m, s, σ)
     μ = rand(Normal(m, s), K)
