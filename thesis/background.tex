@@ -6,10 +6,10 @@ This chapter provides background for concepts used later in chapters~\ref{cha:im
 programming in general, necessary to understand the requirements and usual approaches of
 probabilistic programming systems.  Consequently, the machinery and language used to develop the
 graph tracking system forming the main part of the work are described.  First, basic notions and
-techniques of the Julia compilation process as well as the language's metaprogramming capabilities
-are described, which form the basis of the implementation.  Second, a short introduction to graph
+techniques of Julia's compilation process as well as the language's metaprogramming capabilities are
+described, which form the basis of the implementation.  Second, a short introduction to graph
 tracking and source-to-source automatic differentiation is given, from which many of the ideas and
-terminology that will later be used were taken
+terminology that will later be used were taken.
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -17,19 +17,20 @@ terminology that will later be used were taken
 \label{sec:bayes-infer}
 
 Probabilistic modeling \parencite{winn2019modelbased} is an approach to model phenomena based on the
-assumption that observable data can be fully described through some generative process that involves
-randomness.  Recovering the details of this process, by estimating which one from a class of
-processes fits observed data best, is a form of learning: if we have a good description of how
+assumption that observable data can be fully described through some data generation process that
+involves randomness.  Recovering the details of this process, by estimating which one from a class
+of processes fits observed data best, is a form of learning: if we have a good description of how
 observations are generated, we can make summary statements about the whole population (descriptive
 statistics) or predictions about new observations.  For example, learning the specifics a
 conditional relation between independently observed paired data can be used to solve regression or
-classification problems.
+classification problems.  A \emph{model} is thereby a formal description of the data generating
+process, in mathematical or algorithmic form.
 
 Within the Bayesian framework
 \parencite{bolstad2004introduction,congdon2006bayesian,gelman2020bayesian}, we assume that the
-generative process is specified by random variables related through conditional distributions with
-densities, which describe how the observables would be generated: some \emph{latent variables} are
-generated from \emph{prior distributions}, and the data are generated conditionally on the latent
+generative process is specified by random variables related through conditional distributions, which
+describe how the observables would be generated: some \emph{latent variables} are generated from
+\emph{prior distributions}, and the \emph{observed data} are generated conditionally on the latent
 variables.  The goal is to learn the \emph{posterior distribution} of the latent variables given the
 data.  Whereas the generative model specifies how we assume data generation to work from latent to
 observed values in \enquote{forward} direction, the posterior estimate allows us to reason
@@ -38,7 +39,7 @@ also be described iteratively, as a process of updating prior beliefs through th
 knowledge given by observations.
 
 As an example, consider a linear regression model, where some output depends linearly on an input
-variable, with Gaussian noise:
+variable, with Gaussian noise of fixed standard deviation \(\sigma\):
 \begin{equation}
   \label{eq:bayes-regression-model}
   Y \sim \Normal(\theta_0 + x\theta_1, \sigma). 
@@ -57,8 +58,8 @@ values \parencite{marin2007bayesian}.
 \newthought{In the following}, we will mostly assume that the involved random variables have
 densities with respect to a suitable base measure, generally written as \(\mu\): the counting
 measure in the discrete case, and the Lebesgue measure in the finite-dimensional continuous case
-\parencite{kallenberg2006foundations}.  This allows to conveniently unify summation and integration
-under one notation.  See appendix~\ref{sec:measure-theory} for more information.
+\parencite{kallenberg2006foundations}.  Measure theory notation allows to conveniently unify
+summation and integration; see appendix~\ref{sec:measure-theory} for more details.
 
 The posterior of the generative model can be expressed as a conditional distribution using Bayes'
 theorem. In terms of densities, we then have\footnote{Note the abuse of notation regarding
@@ -70,11 +71,11 @@ theorem. In terms of densities, we then have\footnote{Note the abuse of notation
     \overbrace{\prob{\theta}}^{\text{prior}}}{\prob{x}},
 \end{equation}
 where \(x\) are the observed data, and \(\theta\) are the latent values. The posterior represents
-the distribution of the unobserved variables as a combination of the prior belief updated by what
-has been observed~\parencite{congdon2006bayesian}.  \(\theta\) often functions as a parametrization
-of the likelihood distribution.  Also note that in practice, one might not be interested in all of
-the latent variables, but only a marginal; this corresponds to integrating out some parts of
-\(\theta\).
+the distribution of the unobserved latent variables as a combination of the prior belief updated by
+what has been observed~\parencite{congdon2006bayesian}.  \(\theta\) often functions as a
+parametrization of the likelihood distribution.  Also note that in practice, one might not be
+interested in all of the latent variables, but only a marginal; this corresponds to integrating out
+some parts of \(\theta\).
 
 Going beyond simple applications like the example mentioned above, hand\-ling the posterior gets
 difficult, though.  Simply evaluating the posterior density
@@ -108,7 +109,7 @@ of message passing \parencite{minka2005divergence}.  The methods described in th
 fall into the category of Monte Carlo methods, and are based on sampling \parencites[chapter
 23]{murphy2012machine}{vihola2020lectures}.  Their fundamental idea is to derive, for given
 observations \(x\) and a specified density of \(\Theta \from \pi(\cdot \given x)\), a sampling
-procedure with a consistent estimator for expectations:
+procedure with a consistent estimator \(I\) for expectations of \(f\):
 \begin{equation}
   \label{eq:mc-methods}
   \kth{I}(f) \to \Exp{f(\Theta) | X = x} = \int f(\theta) \pi(\theta \given x) \dif\mu(\theta), \quad \text{as} \quad k
@@ -128,9 +129,9 @@ mean, such that a law of large numbers (LLN) holds:
 \end{equation}
 If we can sample \(\kth{Y} \from \pi(\cdot \given x)\) exactly, they are \iid{} and the LLN holds
 trivially; such samplers exist, but might also be difficult to derive or not possess good enough
-convergence properties (especially in high dimensions).  Another large class of samplers is formed
-by \emph{Markov Chain Monte Carlo} (MCMC) methods \parencite{vihola2020lectures,robert1999monte},
-which, instead of sampling exactly from the density, define \(\kth{Y}\) via a (time-homogeneous)
+convergence properties (especially in high dimensions).  Another large class of such samplers are
+\emph{Markov Chain Monte Carlo} (MCMC) methods \parencite{vihola2020lectures,robert1999monte},
+which, instead of sampling exactly from the density, define the \(\kth{Y}\) via a (time-homogeneous)
 Markov chain:
 \begin{equation}
   \label{eq:mc-kernel}
@@ -142,17 +143,20 @@ Markov chain:
     % &\quad = k(y \given \kth{y}) \dif\mu(y)
   \end{aligned}
 \end{equation}
-for all \(k \ge 1\).  By constructing the parameterized measure \(K\), the \emph{transition kernel},
-in the right way, the resulting has target density \(\pi(\cdot \given x)\) as the unique stationary
-distribution~-- that means for all \(\pi(\cdot \given x)\)-measurable sets \(A\),
+for all \(k \ge 1\) (the differential notation expresses this as a density in \(y\); see
+page~\pageref{cha:notation}).  By constructing the parameterized measure \(K\), the \emph{transition
+  kernel}, in the right way, the resulting Markov chain has the target density
+\(\pi(\cdot \given x)\) as the unique stationary distribution~-- that means for all
+\(\pi(\cdot \given x)\)-measurable sets \(A\), the distribution is invariant under transitions
+according to the kernel:
 \begin{equation}
   \label{eq:stationarity}
   \int \pi(\theta \given x) K(\theta, A) \dif\mu(\theta) = \int_A \pi(\theta \given x) \dif\mu(\theta) =
   \Prob{\Theta \in A \given X = x},
 \end{equation}
-and the LLN for Markov chains holds.  (For discrete spaces, this relation is more familiarly written
-as a left eigen-problem on a stochastic matrix: \(\pi K = \pi\) for \(x\) fixed, and \(\pi\) and
-\(K\) considered a vector and matrix.)  The advantage of MCMC methods is that they apply equally
+and so the LLN for Markov chains holds.  (For discrete spaces, this relation is more familiarly
+written as a left eigen-problem on a stochastic matrix: \(\pi K = \pi\) for \(x\) fixed, and \(\pi\)
+and \(K\) considered a vector and matrix.)  The advantage of MCMC methods is that they apply equally
 well to many structurally complex models, and treat densities in a uniform way, without requiring
 special knowledge about the specific distribution in question.  I refer to \textcites[chapter
 6]{vihola2020lectures}{robert1999monte}[chapters 24 and following]{murphy2012machine} as
