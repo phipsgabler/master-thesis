@@ -147,8 +147,8 @@ for all \(k \ge 1\) (the differential notation expresses this as a density in \(
 page~\pageref{cha:notation}).  By constructing the parameterized measure \(K\), the \emph{transition
   kernel}, in the right way, the resulting Markov chain has the target density
 \(\pi(\cdot \given x)\) as the unique stationary distribution~-- that means for all
-\(\pi(\cdot \given x)\)-measurable sets \(A\), the distribution is invariant under transitions
-according to the kernel:
+\(\pi(\cdot \given x)\)-measurable sets \(A\), the posterior distribution is invariant under
+transitions according to the kernel:
 \begin{equation}
   \label{eq:stationarity}
   \int \pi(\theta \given x) K(\theta, A) \dif\mu(\theta) = \int_A \pi(\theta \given x) \dif\mu(\theta) =
@@ -166,14 +166,14 @@ introductions to MCMC theory and practice.
 (MH), which splits the general definition of the transition kernel into two parts: a proposal
 distribution, given by a transition kernel
 \((\kth[k-1]{y}, \kth{y}) \mapsto q(\kth[k-1]{y}, \kth{y})\) which is easy to sample from, and an
-acceptance rate function \(\alpha\).  Subsequent samples are then produced by proposing values from
-the conditional distribution \(q(\kth[k-1]{y}, \cdot)\) dependent on previous chain element
-\(\kth[k-1]{y}\), and incorporating them into the chain with a probability given through \(\alpha\)
-(see algorithm~\ref{alg:mh}).  There exist many MH-based schemes with different properties and
-requirements: from the classical random-walk Metropolis algorithm with Gaussian proposals, over
-Reversible Jump MCMC for varying dimensions \parencite{green1995reversible}, to gradient-informed
-methods like Metropolis Adjusted Langevin and Hamiltonian Monte Carlo (HMC)
-\parencite{betancourt2018conceptual,girolami2011riemann}.
+acceptance rate function \(\alpha\) (on which there are some technical conditions).  Subsequent
+samples are then produced by proposing values from the conditional distribution
+\(q(\kth[k-1]{y}, \cdot)\) dependent on previous chain element \(\kth[k-1]{y}\), and incorporating
+them into the chain with a probability given through \(\alpha\) (see algorithm~\ref{alg:mh}).  There
+exist many MH-based schemes with different properties and requirements: from the classical
+random-walk Metropolis algorithm with Gaussian proposals, over Reversible Jump MCMC for varying
+dimensions \parencite{green1995reversible}, to gradient-informed methods like Metropolis Adjusted
+Langevin and Hamiltonian Monte Carlo (HMC) \parencite{betancourt2018conceptual,girolami2011riemann}.
 
 % \begin{algorithm}[t]
 %   \sffamily
@@ -207,11 +207,12 @@ methods like Metropolis Adjusted Langevin and Hamiltonian Monte Carlo (HMC)
   \caption{General scheme for the Metropolis-Hastings algorithm.\label{alg:mh}}
 \end{algorithm}
 
-For multi-component structures, where the latent variables have a blocked form
-\(\Theta = [\Theta_1, \ldots, \Theta_M]\), a good proposal distribution can be hard to find, though.
-One way to break down the problem is to use a family of block-wise updates, given by conditional
-kernels \(q_{i}\) operating only on the single block \(\Theta_i\), with the rest, \(\Theta_{-i}\),
-fixed.  Then we can use the following modified proposal \(\hat{Y}\) in algorithm~\ref{alg:mh},
+For multi-component structures, where the latent variables can be subdivided into several
+(potentially multivariate) blocks as \(\Theta = [\Theta_1, \ldots, \Theta_M]\), a good proposal
+distribution can be hard to find, though.  One way to break down the problem is to use a family of
+block-wise updates, given by conditional kernels \(q_{i}\) operating only on the single block
+\(\Theta_i\), with the rest, \(\Theta_{-i}\), fixed.  Then we can use the following modified
+proposal \(\hat{Y}\) in algorithm~\ref{alg:mh},
 \begin{equation}
   \label{eq:conditional-kernels}
   \begin{aligned}
@@ -219,35 +220,37 @@ fixed.  Then we can use the following modified proposal \(\hat{Y}\) in algorithm
     \kth[k]{\hat{Y}}_{i} &\from q_{i}(\kth[k-1]{Y}_{i}, \cdot \given \kth[k-1]{Y}_{-i})
   \end{aligned}
 \end{equation}
-(negative indices denote removal of the indicated entry).  The blocks can be scalar or multivariate,
-the kernels may themselves be any valid transition kernel, and the sampling order of the blocks
-(\(i\)) can be chosen in different random or determinstic ways under some technical conditions
-\parencite[chapter 6.6]{vihola2020lectures}.  This allows one to freely mix different MCMC methods
-suitable for each variable in a problem.
+(negative indices denote removal of the indicated entry).  The kernels for each block may themselves
+be any valid transition kernel, which allows one to freely mix different MCMC methods suitable for
+each variable in a problem.  The sampling order of the blocks (i.e., the series of indices \(i\) for
+which equation~\eqref{eq:conditional-kernels} is applied) can be chosen in different random or
+determinstic conventions under some technical conditions \parencite[see][chapter
+6.6]{vihola2020lectures}.
 
 This so-called \enquote{within-Gibbs} sampler bears its name because it is a generalization of the
 classical \emph{Gibbs sampling} algorithm \parencite{geman1984stochastic}, using as a simple set of
-transition kernels the conditional distributions of the parameters \(\Theta\):
+transition kernels the conditional distributions of the blocks \(\Theta_i\) given the rest:
 \begin{equation}
   \label{eq:gibbs-conditional-kernel}
   q_{i}(\kth[k-1]{y}_{i}, \dif \kth{y}_{i} \given \kth[k-1]{y}_{-i}) =
-  \Prob{\kth{\Theta}_{i} \in \dif\kth{y}_{i} \given \kth[k-1]{\Theta}_{-i} = \kth[k-1]{y}_{-i}, X = x}
+  \Prob{\kth{\Theta}_{i} \in \dif\kth{y}_{i} \given \kth[k-1]{\Theta}_{-i} = \kth[k-1]{y}_{-i}, X = x},
 \end{equation}
-(notably independent of the previous \(\kth[k-1]{y}_{i}\)).  They can directly be used as component
-proposals for a within-Gibbs sampler, leading to a canceling acceptance rate of \(\alpha \equiv 1\).
-This approach has the advantage of being very algorithmic, which makes it rather easy to apply, even
-by hand, to many models.  Hence, the method is a popular starting point for general probabilistic
-programming systems, most prominently BUGS \parencite{lunn2000winbugs,lunn2009bugs} and JAGS
-\parencite{plummer2003jags,plummer2017jags}.
+notably independent of the previous sample \(\kth[k-1]{y}_{i}\).  They can directly be used as
+component proposals for a within-Gibbs sampler, leading to an always-accepting algorithm with
+\(\alpha \equiv 1\).  This approach has the advantage of being very algorithmic, which makes it
+rather easy to apply, even manually, to many models.  Hence, the method is a popular starting point
+for general probabilistic programming systems, most prominently BUGS
+\parencite{lunn2000winbugs,lunn2009bugs} and JAGS \parencite{plummer2003jags,plummer2017jags}.
 
-In many real-world models, the factorization structure is quite sparse and results in small Markov
-blankets.  Algorithms to derive Gibbs samplers exploit this large independency between variables.
-In short, they \enquote{trim} the dependency graph of the model to the local Markov blankets of each
-target variable, and derive either a full conditional from it, where possible (for discrete or
-conjugate variables), or otherwise approximate it through appropriate local sampling (e.g., slice
-sampling) \parencite[see][]{plummer2003jags}.
+In many real-world models, the factorization structure of the underlying graph is quite sparse and
+results in small Markov blankets.  Algorithms to derive Gibbs samplers can exploit this large
+independency between variables.  In short, they \enquote{trim} the dependency graph of the model to
+the local Markov blankets of each target variable, and derive either a full conditional from it,
+where possible (for discrete or conjugate variables), or otherwise approximate it through
+appropriate local sampling (e.g., slice sampling) \parencite[see][]{plummer2003jags}.
 
-As an example, consider a simple Gaussian mixture model with equal weights, specified as follows:
+As an example, consider a simple Gaussian mixture model with equal weights, \(K\) components, and
+\(N\) observations, specified as follows:
 \begin{equation}
   \label{eq:normal-mixture-1}
   \begin{aligned}
@@ -256,26 +259,28 @@ As an example, consider a simple Gaussian mixture model with equal weights, spec
     X_{n} &\from \Normal(\mu_{Z_{n}}, \sigma) \quad\text{for } 1 \le n \le N.
   \end{aligned}
 \end{equation}
-(\(\distr{Categorical}(K)\) is short for a uniform categorical distribution with probabilities
-\(1/K, \ldots, 1/K)\).)  To derive the conditional distribution of \(Z_{n}\) given the remaining
+(\(\distr{Categorical}(K)\) is short for a uniform categorical distribution over
+\([1, \ldots, K]\).)  To derive the conditional distribution of \(Z_{n}\) given the remaining
 variables, we start by writing down the factorization of the joint density:
 \begin{equation}
   p(z_{1:N}, \mu_{1:K}, x_{1:N}) = \prod_{k} p(\mu_{k}) \prod_{n} p(z_{n}) \prod_{n} p(x_{n} | \mu_{z_{n}})
 \end{equation}
-(with \(v_{1:M}\) denoting the combined vector of all \(v_{i}\)). From this, we can derive an
-unnormalized density proportional to the conditional by removing all factors not including the
-target variable (which become part of the normalization constant):
+(with the slice notation \(v_{1:M}\) used for denoting the combined vector \([v_1, \ldots, v_M]\)
+for each variable \(v\)). From this, we can derive an unnormalized density proportional to the
+conditional by removing all factors not including the target variable (which become part of the
+normalization constant):
 \begin{equation}
     p(z_{n} \given z_{-n}, \mu_{1:K}, x_{1:N}) \propto p(z_{n}) p(x_{n} | \mu_{z_{n}})
 \end{equation}
-This is equivalent to finding the Markov blanket of \(Z_{n}\): only those conditionals relating the
-target variable to its children and parents remain.  Since the clusters are drawn from a categorical
-distribution, the support is discrete, and we can find the normalization constant \(Z\) by
-summation:
+This is equivalent to finding the Markov blanket \parencites[section
+24.2]{murphy2012machine}[section 4.5]{koller2009probabilistic} of \(Z_{n}\): only those conditionals
+relating the target variable to its children and parents remain.  Since the clusters are drawn from
+a categorical distribution, the support is discrete, and we can find the normalization constant
+\(C\) by summation:
 \begin{equation}
   \setlength{\jot}{0.8\baselineskip}
   \begin{aligned}
-    &p(z_{n} \given z_{-n}, \mu_{1:K}, x_{1:N}) = p(z_{n}) p(x_{n} | \mu_{z_{n}}) / Z  \\
+    &p(z_{n} \given z_{-n}, \mu_{1:K}, x_{1:N}) = p(z_{n}) p(x_{n} | \mu_{z_{n}}) / C  \\
     &\quad = \dfrac{\distr{Categorical}(z_{n} \given K) \, \Normal(x_{n} \given \mu_{z_{n}}, \sigma)}{
       \sum_{k \in\, \supp(Z_{n})} \distr{Categorical}(k \given K)\, \Normal(x_{n} \given \mu_{k},
       \sigma)}, \\
@@ -303,6 +308,19 @@ indicator function).  More examples are extensively covered in \textcite[chapter
 \section{Probabilistic Programming}
 \label{sec:prob-prog}
 
+Probabilistic programming is a structured way for implementing generative models, as
+described in the previous section, through the syntax of a programming language.  It is beneficial
+to consider probabilistic programs not only as syntactic sugar for denoting the implementation of a
+joint probability density over some set of variables, but as organized objects in their own right:
+they open up possibilities that \enquote{black box} density functions cannot automatically
+provide. In more concise terms of \textcite{vandemeent2018introduction}:
+\begin{quote}
+  Probabilistic programming is largely about designing languages, interpreters, and compilers that
+  translate inference problems denoted in programming language syntax into formal mathematical
+  objects that allow and accommodate generic probabilistic inference, particularly Bayesian
+  inference and conditioning.
+\end{quote}
+
 \begin{lstfloat}[t]
   \begin{lstlisting}[style=lstfloat]
 @model function normal_mixture(x, K, m, s, σ)
@@ -325,48 +343,35 @@ indicator function).  More examples are extensively covered in \textcite[chapter
     return x
 end
 \end{lstlisting}
-    \caption{\turingjl{} implementation of a Gaussian mixture model with prior on the cluster centers,
-    equal cluster weights, and all other parameters fixed.\label{lst:normal}}
+  \caption{\turingjl{} implementation of a Gaussian mixture model with prior on the cluster centers,
+    equal cluster weights, and all other parameters fixed as arguments.\label{lst:normal}}
 \end{lstfloat}
-
-Probabilistic programming is a structured way for implementing generative models, as described in the
-previous section, through the syntax of a programming language.  It is beneficial to consider
-probabilistic programs not only as syntactic sugar for denoting the implementation of a joint
-probability density over some set of variables, but as organized objects in their own right: they
-open up possibilities that \enquote{black box} density functions cannot automatically provide. In
-more concise terms of \textcite{vandemeent2018introduction}:
-\begin{quote}
-  Probabilistic programming is largely about designing languages, interpreters, and compilers that
-  translate inference problems denoted in programming language syntax into formal mathematical
-  objects that allow and accommodate generic probabilistic inference, particularly Bayesian
-  inference and conditioning.
-\end{quote}
 
 A probabilistic program differs from a regular program (that may also contain stochastic parts)
 through the possibility of being conditioned on: some of the internal variables can be fixed to
-observed values, from outside. As such, the program denotes on the one hand a joint distribution,
+observed values, from outside.  As such, the program denotes on the one hand a joint distribution,
 that can be \emph{forward sampled} from by simply running the program top to bottom and producing
 (pseudo-) random values.  But at the same time, it also represents a conditional distribution, in
-form on the unnormalized conditional density, which together with an inference algorithm can also be
-\emph{backward sampled} from.  (Other terms, such as \enquote{evaluation} and \enquote{querying},
-are used as well.)  Consider the model~\eqref{eq:normal-mixture-1} from above: to perform inference
-on it in \turingjl{} \parencite{ge2018turing}, the probabilistic programming language used in this
-thesis, its mathematical description might be translated into the Julia program given in
-listing~\ref{lst:normal}.
+form of an unnormalized conditional density, which together with an inference algorithm can also be
+\emph{backward sampled} from.  (Other pairs of terms, such as \enquote{evaluation} and
+\enquote{querying}, are in use as well.)  Consider the model~\eqref{eq:normal-mixture-1} from above:
+to perform inference on it in \turingjl{} \parencite{ge2018turing}, the probabilistic programming
+language used in this thesis, its mathematical description might be translated into the Julia
+program given in listing~\ref{lst:normal}.
 
 We can then sample from the model in several ways using Julia:
 \begin{lstlisting}
-julia> m = normal_mixture(x_observations, K, m, s, σ);
-julia> forward = sample(m, Prior(), 10);
-julia> chain = sample(m, MH(), 1000);
+julia> model = normal_mixture(x_observations, K, m, s, σ);
+julia> forward = sample(model, Prior(), 10);
+julia> chain = sample(model, MH(), 1000);
 \end{lstlisting}
-A model instance \jlinl{m} is created first.  The value of \jlinl{forward} will then be a
+A model instance \jlinl{model} is created first.  The value of \jlinl{forward} will then be a
 dataframe-like object containing 10 values for each variable sampled from the forward (i.e., joint)
 distribution, matching the size of \jlinl{x_observations}.  Similarly, \jlinl{chain} will contain a
 length 1000 sample from a Markov chain targeting the posterior, conditionally on
-\jlinl{x_observations}, created using the MH algorithm.  If we were to write out code for these two
-functionalities manually, in idiomatic Julia, we would end up with at least two separate functions
-needed for the sampler:\todo{page break}
+\jlinl{x_observations}, created using the Metropolis-Hastings algorithm.  If we were to write out
+code for these two functionalities manually, in idiomatic Julia, we would end up with at least two
+separate functions needed for the sampler:
 \begin{lstlisting}
 function normal_mixture_sampler(N, K, m, s, σ)
     μ = rand(Normal(m, s), K)
@@ -385,9 +390,9 @@ function normal_mixture_logpdf(μ, z, x, K, m, s, σ)
 end
 \end{lstlisting}
 And still, with these, we would lack much of the flexibility of models written in a dedicated
-library such as\turingjl: no general interface for sampling algorithms to automatically detect all
-latent and observed variables; no possibility for other, nonstandard execution forms as are needed
-for variational inference or gradient computation for HMC; no automatic name extraction and
+library such as \turingjl{}: no general interface for sampling algorithms to automatically detect
+all latent and observed variables; no possibility for other, nonstandard execution forms as are
+needed for variational inference or gradient computation for HMC; no automatic name extraction and
 dataframe building for chains.  All these points highlight the advantages of dedicated probabilistic
 programming languages (PPLs) over hand-written model code.  (Additionally, there is of course a
 benefit of reducing errors introduced by the sampling function not matching the likelihood function,
@@ -397,8 +402,8 @@ or errors involving log-probabilities.)
 \parencite{carpenter2017stan}, JAGS \parencite{plummer2003jags}, and BUGS
 \parencite{lunn2000winbugs,lunn2009bugs}.  Others are specified in the \enquote{meta-syntax} of Lisp
 S-expressions, as Church \parencite{goodman2012church}, Anglican \parencite{wood2015new}, or Venture
-\parencite{mansinghka2014venture}.  A third group is embedded into host programming languages with
-sufficient syntactic flexibility, for example \juliapackage{Gen.jl}
+\parencite{mansinghka2014venture}.  A third group is embedded into other host programming languages
+of sufficient syntactic flexibility, for example \juliapackage{Gen.jl}
 \parencite{cusumano-towner2019gen,cusumano-towner2020gen} and \juliapackage{Soss.jl}
 \parencite{scherrer2019soss} in Julia (besides the already named \turingjl{}), or Pyro
 \parencite{bingham2018pyro} and PyMC3 \parencite{salvatier2016probabilistic} in Python.
@@ -409,9 +414,9 @@ a variety of further reasons why one would rather describe an inference problem 
 program than in more \enquote{low-level} form, e.g., as a graph or likelihood function.  In a good
 probabilistic programming DSL, models should be expressible very concisely and intuitively, without
 much bookkeeping (e.g., as close to textbook model specifications as possible).  At the same time,
-structures should exist to allow complex behaviour, such as to
+structures should exist to allow complex behaviour, such as to\todo{page break}
 \begin{itemize}
-  % \firmlist
+  \firmlist
 \item define recursive relationships,
 \item write models using imperative constructs, such as loops, or mutable intermediate computations
   for efficiency,
@@ -419,7 +424,7 @@ structures should exist to allow complex behaviour, such as to
   termination,
 \item use distributions over complex custom data structures, e.g. trees,
 \item perform inference involving complex transformations from other domains, for which
-  implementations already exist, e.g. neural networks or differential equation solver, or
+  implementations already exist, e.g. neural networks or differential equation solvers, or
 \item integrate calls to very complex external systems, e.g. simulators or renderers.
 \end{itemize}
 Depending how many of these features should be supported, several possibilities for the
@@ -427,7 +432,7 @@ implementation of such a DSL exist.  All are based on some form of abstract inte
 distinction can be made between \emph{compilation-based methods}, which statically translate the
 model code to a graph or density function, and \emph{evaluation-based methods}, which dynamically or
 implicitly build such a structure at run-time, by allowing an inference algorithm to interleave the
-execution.  The latter makes it easier to include host-language control constructs.  See
+execution.  The latter often makes it easier to include host-language control constructs.  See
 \textcite{vandemeent2018introduction} for a general introduction into some common implementation
 approaches for PPLs, and \textcite{goodman2014design} for a detailed overview of the internals of
 one specific, continuation-based implementation called WebPPL (using a Lisp-based syntax).
@@ -490,24 +495,25 @@ which transforms valid Julia function definitions into a reusable representation
 a Julia macro; see section~\ref{sec:comp-metapr-julia} for more explanation).  The result is a new
 function which produces instances of a structure of type \jlinl{Model}, which in turn will contain
 the provided data, some metadata, and a nested function with the slightly changed original model
-code. In the concrete case of the model in listing~\ref{lst:normal}, the resulting code would be
+code.  In the concrete case of the model in listing~\ref{lst:normal}, the resulting code would be
 approximately equal to the code in listing~\ref{lst:normal-expanded}.  The purpose of this is the
-following: the outer function, the \enquote{generator}, constructs an instance of the model for
-given parameters~-- usually done once per inference problem, to fix the observations and
+following: the outer function, the model \enquote{generator}, constructs an instance of the model
+for given parameters~-- usually done once per inference problem, to fix the observations and
 hyper-parameters.  Subsequently, the \jlinl{sample} function can be applied to this instance with
-different values for the sampling algorithm, which in turn will use the \jlinl{evaluator} function
-of the instance to run the model with chosen \jlinl{sampler} and \jlinl{context} arguments, that are
-passed to the \enquote{tilde functions}, to which the statements of the form \jlinl{expr ~ D} are
-converted.
+different values for the sampling algorithm, which in turn will use the inner \jlinl{evaluator}
+function of the instance to run the model with chosen \jlinl{sampler} and \jlinl{context} arguments,
+that are passed to the \enquote{tilde functions}, to which the statements of the form \jlinl{expr ~
+  D} are converted.
 
 A special distinction is made for the tilde functions of variables that are based on the model's
-arguments. \dppljl{} distinguishes between \emph{assumptions}, i.e., latent variables that should be
+arguments.  \dppljl{} distinguishes between \emph{assumptions}, latent variables that should be
 recovered through posterior inference, and \emph{observations}, that need to be provided when
-instantiating the model and are conditioned upon.  The latter by default will only contribute to the
-likelihood, instead of being sampled.  But in certain cases, such as in probability evaluation or
-when using the complete model in a generative way, this behavior can be different.  For this
-purpose, the tilde functions for the variables \jlinl{x[i]} in listing~\ref{lst:normal-expanded} are
-differentiated in a conditional statement.
+instantiating the model~-- the posterior is then the conditional distribution of the assumed
+variables given the observations.  The latter by default will only contribute to the likelihood,
+instead of being sampled.  But in certain cases, such as in probability evaluation or when using the
+complete model in a generative way, this behavior can be different.  For this purpose, the tilde
+functions for the variables \jlinl{x[i]} in listing~\ref{lst:normal-expanded} are distinguished in a
+conditional statement.
 
 Inside the tilde functions, the real stochastic work happens.  Depending on the \jlinl{sampler} and
 the \jlinl{context}, values may be generated and stored in the \jlinl{VarInfo} object, and the joint
@@ -518,10 +524,10 @@ needed for probability queries, or density-based algorithms (which might additio
 differentiation on the density evaluation procedure).  All shared information for external usage is
 thereby conventionally stored in the \jlinl{VarInfo} object, which resembles a dictionary from
 variable names\footnote{These \texttt{VarName} objects, constructed by the macro \texttt{@varname},
-  simply represent an indexed variable through a symbol and a tuple of integers.}  to values
+  simply represent an indexed variable through a symbol and a tuple of integers.} to values
 (internal sampler state can also be stored in the \jlinl{sampler} object).  Through the
-\jlinl{sample} interface, the resulting values are then stored in a \jlinl{Chains} object, a data
-frame containing a value for each variable at each sampling step.
+\jlinl{sample} interface, the resulting values of sequential evaluations are then stored in a
+\jlinl{Chains} object, a data frame containing a value for each variable at each sampling step.
 
 From the point of view of a sampling algorithm, all that it sees is a sequence of tilde statements,
 consisting of a value, a variable name, and a distribution.  \turingjl{}, crucially, does not have a
@@ -544,27 +550,28 @@ introduced later, we will now turn to an overview of Julia's evaluation, compila
 metaprogramming techniques.
 
 Julia \parencite{bezanson2017julia} is a programming language with a strong, dynamic type system
-with nominal, parametric subtyping and elaborate multiple dispatch.  It uses LLVM
-\parencite{llvmproject2019llvm} for JIT-compilation and while it is dynamically typed, a combination
-of method specialization and type inference allows it to produce very optimized, fast machine code
-\parencite{bezanson2018julia}.  The language syntactically draws on a certain resemblance to Matlab,
-Python, or Ruby.  Contrary to them, it is designed to utilize a compiler, and not primarily rely on
-libraries calling foreign functions (e.g., Numpy), to achieve C-like speed.  Although Julia does
-use, e.g., BLAS and LAPACK for numerical algebra, there is nothing that fundamentally prevents
-implementing their functions: true array types, fast loops, and various optimizations are available,
-as opposed to languages like Python, which are fundamentally limited by to their dynamic
-interpretation.  This advantage carries over to domains outside of numeric computation, of course.
+with nominal, parametric subtyping \parencite{pierce2002types} and elaborate multiple dispatch
+\parencite{bruce1995binary}.  It uses LLVM \parencite{llvmproject2019llvm} for JIT-compilation and
+while it is dynamically typed, a combination of method specialization and type inference allows it
+to produce very optimized, fast machine code \parencite{bezanson2018julia}.  The language
+syntactically draws on a certain resemblance to Matlab, Python, or Ruby.  Contrary to them, it is
+designed to utilize a compiler, and not primarily rely on libraries calling foreign functions (e.g.,
+Numpy), to achieve C-like speed.  Although Julia does use, e.g., BLAS and LAPACK for numerical
+algebra, there is nothing that fundamentally prevents implementing their functions: true array
+types, fast loops, and various optimizations are available, as opposed to languages like Python,
+which are fundamentally limited to their dynamic interpretation.  This advantage carries over to
+domains outside of numeric computation, of course.
 
 On top of that, the language is built on a very open compilation model.  Underlying the surface
-syntax is an abstract syntax tree (AST), that is used in the initial stages of compilation, but also
-exposed to the programmer through macros, which allow to transform pieces of code at compile time.
-Julia macros are proper hygienic, LISP-style code transformations \parencite[cf.][]{hoyte2008let},
-not simple text-substitutions as C preprocessor macros.  As an example, look at the following
+syntax is an abstract syntax tree (AST), used in the initial stages of compilation, but also exposed
+to the programmer through macros, which allow to transform pieces of code at compile time.  Julia
+macros are proper hygienic, LISP-style code transformations \parencite[cf.][]{hoyte2008let}, not
+simple text-substitutions as C preprocessor macros.  As an example, look at the following
 method\footnote{The terminology of Julia uses \emph{function} for a callable object, which can have
   multiple \emph{methods} for different combinations of argument types.  This is what allows
   multiple dispatch: when a function is applied, the types of the arguments are determined, and the
   most specific matching methods selected and called.  For example, the \protect\jlinl{+} function
-  has many methods for adding integers, floats, arrays, etc.}  that sums up the \jlinl{sin} values
+  has many methods for adding integers, floats, arrays, etc.} that sums up the \jlinl{sin} values
 of a list of numbers:
 \begin{lstlisting}
 function foo(x)
@@ -606,9 +613,8 @@ function foo(x)
     return y
 end
 \end{lstlisting}
-(Note the automatic conversion of the symbol \jlinl{:value} to a generated name \jlinl{#1#value}, in
-order to not possibly shadow any variables from the calling scope.)
-
+Note the automatic conversion of the symbol \jlinl{:value} to a generated name \jlinl{#1#value}, in
+order to not possibly shadow any variables from the calling scope.
 
 \begin{lstfloat}[t]
 \begin{lstlisting}[style=lstfloat]
@@ -642,12 +648,12 @@ order to not possibly shadow any variables from the calling scope.)
     \texttt{@code\_warntype}).\label{lst:foo-inferred}}
 \end{lstfloat}
 
-After macro expansion, the code of the method is \emph{lowered} into an intermediate
-representation consisting of only function calls and branches.  This comprises of several
-transformations: for one, certain syntactic constructs are \enquote{desugared} into primitive
-function calls.  For example, array accesses, \jlinl{x[i]}, are replaced by calls to the library
-function \jlinl{getindex(x, i)}.  The for loop in the example is converted into a while loop using
-the \jlinl{iterate} library function:
+After macro expansion, the code of the method is \emph{lowered} into an intermediate representation
+consisting of only function calls and branches.  This comprises several transformations: first,
+certain syntactic constructs are \enquote{desugared} into primitive function calls.  For example,
+array accesses, \jlinl{x[i]}, are replaced by calls to the library function \jlinl{getindex(x, i)}.
+The for loop in the example is converted into the equivalent of a while loop using the
+\jlinl{iterate} library function:
 \begin{lstlisting}
 iterable = eachindex(x)
 iter_result = iterate(iterable)
@@ -658,19 +664,19 @@ while !(iter_result === nothing)
 end
 \end{lstlisting}
 Consequently, all nested expressions are split apart, so that only simple, unnested calls remain,
-and any subsequent assignments to variables are linearized to a series of definitions, with newly
+and any subsequent assignments to variables are linearized into a series of definitions, with newly
 introduced names of the form \jlinl{\%i}.  The remaining control flow statements (e.g., while loops
 and conditionals) are represented through a sequence of labeled \emph{basic blocks}, with (possibly
-conditional) branches between them (with return statements forming a special kind of branch without
-a block target).  The sequence of assignments is further processed into \emph{single static
-  assignment (SSA) form} \parencite{rosen1988global,singer2018static}, the characteristic property
-of which is that every variable is assigned exactly once, by giving a unique, position-independent
-name to each intermediate value of an expression.  By introducing this immutability guarantee and
-flattened structure, the resulting code is, in a certain sense, referentially transparent, which
-facilitates program flow analyses, and makes many transformations easier
-\parencite{muchnick1997advanced}.  Accordingly, SSA form is widely used in intermediate forms of
-compiler systems (such as LLVM \parencite{llvmproject2019llvm}, or Swift
-\parencite{apple2020swifta}), simplifying transformations and optimizations.
+conditional) branches between them.  Return statements form a special kind of branch without a block
+target.  The sequence of assignments is further processed into \emph{single static assignment (SSA)
+  form} \parencite{rosen1988global,singer2018static}, the characteristic property of which is that
+every variable is assigned exactly once, by giving a unique, position-independent name to each
+intermediate value of an expression.  By introducing this immutability guarantee and flattened
+structure, the resulting code is, in a certain sense, referentially transparent, which facilitates
+program flow analyses, and makes many transformations easier \parencite{muchnick1997advanced}.
+Accordingly, SSA form is widely used in intermediate forms of compiler systems (such as LLVM
+\parencite{llvmproject2019llvm}, or Swift \parencite{apple2020swifta}), simplifying transformations
+and optimizations.
 
 The result of the translation of our example into three basic blocks can be found in
 listing~\ref{lst:foo-inferred}: the first block contains the logic before the \texttt{for}-loop,
@@ -694,14 +700,14 @@ end
 h(y)
 \end{lstlisting}
 Here, the value of \jlinl{h(y)} depends on two possible locations of \jlinl{y}~-- hence, we cannot
-simply rename every variable in a naive way.  Instead, in the variant of SSA form used in this text
-and most of Julia, values of variables that are assigned in multiple parent blocks are passed on as
-\emph{block arguments}, as in figure~\ref{fig:ssa-phi} on the right, and subsequently in this work.
-This makes basic blocks resemble local functions, and cleanly resolves the problem of joins just
-like functions handle variable inputs.  The traditional, functionally equivalent alternative is to
-introduce \emph{\(\phi\)-functions} \parencite{rosen1988global}, which are defined ad-hoc to
-distinguish between several values depending on the control path taken before.  This form is shown
-in the same figure on the left.
+simply rename every variable in a naive way.  Instead, in the variant of SSA form used in this work,
+values of variables that are assigned in multiple parent blocks are passed on as \emph{block
+  arguments}, as in figure~\ref{fig:ssa-phi} on the right.  This makes basic blocks resemble local
+functions, and cleanly resolves the problem of control joins just like functions handle variable
+inputs.  The traditional, functionally equivalent alternative is to introduce
+\emph{\(\phi\)-functions} \parencite{rosen1988global}, which are defined ad-hoc to distinguish
+between several values depending on the control path taken before.  This form is shown in the same
+figure on the left.
 
 \begin{figure}[t]
   \centering
@@ -722,7 +728,7 @@ syntactic in nature, and could be performed by solely transforming the code of t
 \jlinl{foo}, without taking into account semantic information.  As soon as \jlinl{foo} is called on
 a concrete type during evaluation, though, a specific overload, called a \emph{method}, must be
 chosen.  To apply type inference on the body of a given function, the most specific method fitting
-to the argument types of each call will be selecte.  If we go with the example and and consider
+to the argument types of each call will be selected.  If we go with the example and consider
 \jlinl{foo([1.0])}, with \jlinl{Vector\{Int\}} as the sole argument type, the types as annotated in
 listing~\ref{lst:foo-inferred} will be inferred.
 
@@ -792,7 +798,7 @@ equivalent to \ref{lst:foo-inferred}, but now all function calls are either lowe
 functions (\jlinl{arraysize}, \jlinl{sle_int}), or converted to typed \jlinl{invoke} primitives.
 Several method calls have been inlined, e.g., the \jlinl{+}, which has become an \jlinl{add_int}
 intrinsic.  The many empty blocks and branches, and some spurious constants, are left-overs from the
-optimization processes.  This code is in true, traditional SSA form, with all variable slots
+optimization processes.  This code is in true, traditional SSA form, with all named variables
 eliminated, and block arguments converted to the mentioned \(\phi\)-functions.  Finally, this
 representation will be translated and sent to LLVM, where further optimization can happen, and
 machine code will be generated and executed, as well as stored for later usage as part of the
@@ -810,12 +816,12 @@ which is used for lookup at subsequent calls.  Note that method compilation does
 recursively at once: only when the body of a compiled method is actually executed with concrete
 arguments, the same process is performed again, for each invoked method.
 
-So, in a sense, JIT compilation can be seen as a function that returns compiled code, given a
+So, in a sense, JIT compilation can be seen as a process that returns compiled code, given a
 function and a tuple of types.  Similar to macros, which transform original code, given an
-expression, the process of generating compiled methods from argument types is customizable in Julia:
-via so-called \emph{generated functions}.  These are a form of staged programming
+expression, the process of generating compiled methods from argument types is customizable in Julia.
+So-called \emph{generated functions} are a form of staged programming
 \parencite{rompf2010lightweight,bolewski2015staged}, a paradigm in which code generation is
-controlled via regular types and functions, instead of specially priviledged ones as macros
+controlled via regular types and functions, instead of specially priviledged constructs as macros
 are. Such generated functions, when called, are not directly translated into machine code: instead,
 they emit new code to the compiler based on the types of their arguments.  The new code is then
 JIT-compiled.  For example, when we have two methods of a function \jlinl{f}:
