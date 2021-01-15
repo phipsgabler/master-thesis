@@ -565,7 +565,7 @@ domains outside of numeric computation, of course.
 On top of that, the language is built on a very open compilation model.  Underlying the surface
 syntax is an abstract syntax tree (AST), used in the initial stages of compilation, but also exposed
 to the programmer through macros, which allow to transform pieces of code at compile time.  Julia
-macros are proper hygienic, LISP-style code transformations \parencite[cf.][]{hoyte2008let}, not
+macros are proper hygienic, Lisp-style code transformations \parencite[cf.][]{hoyte2008let}, not
 simple text-substitutions as C preprocessor macros.  As an example, look at the following
 method\footnote{The terminology of Julia uses \emph{function} for a callable object, which can have
   multiple \emph{methods} for different combinations of argument types.  This is what allows
@@ -821,7 +821,7 @@ function and a tuple of types.  Similar to macros, which transform original code
 expression, the process of generating compiled methods from argument types is customizable in Julia.
 So-called \emph{generated functions} are a form of staged programming
 \parencite{rompf2010lightweight,bolewski2015staged}, a paradigm in which code generation is
-controlled via regular types and functions, instead of specially priviledged constructs as macros
+controlled via regular types and functions, instead of specially privileged constructs as macros
 are. Such generated functions, when called, are not directly translated into machine code: instead,
 they emit new code to the compiler based on the types of their arguments.  The new code is then
 JIT-compiled.  For example, when we have two methods of a function \jlinl{f}:
@@ -853,9 +853,9 @@ up\footnote{A caveat: technically, the compiler is still free to call the genera
   times~-- which is the reason generated functions must never involve side effects or depend on
   external state.}.  Of course, simply replacing dispatch, as with this example, is not what
 generated functions are used for in practice.  Most applications concern parametric types with
-statically known shape arguments, such as tuples, named tuples, or array ranks.  They can also be
-used for type-level computations on values that become known only at run-time, through singleton
-types such as \jlinl{Val}.
+type-encoded \enquote{shape arguments}, such as tuples, named tuples, or array ranks.  They can also
+be used for type-level computations on values that become known later, through singleton types such
+as \jlinl{Val}.
 
 The direct generation of code, given argument types, is however not the furthest we can go.  For
 one, generated functions are not only allowed to return \jlinl{Expr} objects~-- the internal
@@ -867,13 +867,13 @@ these two, we now have all the tools to implement IR-level code transformations 
 \begin{enumerate}
   \firmlist
 \item Define a generated function, taking as arguments another function and its arguments.
-\item Within this function, obtain the IR of the method of the passed-in function for the remaining
-  arguments.
+\item Within the generated function, obtain the IR of the method of the passed-in function for the
+  remaining arguments.
 \item Transform this IR however necessary.
-\item Return the IR, which will now be compiled and called on the actual arguments.
+\item Return the IR, which will then be compiled and called on the actual arguments.
 \end{enumerate}
 Importantly, unlike macros, such transformations can be performed \emph{recursively}: one simply
-inserts the same generated function to inner function calls during the transformation in step 3.
+applies the same generated function to inner function calls during the transformation in step 3.
 Since the transformation operates not during parsing, the function to be transformed needs not be
 known beforehand, and not be present literally in the code~-- the generated function can be called
 on every available callable object, at any time during run-time.  This makes it possible to
@@ -898,7 +898,7 @@ provides overloadable function application by a so-called \enquote{overdubbing} 
 abstracting out some common patterns; and
 \juliapackage{IRTools.jl}\footnote{\protect\url{https://github.com/FluxML/IRTools.jl}}, which has a
 more user-friendly alternative to \jlinl{CodeInfo}, and a macro similar to \jlinl{@generated} that
-makes writing recursive IR-transformation easier by directly using this data structure.  The latter
+makes writing recursive IR-transformation easier by directly using said data structure.  The latter
 is what the work of this thesis builds on.
 
 
@@ -920,20 +920,21 @@ minimizing the loss function then define the optimal model.  When the loss funct
 (sub-)differentiable, there exist a variety of gradient-based optimization methods to minimize the
 loss (at least in terms of a practically sufficient local minimum).
 
-While in some cases the loss function is simple enough to find the gradient by hand, in general, the
-model, and therefore the loss function, may be specified in terms of rather complicated programs,
-for which hand-writing derivatives is difficult to infeasible.  For this reason, computerized
-methods for differentiation have been developed.  These can be categorized into three classes:
+While in some cases the loss function is simple enough to find the gradient by manual calculation,
+in general, the model, and therefore the loss function, may be specified in terms of rather
+complicated programs, for which \enquote{hand-writing} derivatives is difficult to infeasible.  For
+this reason, computerized methods for differentiation have been developed.  These can be categorized
+into three classes:
 \begin{itemize}
   \firmlist
-\item Finite differences
+\item Finite difference methods
 \item Symbolic differentiation
 \item Automatic differentiation
 \end{itemize}
-In finite differences, the idea is to discretize the definition of derivatives, and numerically
-evaluate the function within an environment.  This is simple to implement, but does not scale well
-with the dimension of the involved space, and can become numerically unstable in various ways
-\parencite[section 5.7]{press2007numerical}.  Symbolic differentiation works through representing
+In finite difference methods, the idea is to discretize the definition of derivatives, and
+numerically evaluate the function within an environment.  This is simple to implement, but does not
+scale well with the dimension of the involved space, and can become numerically unstable in various
+ways \parencite[section 5.7]{press2007numerical}.  Symbolic differentiation works by representing
 the functions in question as symbolic algebraic objects, and applying the differentiation rules as
 one would manually.  This does not lose precision or introduce divergence, but can suffer from
 blow-up of the size of the generated expressions; additionally, it requires the functions to be
@@ -952,14 +953,14 @@ For a more detailed treatment, I refer to \textcite{griewank2008evaluating}, the
 the topic, and the survey by \textcite{baydin2018automatic}, which includes a comparison of
 state-of-the-art implementations.
 
-The appendix~\ref{sec:ad-details} contains a more formal introduction of the underlying concepts.  In
-short, we treat a program as the composition of functions, and derivatives as equally-shaped
+The appendix~\ref{sec:ad-details} contains a more formal introduction of the underlying concepts.
+In short, we treat a program as the composition of functions, and derivatives as equally-shaped
 compositions of the linear operators they represent.  Since composition is associative, there are
 many possible orders for evaluation of these composed derivatives.  The two main fashions of AD,
 \emph{forward mode} and \emph{backward mode}, correspond to evaluation aligning with the original
 function evalution order, and its reverse.  These composition orders naturally can be described
 through the computation graphs of functions, and transformations on them.  This is illustrated in
-figure~\ref{fig:comp-graph}, where we see the computation graph of a simple expression
+figure~\ref{fig:comp-graph}\todo{larger dashes}, where we see the computation graph of a simple expression
 \jlinl{g(sin(x), y)}, with input variables \jlinl{x} and \jlinl{y} and output \jlinl{Ω}.  There, the
 graphs of the corresponding forward-mode (left) and backward-mode (right) calculations are related
 to the computation graphs.  The dotted (\(\dot{x}\)) and barred (\(\bar{x}\)) values are the
@@ -975,13 +976,15 @@ variables in the original.
     \includegraphics[]{figures/comp-graph-backward}}
   \caption{Computation graph and intermediate expressions of the expression \protect\jlinl{g(sin(x),
       y)}, together with the derivative graphs in forward- and backward mode.  Dashed arrows
-    indicate re-use of forward values in the derivative graph.}
+    indicate re-use of forward values in the derivative graph.  \(\Omega\) is the resulting value,
+    \(\Dif\) and \(\CoDif\) the derivative operators, and dots and bars indicate perturbation
+    values.}
   \label{fig:comp-graph}
 \end{figure}
 
 In this setting, forward-mode AD is simply an efficient way to calculate the \emph{Jacobian-vector
   product} \(J(x) \Delta\), or equivalently the total derivative at \(x\) for a fixed perturbation
-\(\Delta\), avoiding full matrix multiplication.  Appling this to all all basis vectors, we get back
+\(\Delta\), avoiding full matrix multiplication.  Applying this to all basis vectors, we get back
 the gradient.  Backward mode, on the other hand, calculates the product of the Jacobian with a dual
 vector.  This, in fact, is nothing else than a \emph{vector-Jacobian product} with the transposed
 Jacobian.  Recovering the (transposed) gradient of a loss function of type \(\RR^N \to \RR\) then
@@ -1006,10 +1009,10 @@ The second possibility is \emph{operator overloading}.  Forward mode can rather 
 any existing programming language which has a sufficiently extensible system for overloading
 mathematical operators by implementing dual numbers (see page~\pageref{sec:dual-numbers}).  This can
 be done using ad-hoc polymorphism with traits \parencite{amin2016dependent} or type classes
-\parencite{wadler1989how}, or by dynamic dispatch, which is what is used in Python and Julia.  The
-latter is especially versatile in this respect, since every function can be extended to a new type
-of dual numbers by simply adding a method; unlike in Python, where only certain operators are open
-to extension~-- a fundamental limitation of its single dispatch, object oriented approach.
+\parencite{wadler1989how}, or by dynamic dispatch, which is what is used in Python and Julia.  Julia
+is especially versatile in this respect, since every function can be overloaded to a new type of
+dual numbers by simply adding a method, unlike Python, where only certain operators are open to
+extension~-- a fundamental limitation of its single dispatch, object oriented approach.
 
 \begin{figure}[t]
   \centering
@@ -1017,21 +1020,21 @@ to extension~-- a fundamental limitation of its single dispatch, object oriented
   \caption{Wengert list of the example function \protect\jlinl{g(sin(x), y)} introduced above.
     Every intermediate variable becomes an element, linked through pointers.  The gradient can be
     calculated by backward traversal and accumulating the adjoint values as metadata in the list
-    elements.}
+    elements.  \(\Omega\) is the resulting value of the expression.}
   \label{fig:wengert-list}
 \end{figure}
 
 Backward-mode AD can be implemented using operator overloading as well, but this requires more
 effort.  Since adjoint values cannot be simply threaded through in parallel to forward evaluation,
-one needs to build up a data structure during the forward pass, which can at the end be traced back
-in reverse order.  One possibility of doing this is to use closures (function objects capturing an
+one needs to build up a data structure during the forward pass, which can at the end be run in
+reverse order.  One possibility of doing this is to use closures (function objects capturing an
 environment), but the usage of many higher order functions might lead to unwanted heap allocation
 and makes understanding harder.
 
 The alternative is to use a tape structure, or \emph{Wengert list} \parencites[][section
 3]{baydin2018automatic}.  On such a list, the computation graph is stored in topological order with
 pointers between elements, as shown in figure~\ref{fig:wengert-list}.  The Wengert list can also be
-constructed through an operator overloading approach, which is exactly what graph-based machine
+constructed through an operator overloading approach, which is exactly what most graph-based machine
 learning frameworks do: PyTorch \parencite{paszke2017automatic}, TensorFlow
 \parencite{abadi2015tensorflow} in eager mode, DyNet \parencite{neubig2017dynet}, and Chainer
 \parencite{tokui2015chainer}.  In these, the programmer interacts with a library mirroring the usual
@@ -1046,7 +1049,7 @@ parallelization, and other syntactic abstractions over functional programs writt
 unified intermediate representation that is recovered from an original function by tracing.
 
 This style of implementation has limitations, though: it requires building up many objects at
-run-time, and is completely oblivious of control structures.  Additionally, the code expressing
+run-time, and is completely oblivious to control structures.  Additionally, the code expressing
 differentiable functions has to be written entirely in the DSL, in a library-aware fashion,
 preventing the usage of third-party functions and language features, and forcing the user to adhere
 to certain semantic constraints that cannot be verified statically by the host language.  TensorFlow
@@ -1060,16 +1063,37 @@ stick to the provided expression types and library functions, though.
 Efforts to overcome these limitations lead to the third kind of approach: language-internal
 \emph{source transformation}.  Recent work in Julia \parencite{innes2018don} has shown that the
 available metaprogramming mechanisms (described in section~\ref{sec:comp-metapr-julia}) allow to
-systematically derive \enquote{adjoint programs} for arbitrary user-provided Julia programs, given
-only a set of \emph{primitive adjoints} (such as derivatives of built-in functions).  This approach
-works purely structurally on the Julia IR, employing generated functions to analyze functions' code
-and transform them completely, including third-party functions and data types, and control flow.
-The key insight here is that SSA-form IR already resembles the structure of Wengert lists, extended
-by branches.  As in building up reverse computation graphs, the adjoint code will therefore invert
-the control flow of the basic blocks in the primal function, taking into account that data flow may
-involve dynamic dependencies.  Differentiation through data types and closures is supported via a
-unified treatment of them in a tuple-like form, with constructors and accessors (inspired by
-cons-cells in Lisp).
+systematically derive derivative programs for arbitrary user-provided Julia programs, given only a
+set of \emph{primitive adjoints} (such as derivatives of built-in functions).  This approach works
+purely structurally on the Julia IR, employing generated functions to analyze functions' code and
+transform them completely, including third-party functions and data types, and control flow.  The
+key insight here is that SSA-form IR already resembles the structure of Wengert lists, extended by
+branches.  For example, the Wengert list in figure~\ref{fig:wengert-list} could be written as
+\begin{equation}
+  \label{eq:ad-primal-0}
+  \begin{aligned}
+    x &= \operatorname{?}, \\
+    y &= \operatorname{?}, \\
+    z &= \sin(x), \\
+    \Omega &= g(z, y).
+  \end{aligned}
+\end{equation}
+As in building up reverse computation graphs, the adjoint code will invert the control flow of the
+basic blocks in the primal function, taking into account that data flow may involve dynamic
+dependencies.  In our little example (withouth control flow), this leads to
+\begin{equation}
+  \label{eq:ad-backward-0}
+  \begin{aligned}
+    \bar{x} &= \bar{z}_2 = -\delta, \\
+    \bar{y} &= \cos(x) \, \delta\\
+    \bar{z} &= [\delta, -\delta] \\
+    \bar{\Omega} &= \delta,
+  \end{aligned}
+\end{equation}
+for output perturbation \(\delta\) (to be read from bottom to top).  These two equations
+should illustrate the kinship of Wengert form and SSA code.  Differentiation through data types and
+closures is also supported, via a unified treatment in a tuple-like form, with constructors and
+accessors (inspired by cons-cells in Lisp).
 
 An implementation of this principle has been released as the \juliapackage{Zygote.jl}
 package\footnote{\url{https://github.com/FluxML/Zygote.jl}}.  In similar spirit, there is also work
@@ -1083,10 +1107,10 @@ section~\ref{sec:irtracker-eval}).
 
 Internal source-based methods can therefore be composable, extensible, and more user-friendly, since
 no special treatment of programs to be differentiated is required: primal functions can be
-implemented as any other regular function in the host language.  A source-transformation approach
-also completely avoids the obscure issue of \enquote{perturbation confusion}, which leads to
-hard-to-find errors when using nested differentiation with dual numbers
-\parencite{baydin2018automatic,manzyuk2019perturbation}.
+implemented as any other regular function in the host language, and primitive adjoints added at any
+time.  A source-transformation approach also completely avoids the obscure issue of
+\enquote{perturbation confusion}, which leads to hard-to-find errors when using nested
+differentiation with dual numbers \parencite{baydin2018automatic,manzyuk2019perturbation}.
 
 As a concluding note, all these graph operations reveal that automatic differentiation is really
 only a special case of message passing algorithms in computation graphs
