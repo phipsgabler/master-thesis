@@ -909,7 +909,7 @@ is what the work of this thesis builds on.
 
 This section will explain some of the interrelations between automatic differentiation, computation
 graphs, and IR transformations, to be able to understand how SSA-form representation is a natural
-structure for extracting and analyzing computation graphs, and how the necessary transformations
+structure for extracting and analysing computation graphs, and how the necessary transformations
 arise in practice.  To appreciate how the form of the computation graphs interacts with the
 mathematics, some foundations need to be introduced first.
 
@@ -1065,7 +1065,7 @@ Efforts to overcome these limitations lead to the third kind of approach: langua
 available metaprogramming mechanisms (described in section~\ref{sec:comp-metapr-julia}) allow to
 systematically derive derivative programs for arbitrary user-provided Julia programs, given only a
 set of \emph{primitive adjoints} (such as derivatives of built-in functions).  This approach works
-purely structurally on the Julia IR, employing generated functions to analyze functions' code and
+purely structurally on the Julia IR, employing generated functions to analyse functions' code and
 transform them completely, including third-party functions and data types, and control flow.  The
 key insight here is that SSA-form IR already resembles the structure of Wengert lists, extended by
 branches.  For example, the Wengert list in figure~\ref{fig:wengert-list} could be written as
