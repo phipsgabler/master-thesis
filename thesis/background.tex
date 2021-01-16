@@ -45,7 +45,7 @@ variable, with Gaussian noise of fixed standard deviation \(\sigma\):
   Y \sim \Normal(\theta_0 + x\theta_1, \sigma). 
 \end{equation}
 In a traditional approach, \(\theta\) would be considered fixed, and estimated through least-squares
-optimization given pairs of observations of \(x\) and \(y\).  In a Baysian approach, though, we
+optimization given pairs of observations of \(x\) and \(y\).  In a Bayesian approach, though, we
 first decide on some prior distribution for the parameters, which are now a thought of as
 realizations of random variable \(\Theta\), and then try to recover the posterior distribution of
 \(\Theta\) given the observed data.  This estimate allows some more applications, compared to the
@@ -224,7 +224,7 @@ proposal \(\hat{Y}\) in algorithm~\ref{alg:mh},
 be any valid transition kernel, which allows one to freely mix different MCMC methods suitable for
 each variable in a problem.  The sampling order of the blocks (i.e., the series of indices \(i\) for
 which equation~\eqref{eq:conditional-kernels} is applied) can be chosen in different random or
-determinstic conventions under some technical conditions \parencite[see][chapter
+deterministic conventions under some technical conditions \parencite[see][chapter
 6.6]{vihola2020lectures}.
 
 This so-called \enquote{within-Gibbs} sampler bears its name because it is a generalization of the
@@ -414,7 +414,7 @@ a variety of further reasons why one would rather describe an inference problem 
 program than in more \enquote{low-level} form, e.g., as a graph or likelihood function.  In a good
 probabilistic programming DSL, models should be expressible very concisely and intuitively, without
 much bookkeeping (e.g., as close to textbook model specifications as possible).  At the same time,
-structures should exist to allow complex behaviour, such as to\todo{page break}
+structures should exist to allow complex behavior, such as to\todo{page break}
 \begin{itemize}
   \firmlist
 \item define recursive relationships,
@@ -556,7 +556,7 @@ while it is dynamically typed, a combination of method specialization and type i
 to produce very optimized, fast machine code \parencite{bezanson2018julia}.  The language
 syntactically draws on a certain resemblance to Matlab, Python, or Ruby.  Contrary to them, it is
 designed to utilize a compiler, and not primarily rely on libraries calling foreign functions (e.g.,
-Numpy), to achieve C-like speed.  Although Julia does use, e.g., BLAS and LAPACK for numerical
+NumPy), to achieve C-like speed.  Although Julia does use, e.g., BLAS and LAPACK for numerical
 algebra, there is nothing that fundamentally prevents implementing their functions: true array
 types, fast loops, and various optimizations are available, as opposed to languages like Python,
 which are fundamentally limited to their dynamic interpretation.  This advantage carries over to
@@ -600,7 +600,7 @@ macro show(ex)
     return blk
 end
 \end{lstlisting}
-The result is then spliced back into the AST, which is compiled further as if it were written as
+The result is then spliced back into the AST, which is compiled further as if it were written as\todo{pagebreak}
 \begin{lstlisting}
 function foo(x)
     y = zero(eltype(x))
@@ -958,7 +958,7 @@ In short, we treat a program as the composition of functions, and derivatives as
 compositions of the linear operators they represent.  Since composition is associative, there are
 many possible orders for evaluation of these composed derivatives.  The two main fashions of AD,
 \emph{forward mode} and \emph{backward mode}, correspond to evaluation aligning with the original
-function evalution order, and its reverse.  These composition orders naturally can be described
+function evaluation order, and its reverse.  These composition orders naturally can be described
 through the computation graphs of functions, and transformations on them.  This is illustrated in
 figure~\ref{fig:comp-graph}\todo{larger dashes}, where we see the computation graph of a simple expression
 \jlinl{g(sin(x), y)}, with input variables \jlinl{x} and \jlinl{y} and output \jlinl{Ω}.  There, the
@@ -1080,7 +1080,7 @@ branches.  For example, the Wengert list in figure~\ref{fig:wengert-list} could 
 \end{equation}
 As in building up reverse computation graphs, the adjoint code will invert the control flow of the
 basic blocks in the primal function, taking into account that data flow may involve dynamic
-dependencies.  In our little example (withouth control flow), this leads to
+dependencies.  In our little example (without control flow), this leads to
 \begin{equation}
   \label{eq:ad-backward-0}
   \begin{aligned}
