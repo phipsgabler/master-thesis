@@ -1,49 +1,54 @@
 \chapter{Conclusion}
 \label{cha:conclusion}
 
-TODO\todo{short recap}
-
-\section{Discussion}
-\label{sec:discussion}
-
 The history of this project forms a large arc, starting from a general problem in \turingjl{}, over
 a digression into compiler technology and automatic differentiation, back the implementation of a
 proof of concept in the form of a very specific inference method.  As we have seen, two separate
-pieces of software have emerged from it: \irtrackerjl{} and \autogibbsjl{}.  On its own, the latter
-is indeed an improvement over the previous situation: Gibbs conditional samplers can be
-significantly faster than particle-based samplers, the go-to instrument for discrete variables in
-\turingjl{} so far, while delivering comparable inference results.  Already the addition of a
-\enquote{manual} Gibbs conditional sampler in \turingjl{} allows to directly implement many models
-from the literature, for which conditionals are often provided analytically.  Automatic derivation
-allows to generalize this to a large class of models that have been found useful in other systems
-such as JAGS.  However, the underlying issue~-- that \turingjl{} lacks a structural representation
-of models~-- is not resolved by the implementation.  This makes \autogibbsjl{} not
-completely satisfactory, since the recursion and branch tracking features of \irtrackerjl{} cannot
-be applied in a useful way.
+pieces of software have emerged from it: \irtrackerjl{} and \autogibbsjl{}.
+
+\irtrackerjl{} is a novel system for tracking (slices of) computation graphs in general Julia
+programs through transformation of Julia's IR.  It combines advantages from operator overloading and
+source-transformation approaches to record more structured data than conventional tracking systems,
+as are used in AD.  It is not specialized for certain DSLs such as probabilistic programs, but
+versatile enough to track all Julia programs, for various purposes in program analysis or abstract
+interpretation.
+
+\autogibbsjl{} is an extension for \turingjl{} that utilizes those tracked graphs to construct Gibbs
+conditional samplers for certain classes of models.  On its own, the latter is an improvement over
+the previous situation in \turingjl{}: Gibbs conditional samplers can be significantly faster than
+particle-based samplers, the go-to instrument for discrete variables in \turingjl{} so far, while
+delivering comparable inference results.  Already the addition of a \enquote{manual} Gibbs
+conditional sampler in \turingjl{} allows to directly implement many models from the literature, for
+which conditionals are often provided analytically.  Automatic derivation allows to generalize this
+to a large class of models that have been found useful in other systems such as JAGS.  However, the
+underlying issue~-- that \turingjl{} lacks a structural representation of models~-- is not resolved
+by the implementation.  This makes \autogibbsjl{} not completely satisfactory, since the recursion
+and branch tracking features of \irtrackerjl{} cannot be applied in a useful way.
 
 The real difficulty is that dynamic models cannot be satisfactorily handled through snapshot-like
 slices in the form of traces.  Systems trying to achieve this either become restrictive in their
 expressibility, or very complex in some aspects, up to practical limitation (see
 \textcite{mansinghka2014venture} and \textcite{goodman2012church}).  Furthermore, during
-implementation of the work, the two main practical difficulties were matching of variable names,
-e.g., subsuming \jlinl{x[1:10]} under \jlinl{x[1:3][2]}, and the correct handling of mutations that
-shadow actual data dependencies.  The latter occurs in cases where one has, for example, an array
-\jlinl{x}, samples a value \jlinl{x[1]}, writes that to \jlinl{x} with \jlinl{setindex!}, and then
-uses \jlinl{getindex(x, 1)} somewhere downstream.  A more versatile dictionary structure for
-variable name keys could improve the situation for variable names\footnote{Work to tackle these
-  issues has already begun in \turingjl{}, as of December 2020.}, but wouldn't solve all of the
-underlying issues.
+implementation process, the two main practical difficulties turned out to be matching of variable
+names, e.g., subsuming \jlinl{x[1:10]} under \jlinl{x[1:3][2]}, and the correct handling of
+mutations that shadow actual data dependencies.  The latter occurs in cases where one has, for
+example, an array \jlinl{x}, samples a value \jlinl{x[1]}, writes that to \jlinl{x} with
+\jlinl{setindex!}, and then uses \jlinl{getindex(x, 1)} somewhere downstream.  A more versatile
+dictionary structure for variable name keys could improve the situation for variable
+names\footnote{Work to tackle these issues has already begun in \turingjl{}, as of December 2020.},
+but wouldn't solve all of the underlying issues.
 
-There is also a fragility problem: Julia IR, while being publicly documented, is a rather internal
-feature of the language, and may change between compiler versions.  The \juliapackage{IRTools.jl}
-package provides a good mid-layer mitigating this, but still there's lot of reasons why a custom IR
-would be nicer.  From the other side, the internal structure of \dppljl{}'s model representations
-might change, and is an implementation detail that should not be relied on from the outside~--
+There is also a fragility problem: Julia IR, while being publicly documented and, to a certain
+extent, officially supported, is a rather internal feature of the language, and may change between
+compiler versions.  The \juliapackage{IRTools.jl} package provides a good mid-layer mitigating this,
+but there are still many reasons why a more specialized representation would be advantageous.  From
+a different point of view, also the internal structure of \dppljl{}'s model representations might
+change, and this is an implementation detail that should not be relied on from the outside~--
 especially not by an important feature such as dependency extraction.  In a certain sense, the whole
 approach is misguided: why rely on external tracking for a framework that is really under ones own
 control, using such heavy machinery as IR transformations?  This is illuminated by following very
-telling comment about similar tendencies (\juliapackage{Cassette.jl} is a package very similar to
-\juliapackage{IRTools.jl}):
+telling comment about recent tendencies in Julia (\juliapackage{Cassette.jl} is an IR transformation
+package very similar to \juliapackage{IRTools.jl}):
 \begin{quote}
   Using Cassette on code you wrote is a bit like shooting yourself with a experimental mind control
   weapon, to force your hands to move like you knew how to fly a helicopter.  Even if it works, you
@@ -71,98 +76,98 @@ more fundamental level.\footnote{The following ideas are based on a previous inf
   \protect\url{https://github.com/phipsgabler/probability-ir}}.
 
 Let us review the important features of a universal, flexible PPL as mentioned in
-section~\ref{sec:prob-prog}.  Its DSL should allow general recursion and nesting, support for all
-language constructs and custom types and extensions, and be able to delegate to other samplers or
-complex programs.  In addition, the internal representation should be such that multiple forms of
+section~\ref{sec:prob-prog}.  Its DSL should allow for general recursion and nesting, support for
+all language constructs and custom types and extensions, and be able to delegate to other samplers
+or complex programs.  In addition, the internal representation should be such that multiple forms of
 analysis, optimization, non-standard execution, and transformation can be performed.  Currently,
 \turingjl{} is following a rather simple approach: one data structure (\jlinl{VarInfo}) contains a
-map from variable names to values, the accumulated log-likelihood, and some other sampling
-metadata. \autogibbsjl{}' solution consists of retrofitting some more structure onto this
+map from variable names to values, the accumulated log-likelihood, and some other sampling metadata.
+\autogibbsjl{}'s solution consists only of retrofitting some more structure onto this
 representation~-- which is not ideal, and for proper analysis, it would be desirable to begin with a
 better representation from the start.
 
 From difficulties described above, which became apparent during the implementation of the Gibbs
 conditional extraction, together with the knowledge about \dppljl{}'s internals, I developed an
 understanding of what a more advanced representation of probabilistic models, with a focus on
-transformation and analysis, could be, from a metaprogramming and static analysis, and language
-design perspective.  The idealized goal would be for variable names and dependency graphs in general
+transformation and analysis, could be, from a metaprogramming, static analysis, and language design
+perspective.  The idealized goal would be for variable names and dependency graphs in general
 probabilistic programs to behave more conveniently as abstract data structures, and to be part of a
 closed, elegant, high-level language.  Many successful approaches to PPL design probably come from
-the perspective of efficient and general inference algorithm, putting the language design problem
+the perspective of efficient and general inference algorithms, putting the language design problem
 second to such a desire~-- but it should be possible to approach the field from a more
 \enquote{linguistic} perspective as well.  A further goal would be to close the gap between
 practical inference systems and the mostly theoretical, functional-programming-based approaches of
-just formalizing probabilistic programs (such as probabilistic lambda calculi, or type-theoretic
+formalizing probabilistic programs, such as probabilistic lambda calculi, or type-theoretic
 formulations; see
-\textcite{ramsey2002stochastic,heunen2017convenient,bhat2012type,scibior2015practical})
+\textcite{ramsey2002stochastic,heunen2017convenient,bhat2012type,scibior2015practical}.
 
-Universal PPLs have as their goal to let the user write down every model the language allows, and
-still be able to do inference on it.  Of course, at the boundary of the space of
-\enquote{reasonable} programs, trade-offs need to be made to still be able to do this.  It seems
-advantageous to split up this conjunction: by creating a format in which one can denote every
-possible model of a very large class, without a priori having to deal with the restrictions of
-inference.  Then for each model, suitable transformations and analyses can be performed in a uniform
-representation, and specialized backends be chosen from a wide range, which understand precisely the
-fragment of the model language used.
+Universal PPLs have as their goal to let the user write down every model that is meaningful in the
+underlying programming language, and still be able to do inference on it.  Of course, at the
+boundary of the space of \enquote{reasonable} programs, trade-offs need to be made to still be able
+to do this.  It seems advantageous to split up this conjunction: by creating a format in which one
+can denote every possible model of a very large class, without a priori having to deal with the
+restrictions of inference.  Then, for each model, suitable transformations and analyses can be
+performed in a uniform representation, and specialized backends be chosen from a wide range, each
+understanding a precisely defined fragment of the used modeling language.
 
-What I propose is a \enquote{probabilistic intermediate representation}, that turns around how
-things are currently construed in most of the approaches.  Instead of starting from a model as a
+What I propose therefore is a \enquote{probabilistic intermediate representation}, that turns around
+how things are currently construed in most of the approaches.  Instead of starting from a model as a
 \enquote{sampling function}, which is evaluated to extract graphs or other symbolic representations
 from it, one would begin from a representation that already is general, yet richly structured, and
 derive inference programs from it.  Viewed from the opposite direction, in contrast to PPLs that are
-built on top of a DSL representation, such an representation should be backend-agnostic, and instead
+built on top of a DSL representation, such a representation should be backend-agnostic, and instead
 allow all kinds of models to be specified in a uniform syntax, without being constraint by the
-demands of a specific sampling algorithm or inference technique.  Furthermore, it shouldn't matter
-whether the model is complicated, nonparametric, dynamic~-- the object that is worked with is always
-a fixed, full program in a specified syntax, with an intuitive denotation.
+demands of a specific sampling algorithm or inference technique.  Furthermore, it should not matter
+to the representation how complicated, nonparametric, or dynamic a model is~-- the object that is
+worked with is always a fixed, full program in a specified syntax, with an intuitive denotation.
 
 This separation between the a \enquote{specification abstraction} in form of a general
 representation and \enquote{evaluator abstractions} provided by interfaces to multiple sampler
 implementations seems novel.  The closest correspondence would be the formalization attempts of
 probabilistic models through monads and type systems; but that is more semantic than syntactic.
 There exist some domain-specific \enquote{linguae frankae} like the syntax of Stan and JAGS, but
-they are, too, somewhat restricted, and not independently defined and maintained~-- the systems
-coming later just chose to take over the same kind of input format for their own implementation.
-\juliapackage{Gen.jl} \parencite{cusumano-towner2020gen} provides an extensibel interface for the
+they are, too, rather restricted, and not independently defined and maintained~-- the systems coming
+later just chose to take over the same kind of input format for their own implementation.
+\juliapackage{Gen.jl} \parencite{cusumano-towner2020gen} provides an extensible interface for the
 class of models it supports, but this is still quite tightly bound to its inference system.  All
 these approaches could rather be abstracted out into a model specification formalism in its own
 right, that has more general analysis capabilities, and can then be transformed abstractly,
 ultimately producing the form some concrete evaluator (i.e., sampling algorithm or PPL system)
 requires.
 
-The advantage of such aseparation, besides making available solutions and techniques from
-programming language theory and compiler constrution, is that it provides a different kind of common
+The advantage of such a separation, besides making available solutions and techniques from
+programming language theory and compiler construction, is that it provides a different kind of common
 abstraction for PPLs than is possible through a \enquote{one DSL per system} approach.  Recently,
-developers in Julia have started writing \enquote{bridge code} to allow PPL interaction: there is
-invented a common interface that multiple PPL systems can be fit under, and then models in each can
-be used from within the other at evaluation.  This is necessary due to the lack of division of each
-system into an evaluator and a model specification part: they always go together.  (\dppljl{} is
-itself supposed to define an extensible model description language, but in practice is still quite
-strongly integrated with \turingjl{}.)
+developers in Julia have started writing more and more \enquote{bridge code} to allow PPL
+interaction: there is invented a common interface that multiple PPL systems can be fit under, and
+then models in each can be used from within the other at evaluation.  This is necessary due to the
+lack of division of each system into an evaluator and a model specification part: they always go
+together.  (\dppljl{} is itself supposed to define an extensible model description language, but in
+practice is still quite strongly coupled with \turingjl{}.)
 
 I believe that starting from a common model specification language is in many cases preferable, and
 more general than just a common interface for evaluators.  Such interfaces tend to assume much more
 about the internals, while the capabilities of universal probabilistic programs are essentially
-fixed: the notation of random variables used in model specification by hand, extended through the
-forms of an embedding programming language.  Starting from this, we could consider the following a
-least upper bound of all the PPL modeling approaches:
+fixed: the notation of random variables used in model specification \enquote{by hand}, extended
+through the forms of an embedding programming language.  Starting from this, I consider the
+following a least upper bound of all the universal PPL modeling approaches:
 \begin{itemize}
   \firmlist
 \item General code: covered by normal Julia IR with SSA statements, branches, and blocks.
 \item \enquote{Sampling statements}: special assignment forms for tildes, or assumptions and
-  observations in \turingjl{} parlance, which relate names or values to distributions (or generally
-  sub-models) in an declarative way.
-\item First-class variable names: these may be quite complex, containing for example indexing,
-  fields, link functions, etc., which can be identified and analysed in a structured way.
+  observations in \turingjl{} parlance, which relate names or values to distributions (or, more
+  generally, sub-models or even measures) in an declarative way.
+\item First-class variable names: these may be quite complex, containing for example indexing, field
+  access, link functions, and more, which can be identified and analysed in a structured way.
 \end{itemize}
-Given this, it seems feasible to define arbitrary probabilistic programs an IR-like syntax, similar
-to an extended SSA-form; the crucial point being that names and tildes are not separated from a host
-language.  The idea amounts to writing out a directed graphical model with deterministic and
-stochastic nodes, named random variables, but generalized to programs~-- e.g., allowing dynamic
-structure with to branching and recursion.  A model in this kind of format then defines an abstract
-and uninterpreted parametrized joint density function over its trace space (as given through the
-unified name set of all possible runs, see e.g. \textcite{lew2020trace}), factorized into primitive
-statements and blocks.
+Given this, it seems feasible to define arbitrary probabilistic programs in an IR-like syntax,
+similar to an extended SSA form; the crucial point being that names and tildes are not separated
+from the host language.  The idea amounts to writing out a directed graphical model with
+deterministic and stochastic nodes and named random variables, but generalized to programs~-- e.g.,
+allowing dynamic structure with to branching and recursion.  A model in this kind of format then
+defines an abstract and uninterpreted parametrized joint density function (or measure) over its
+trace space (as given through the unified name set of all possible runs, see
+e.g. \textcite{lew2020trace}), factorized into primitive statements and blocks.
 
 There is still much to be clarified and researched about the syntax and semantics of such a
 representation, but the underlying principle should be intuitively clear by just matching the
@@ -177,8 +182,9 @@ while n <= N
 end
 {y} ~ MvNormal({x}, {sigma})
 \end{lstlisting}
-We can imagine this to be represented directly in probabilistic IR by conceiving of a lowering
-mechanism that treats tilde statements just like assignments, and preserves variable names:
+where braces indicate first-class variable names.  We can imagine this to be represented directly in
+a probabilistic IR by conceiving of a lowering mechanism that treats tilde statements just like
+assignments, and preserves variable names in some form:
 \begin{lstlisting}
 1:
   goto 2 (1)
@@ -197,50 +203,52 @@ mechanism that treats tilde statements just like assignments, and preserves vari
 \end{lstlisting}
 If we define the tilde statements to behave like stochastic function calls, with a side effect of
 somehow storing the intermediate stochastic values and their names as metadata, this is exactly how
-the evaluation semantics of \dppljl{} in most cases work.
+the evaluation semantics of \dppljl{}, or \juliapackage{Gen.jl}'s dynamic interface, work in most
+cases.
 
 In contrast to \autogibbsjl{}'s data structures, this kind of model is not a slice, but preserves
-the complete information about a model specification though a first-class representations.  The
+the complete information about a model specification though first-class representations.  The
 probabilistic part of it, as opposed to the code generated by \dppljl{}, is referentially
 transparent.  These properties make analysis and code transformations, similar to the ones possible
 with \juliapackage{IRTools.jl}, significantly easier and more general.  On the formal representation
 we can then apply transformations such as specialization on a constant parameter or observation,
 resulting in a new model in IR form, exploitation of probabilistic knowledge, like collapsing or
-conjugacy exploitation, or \enquote{disaggregating} a non-parametric model into something sampleable
+conjugacy exploitation, \enquote{disaggregating} a non-parametric model into something sampleable
 (e.g., re-representing a Dirichlet process model with a CRP-based one), or other changes of the
-probabilistic structure.  We can also apply static analysis or abstract interpretation techniques:
-e.g., extraction of Gibbs conditionals.  Finally, the model can be converted into a form fit for
-evalation~-- the transformation of the IR into executable code, or data structures for other PPL
-systems.
+probabilistic structure.  We can also apply static analysis or abstract interpretation techniques,
+like the extraction of Gibbs conditionals.  Finally, the model can be converted into a form fit for
+evaluation in various backends~-- the transformation of the IR into executable code, or data
+structures for other PPL systems.
 
 \newthought{All these usages} can be represented through composition of several small structural
-functions: constructing a new model that is the Gibbs conditional for some varible; turning a model
+functions: constructing a new model that is the Gibbs conditional for some variable; turning a model
 into a plain Julia generative function; extracting the log-likelihood function of the model;
 specializing a model with some variable to given observations, and checking that the result is
 static; perform a causal intervention on some random variable; of converting a model with fixed data
 into a factor graph representation.
 
-A similar principle of is currently developed with JAX \parencite{bradbury2018jax}, which is inteded
-for numeric functions, and in which there exists a unified representation of functional programs
-that undergo various transformations.  On top of JAX,
-Oryx\footnote{\protect\url{https://www.tensorflow.org/probability/oryx}} should provide with the
+A somewhat similar idea is currently being developed in JAX \parencite{bradbury2018jax}, which is
+intended for numeric functions, and in which there exists a unified representation of (functionally
+pure) programs that can undergo various transformations.  On top of JAX,
+Oryx\footnote{\protect\url{https://www.tensorflow.org/probability/oryx}} should provide the
 necessary infrastructure to apply this in the setting of probabilistic programs.  JAX, though, is
-closer to lambda calculus in A-normal form than SSA-form IR; it assumes referential transparency and
-has no representation of control structures.  In Julia, Soss \parencite{scherrer2019soss} takes a
-somewhat comparable approach by representing models written in a Julia DSL in completely symbolic
-expression form, from which inference code is generated.  Also here, not the full generality of the
-host language is available, but only a pure subset of it; and again, control structure can only be
-realized through combinator functions, not at language level.
+closer to lambda calculus in A-normal form than SSA-form IR; it assumes referential transparency,
+static computation graphs, and has no representation of control structures.  In Julia,
+\juliapackage{Soss.jl} \parencite{scherrer2019soss} takes a somewhat comparable approach by
+representing models written in a Julia DSL in completely symbolic expression form, from which
+inference code is generated.  Also here, not the full generality of the host language is available,
+but only a pure subset of it; and again, control structure can only be realized through combinator
+functions, not at language level.
 
-The approach most comparable to the presented ideas, although stemming from a complete different
-domain, would be tactic or elaborator systems in proof assistants
+The approach most comparable to the a system as I imagine, although stemming from a completely
+different domain, would be the tactic or elaborator systems in proof assistants
 \parencite[e.g.,][]{brady2013idris,coqdevelopmentteam2020coq}.  There, user-written programs are
 iteratively refined into other, more specialized forms through functions expressed in a metalanguage
 (the so-called tactics), interleaving automated transformations and manual interventions.  A similar
 style of development could boost the usability and flexibility of Bayesian inference: after writing
-a down model syntactically, the user can interactively refine the model code in symbolic form,
-applying their knowledge and constraints, until they arrive at a form that can be passed to some
-inference mechanism.
+a down model syntactically, the user can interactively refine the model code in symbolic, algebraic
+form, applying their knowledge and constraints, until they arrive at a form that can be passed to
+some inference mechanism.
 
 %%% Local Variables: 
 %%% TeX-master: "main"
