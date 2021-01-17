@@ -112,8 +112,8 @@ observations \(x\) and a specified density of \(\Theta \from \pi(\cdot \given x)
 procedure with a consistent estimator \(I\) for expectations of \(f\):
 \begin{equation}
   \label{eq:mc-methods}
-  \kth{I}(f) \to \Exp{f(\Theta) | X = x} = \int f(\theta) \pi(\theta \given x) \dif\mu(\theta), \quad \text{as} \quad k
-  \to \infty
+  \kth{I}(f) \to \Exp{f(\Theta) | X = x} = \int f(\theta) \pi(\theta \given x) \dif\mu(\theta),
+  \quad \text{as} \quad k \to \infty,
 \end{equation}
 in some appropriate stochastic convergence (usually convergence in probability is enough).
 
@@ -125,7 +125,7 @@ methods are defined in a form that directly samples a sequence of individual ran
 mean, such that a law of large numbers (LLN) holds:
 \begin{equation}
   \label{eq:mc-lln}
-  \kth{I}(f) = \frac{1}{k} \sum_{i=1}^{k} f(\kth[i]{Y}) \to \Exp{f(\Theta) \given X = x}
+  \kth{I}(f) = \frac{1}{k} \sum_{i=1}^{k} f(\kth[i]{Y}) \to \Exp{f(\Theta) \given X = x}.
 \end{equation}
 If we can sample \(\kth{Y} \from \pi(\cdot \given x)\) exactly, they are \iid{} and the LLN holds
 trivially; such samplers exist, but might also be difficult to derive or not possess good enough
@@ -270,7 +270,7 @@ for each variable \(v\)). From this, we can derive an unnormalized density propo
 conditional by removing all factors not including the target variable (which become part of the
 normalization constant):
 \begin{equation}
-    p(z_{n} \given z_{-n}, \mu_{1:K}, x_{1:N}) \propto p(z_{n}) p(x_{n} | \mu_{z_{n}})
+    p(z_{n} \given z_{-n}, \mu_{1:K}, x_{1:N}) \propto p(z_{n}) p(x_{n} | \mu_{z_{n}}).
 \end{equation}
 This is equivalent to finding the Markov blanket \parencites[section
 24.2]{murphy2012machine}[section 4.5]{koller2009probabilistic} of \(Z_{n}\): only those conditionals
@@ -297,7 +297,7 @@ have the form
     &p(\mu_{k} \given z_{1:N}, \mu_{-k}, x_{1:N}) \\
     &\quad \propto p(\mu_k) \prod_{n} p(x_{n} | \mu_{k})^{\indicator{z_{n} \, = \, k}} \\
     &\quad = \prod_{n} \left( \Normal(\mu_{k} \given m, s) \,
-      \Normal(x_{n} \given \mu_{k}, \sigma) \right)^{\indicator{z_{n} \, = \, k}}
+      \Normal(x_{n} \given \mu_{k}, \sigma) \right)^{\indicator{z_{n} \, = \, k}},
   \end{aligned}
 \end{equation}
 which we recognize as a product of conjugate pairs of normal distributions (\(\vvmathbb{1}\) being the
@@ -960,7 +960,7 @@ many possible orders for evaluation of these composed derivatives.  The two main
 \emph{forward mode} and \emph{backward mode}, correspond to evaluation aligning with the original
 function evaluation order, and its reverse.  These composition orders naturally can be described
 through the computation graphs of functions, and transformations on them.  This is illustrated in
-figure~\ref{fig:comp-graph}\todo{larger dashes}, where we see the computation graph of a simple expression
+figure~\ref{fig:comp-graph}, where we see the computation graph of a simple expression
 \jlinl{g(sin(x), y)}, with input variables \jlinl{x} and \jlinl{y} and output \jlinl{Ω}.  There, the
 graphs of the corresponding forward-mode (left) and backward-mode (right) calculations are related
 to the computation graphs.  The dotted (\(\dot{x}\)) and barred (\(\bar{x}\)) values are the

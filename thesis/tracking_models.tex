@@ -366,7 +366,7 @@ To give a concrete illustration of the construction in programmatic terms, consi
 \item For each of these (sub-)variables, collect the likelihoods of their children variables, thus
   completing the Markov blanket:
   \begin{equation*}
-    \ell_{2} = \mathtt{logpdf(Bernoulli(\theta[\pi]), \theta[x])}
+    \ell_{2} = \mathtt{logpdf(Bernoulli(\theta[\pi]), \theta[x])}.
   \end{equation*}
   The complicated part of this and the previous step is the correct matching of indexed variables in
   the trace dictionary: forms like \jlinl{θ[v][1]} and \jlinl{θ[v[1]]} need to be resolved correctly
@@ -798,9 +798,9 @@ buttressed by the distribution of the diagnostic values.  IMM seems poses a part
 application for AG, but otherwise, no consistent \enquote{winner} is visible, and variations do not
 seem to follow a consistent pattern.
 
-In conclusion, it can be said that for models where both are applicable, \texttt{Auto\-Gibbs.jl}
-provides a viable alternative to PG, delivering comparable results in less time.  Care has to be
-taken to diagnose mixing behavior, though, as always in MCMC simulations.
+In conclusion, it can be said that for models where both are applicable,
+\juliapackage{Auto\-Gibbs.jl} provides a viable alternative to PG, delivering comparable results in
+less time.  Care has to be taken to diagnose mixing behavior, though, as always in MCMC simulations.
 
 
 % \begin{table}[t]
