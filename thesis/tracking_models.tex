@@ -4,28 +4,28 @@
 We will now see how the system described in chapter~\ref{cha:impl-dynam-graph}, implemented in the
 Julia package \irtrackerjl{}, can be utilized for the analysis of probabilistic models written in
 \dppljl{}, and for posterior inference in \turingjl{}.  This part of the work is realized in another
-package, \autogibbsjl{}, which is available as open-source
+package, \autogibbsjl{}, which is also available as open-source
 code\footnote{\url{https://github.com/phipsgabler/AutoGibbs.jl}}.  There are two applications
 provided, built on top of the graph tracking functionality: first, dependency analysis of random
-variables in a model can be performed.  The result is a a complete graphical model for static
-models, and a slice of it for dynamic models.  This graph can be plotted for visualization.  Second,
-given the dependency graph, the conditional likelihoods of unobserved variables in static models can
-be extracted.  With these, analytic Gibbs conditionals can be derived and used in \turingjl{}'s
+variables in a model.  The result is a complete graphical model for static models, and a slice of it
+for dynamic models.  This graph can be plotted for visualization.  Second, given the dependency
+graph, the conditional likelihoods of unobserved variables in static models can be extracted.  With
+these, analytic Gibbs conditionals for certain variables can be derived and used in \turingjl{}'s
 within-Gibbs sampler.
 
 \section{Dependency Analysis in Dynamic Models}
 \label{sec:dependency-analysis}
 
-In order to use \irtrackerjl{} to extract the dependencies in a probabilistic model written in
-\dppljl{}, we need to remember the structure of such models.  As was introduced in
+In order to apply \irtrackerjl{} to extract the dependencies in a probabilistic model written in
+\dppljl{}, recall the internal structure of such models.  As was introduced in
 section~\ref{sec:prob-prog}, there is one evaluator function, into which the original code is
 transformed, and which evaluates the model in different modes.  This function has the same structure
 as the original code, but adds some more complicated book-keeping logic to it, and transforms the
-tilde statements into function calls with some additional metadata.  Furthermore, when calling the
-model as a callable object, there are several layers of dispatch (about five layers of nesting,
-depending on the arguments), until the real evaluator function is actually hit.  On the other hand,
-there is no further nesting involved beyond the evaluator function (\turingjl{} currently does not
-support nested models).
+tilde statements into function calls with additional metadata.  Furthermore, when using the model as
+a callable object, there are several layers of dispatch (about five layers of nesting, depending on
+the arguments), until the real evaluator function is actually hit.  There is no further nesting
+involved beyond the evaluator function, though (\turingjl{} currently does not support nested
+models).
 
 Therefore, we first need to introduce an \irtrackerjl{} context that will record all the internal
 function calls down to the evaluator function, and stop there.  Similar to the
@@ -33,13 +33,13 @@ function calls down to the evaluator function, and stop there.  Similar to the
 is to overload the \jlinl{canrecur} method to stop at the right call.  This can easily be done by
 introducing a helper predicate function \jlinl{ismodelcall} that dispatches on the involved types.
 Next, we notice that the resulting computation graph consists of a nested and quite complicated
-structure, due to the initial levels of nesting.  To work with the model code, we need to remore
-outer layers from the inner node containing the trace of the evaluator function.  Thirdly, many of
-the statements in the trace of the evaluator function do not have relevance for dependency
-analysis~-- like those that stem from internal calculations done by the model, or statements that
-were written by the user but to not lie on the dependency graph, such as debugging statements or
-lowered code of certain loops.  These we can be stripped off in advance, so as to clean the raw
-dependency trace.  These three preparation steps are put together in one method:
+structure, due to the initial levels of nesting.  To work with the core model structure, we need to
+remove outer layers from the innermost node containing the trace of the evaluator function.
+Finally, many of the statements in the trace of the evaluator function do not have relevance for
+dependency analysis~-- like those that stem from internal calculations done by the model, or
+statements that were written by the user but to not lie on the dependency graph, such as debugging
+statements or parts of loops.  These can be stripped off in advance, so as to clean the raw
+dependency trace.  The three preparation steps are put together in one method:
 \begin{lstlisting}
 function slicedependencies(model::Model{F}, args...) where {F}
     trace = trackmodel(model, args...)
@@ -48,17 +48,17 @@ function slicedependencies(model::Model{F}, args...) where {F}
     return slice
 end
 \end{lstlisting}
-Here, \jlinl{trackmodel} extracts the computation graph with the context for models tracking,
+where \jlinl{trackmodel} extracts the computation graph with the context for models tracking,
 \jlinl{strip_model_layers} removes the outer method calls, and \jlinl{strip_dependencies} removes
 all SSA code that is not on the dependency graph spanned by the sampling statements.
 
 The final and most intricate step is to add all the remaining SSA statements to a new graph
-structure, that describes a more domain-specific representation.  In this \jlinl{Graph} type, only
+structure, describing a more domain-specific representation.  In this \jlinl{Graph} type, only
 assumption, observation, call, and constant nodes remain, storing relevant metadata such as their
 values, variable names, and distribution objects.  In addition, the object contains intermediate
 information used during graph construction, such as the mapping between newly generated and original
-references.  The graph construction is implemented in a function \jlinl{makegraph}.  The final
-graph dependency tracking interface thus consists of the single function 
+references.  The graph construction is implemented in a function \jlinl{makegraph}.  The final graph
+dependency tracking interface thus consists of the single function
 \begin{lstlisting}
 function trackdependencies(model, args...)
     slice = slicedependencies(model, args...)
@@ -67,13 +67,14 @@ end
 \end{lstlisting}
 There are two complications regarding \jlinl{makegraph}.  For one, model arguments are handled
 specially by \dppljl{}~-- there are some internal arguments added, and the original arguments are
-inspected to allow to run the same model in generative or posterior mode.  This part needs to be
-sorted out, so that the passed argument values are correctly set up as constants in the dependency
-graph.  Since all information is present, the task is resolved by correctly identifying the
-arguments and restructuring their contents into the right form.
+inspected to allow, e.g., to run the same model in prior or likelihood contexts.  This part needs to
+be sorted out, so that the passed argument values are correctly set up as constants in the
+dependency graph.  Since all information is present, the task is resolved by correctly identifying
+the arguments and restructuring their contents into the right form.
 
 The other problem is the handling of mutation, and tracking of modified array elements.  For
-example, a hidden Markov model might contain code like this:
+example, a hidden Markov model with states \jlinl{s} and transition matrix \jlinl{T} might contain
+code like this:
 \begin{lstlisting}
 s = zeros(Int, N)
 s[1] ~ Categorical(K)
@@ -81,12 +82,12 @@ for i = 2:N
     s[i] ~ Categorical(T[s[i-1]])
 end
 \end{lstlisting}
-In order to express the dependency between successive elements of \jlinl{s}, an empty array is first
+In order to model the dependency between successive elements of \jlinl{s}, an empty array is first
 set up, and then subsequently populated by the results of the tilde statements describing the Markov
-process.  In this form, only the individual variables \jlinl{s[i]} are recognized by the model
-language.  Internally, the tilde statements are translated to array assignments of the form
-\jlinl{s[i] = tilde_assume(...)}, but with additional lowering of the involved arguments, after
-which the corresponding IR will look approximately like this:
+process.  In this form, only the individual variables \jlinl{s[i]} are \enquote{seen} by the
+inference algorithm.  Internally, the respective tilde statements are translated to array
+assignments of the form \jlinl{s[i] = tilde_assume(...)}, but with additional lowering of the
+involved arguments, after which the corresponding IR will look approximately like this:\todo{page break}
 \begin{lstlisting}
 %9 = %i - 1                                  # i - 1
 %10 = getindex(%s, %9)                       # s[i - 1]
@@ -96,7 +97,7 @@ which the corresponding IR will look approximately like this:
 %14 = tilde_assume(..., %13, ..., %12, ...)  # %14 ~ %13
 %15 = setindex!(%s, %14)                     # s[i] = %14
 \end{lstlisting}
-(This is not real SSA form~-- several statements have been collapsed, and letters used in SSA
+(which is not real SSA form~-- several statements have been collapsed, and letters been used in SSA
 variables for clarity.)  We see that the direct association between the original variable
 \jlinl{s[i]} (within \jlinl{\%s}) and its distribution (\jlinl{\%13}) is not preserved in the line
 of the tilde method, but spread over multiple statements.  Even worse, since all statements for the
@@ -105,25 +106,26 @@ dependency between \jlinl{s[i]} and \jlinl{s[i-1]} is not available structurally
 recovered dynamically.
 
 The \jlinl{makegraph} implementation solves this by successively identifying mutated arrays
-representing random variables by inspecting the indexing calls around tilde statements, and storing
-the association between the assumption and the array elements.  This part of the procedure is the
-most intricate one, and there may exist cases where mutation is able to \enquote{circumvent} the
-dependency analysis.  Additionally, the matching between indexing arguments involves some careful
-treatment of variable names; the existing \dppljl{} API for this functionality is not very
-comprehensive.  Due to this, the current implementation of \autogibbsjl{} currently only supports
+representing random variables through inspection of the indexing calls around tilde statements, and
+storing the association between the assumption and the array elements.  This part of the procedure
+is the most intricate one, and there may exist cases where mutation is able to \enquote{circumvent}
+the dependency analysis.  Additionally, the matching between indexing arguments involves some
+careful treatment of variable names; the existing \dppljl{} API for this functionality is not very
+comprehensive.  Due to this, the implementation of \autogibbsjl{} currently only supports
 \enquote{simple} indexing by one tuple of integers.  Other, more general indexing styles allowed in
 Julia could be added in future extensions.  Furthermore, broadcasting tilde statements, that are
 supported in \dppljl{}, are not supported by \autogibbsjl{} at the moment.
 
 \newthought{To illustrate} the extracted dependency graphs obtained by \autogibbsjl{}, we will
-examine the two simple models shown in listing~\ref{lst:dependency-examples}\todo{fix caption
-  alignment}.  The pretty-printed \jlinl{Graph} objects resulting from each of the models are shown
-below them, in listing~\ref{lst:trace-examples}.  We can see that the model arguments for
-observations occur as constant values, and all of the intermediate transformation visible in the
-original model definitions are observed.  From this structure, \autogibbsjl{} can construct output
-in the Dot graph format and visualized using GraphViz \parencite{gansner2000open}.  The visual
-outputs of the example models is shown in figure~\ref{fig:geom-deps}.\todo{add models in math
-  notation?}
+examine the two simple models shown in listing~\ref{lst:dependency-examples}: a boolean variable
+sampled from a mixture of two Bernoulli distributions, and a simple single-variable Gaussian model
+with conjugate prior.\todo{fix caption alignment} The pretty-printed \jlinl{Graph} objects resulting
+from each model are shown below them, in listing~\ref{lst:trace-examples}.  We can see that the
+model arguments for observations occur as constant values, and all of the intermediate function
+calls visible in the original model definitions are preserved.  From this structure, \autogibbsjl{}
+can construct output in the Dot graph format and visualized using GraphViz
+\parencite{gansner2000open}.  The rendered output of the example models is shown in
+figure~\ref{fig:geom-deps}.\todo{orphan}
 
 \begin{lstfloat}[p]
 \begin{lstlisting}[style=lstfloat]
@@ -176,9 +178,9 @@ end
 \end{lrbox}
 \begin{lstfloat}[p]
   \loosesubcaptions
-  \subbottom[Trace of \texttt{bernoulli\_mixture(false)} (some type parameters not shown).]{%
+  \subbottom[Trace of \texttt{bernoulli\_mixture(false)} (some type parameters not shown).\hfill]{%
     \usebox{\bernoullitrace}}
-  \subbottom[Trace of \texttt{hierarchical\_gaussian(1.4)}.]{%
+  \subbottom[Trace of \texttt{hierarchical\_gaussian(1.4)}.\hfill]{%
     \usebox{\gaussiantrace}}
   \caption{Traced structure of the two example models introduced above, with fixed observations
     \texttt{false} and \texttt{1.4}.  Values in \(\langle\)angle brackets\(\rangle\) denote
@@ -220,7 +222,7 @@ In \turingjl{}, models are much less restricted, and the symbolic form has to be
 outside, as we have seen.  To focus on the principal ideas and not to extend the scope too much, the
 implementation described in this section was restricted to the simpler case of finite, discrete
 conditionals.  But since the construction of unnormalized conditionals densities, a necessary
-intermediate step, is independenct from the problem of normalization, this part could still serve as
+intermediate step, is independent from the problem of normalization, this part could still serve as
 a starting point for further, more general conditional samplers, as those in JAGS and BUGS.
 Additionally, and this is a more fundamental limitation, the models to which the extraction
 algorithm can be applied must be static in a specific sense: the whole Markov blanket of the
@@ -239,9 +241,9 @@ The implementation of the conditional extraction system involves three main step
 \item Providing a Gibbs-component sampler for \turingjl{}, that can utilize the resulting
   conditional distributions.
 \end{enumerate}
-It would also be possible to trace the dependency graph at and recalculate the conditional
-likelihood at each Gibbs-component sampling step.  This could remediate some restrictions, at higher
-runtime cost.
+Alternatively, it would be possible to repeatedly trace the dependency graph and recalculate the
+conditional likelihood at each Gibbs-component sampling step.  This could remediate some
+restrictions, but at higher runtime cost.
 
 The third of these steps turned out to be the easiest, since the sampling system of \turingjl{} is
 designed to be extensible.  Ideally, a Gibbs-conditional sampler would have first been added to
@@ -252,13 +254,13 @@ round, and the \autogibbsjl{} sampler has, in generalized form, been added to \t
 \newsavebox{\bmlikelihoods}
 \begin{lrbox}{\bmlikelihoods}
 \begin{lstlisting}[style=lstfloat]
-⟨2⟩ = 1.4                  ⤳ 1.4
+⟨2⟩ = false                 ⤳ false
 ⟨3⟩ = Dirichlet(2, 0.5)    ⤳ Dirichlet(2, 0.5)
 ⟨4⟩ = w ~ ⟨3⟩              ⤳ logpdf(Dirichlet(2, 0.5), θ[w])
 ⟨5⟩ = DNP([0.3, 0.7], ⟨4⟩) ⤳ DiscreteNonParametric([0.3, 0.7], θ[w])
 ⟨6⟩ = π ~ ⟨5⟩              ⤳ logpdf(DiscreteNonParametric([0.3, 0.7], θ[w]), θ[π])
-⟨7⟩ = Bernoulli(⟨6⟩)       ⤳ Bernoulli(θ[p])
-⟨8⟩ = x ~ ⟨7⟩ ← ⟨2⟩       ⤳ logpdf(Bernoulli(θ[p]), θ[x])
+⟨7⟩ = Bernoulli(⟨6⟩)       ⤳ Bernoulli(θ[π])
+⟨8⟩ = x ~ ⟨7⟩ ← ⟨2⟩       ⤳ logpdf(Bernoulli(θ[π]), θ[x])
 \end{lstlisting}
 \end{lrbox}
 \newsavebox{\hglikelihoods}
@@ -291,9 +293,9 @@ round, and the \autogibbsjl{} sampler has, in generalized form, been added to \t
 The initial step, the symbolic extraction of likelihood functions, is implemented by first
 converting the full trace into a symbolic joint log-density.  The expression of each node in the
 dependency graph is therefore associated with a corresponding symbolic representation of a function
-of the \enquote{trace dictionary} \jlinl{θ}, which contains all values of the random variables by
-name (which is to view the probabilistic model as a joint density over trace dictionaries).  This is
-done in the following simple fashion:
+of the \enquote{trace dictionary} \jlinl{θ}, containing all values of the random variables by name
+(which is to view the probabilistic model as a joint density over trace dictionaries).  This is done
+in the following simple fashion:
 \begin{itemize}
   \firmlist
 \item References to call nodes or constant nodes (\jlinl{⟨i⟩ = x}) are inlined.
@@ -321,7 +323,7 @@ corresponding to the density over \(\lambda\), \(m\), and \(x\), factorized as
 \end{equation}
 From this we can then derive conditionals by normalizing the proportional conditional, which can be
 obtained by removing all terms of the joint factorization that do not depend on the conditioned
-variable:
+variable (cf. section~\ref{sec:bayes-infer}):
 \begin{equation}
   \begin{aligned}
     p(m \given \lambda, x) &\propto p(m \given \lambda) \, p(x \given m, \lambda), \\
@@ -335,7 +337,7 @@ The crucial problem here is to find the normalization factor.  In our case, with
 discrete and finite random variables, the normalization factor can be obtained exactly, as it
 reduces to a finite sum.  (In the more general case, it could be found by analysing the structure of
 the resulting expression, such as the conjugate variables \(m\), \(\lambda\), and \(x\) above, but
-this is out of scope of the present work.)  For example, \(p\) in the \jlinl{bernoulli_mixture}
+this is out of scope of the present work.)  For example, \(\pi\) in the \jlinl{bernoulli_mixture}
 model is such a finitely supported variable~-- we get
 \begin{equation}
     p(\pi \given w, x) = \frac{p(w) \, p(\pi \given w) \, p(x \given \pi)}{
@@ -346,8 +348,8 @@ same operation programmatically, and turn the symbolic log-density into a distri
 simply tabulating the values of the denominator through evaluating of the expression over the whole
 support of \(\pi\), the set \(\{0.3, 0.7\}\), and summing it up to get the normalization
 factor.\footnote{This uses the interface of distribution objects from the
-  \juliapackage{Distributions.jl} package, which have a \jlinl{support} method whose result is an
-  iterable.}  This step finalizes the second of the three points of the scheme listed above.
+  \juliapackage{Distributions.jl} package, which have a \texttt{support} method whose result is an
+  iterable object.}  This step finalizes the second of the three points of the scheme listed above.
 
 To give a concrete illustration of the construction in programmatic terms, consider the
 \jlinl{bernoulli_mixture} example:
@@ -369,21 +371,35 @@ To give a concrete illustration of the construction in programmatic terms, consi
   The complicated part of this and the previous step is the correct matching of indexed variables in
   the trace dictionary: forms like \jlinl{θ[v][1]} and \jlinl{θ[v[1]]} need to be resolved correctly
   to the same value.
-\item Construct for each a closure function that takes as an argument a fixed trace dictionary,
-  tabulates the conditional log-likelihood over it with the conditioned variable fixed to all values
-  of its support, and normalizes the result:\todo{Better typesetting?}
+\item Construct for each conditioned variable a closure function that takes as an argument a fixed
+  trace dictionary, tabulates the conditional log-likelihood over it with the conditioned variable
+  fixed to all values of its support, and normalizes the result: let
   \begin{equation*}
-    \begin{aligned}
-      &\theta \mapsto \{ \\
-      &\quad \Omega = \mathtt{support}(\mathcal{D}) \\
-      &\quad \mathtt{table} = \left[\operatorname{eval}(\ell_{1}, \theta[\pi \leadsto \varpi]) +
-        \operatorname{eval}(\ell_{2}, \theta[\pi \leadsto \varpi]) \mid \varpi \in \Omega \right] \\
-      &\quad \distr{DiscreteNonParametric}(\Omega, \operatorname{softmax}(\mathtt{table})) \\
-      &\},
-    \end{aligned}
+    \Omega = \mathtt{support}(\mathcal{D}) = \mathtt{[0.3, 0.7]},
   \end{equation*}
-  where \(\operatorname{softmax}(x) = \broadcast{\exp}(x) / \sum_i \exp(x_{i})\) is the
-  normalization operation on log-probabilities.
+  then the closure is
+  \begin{equation*}
+    \theta \mapsto \distr{DiscreteNonParametric}(\Omega, \operatorname{softmax}(\mathtt{table}(\theta)))
+  \end{equation*}
+  where
+  \begin{equation*}
+    \mathtt{table}(\theta)_i = \operatorname{eval}(\ell_{1}, \theta[\pi \leadsto \Omega_i]) +
+    \operatorname{eval}(\ell_{2}, \theta[\pi \leadsto \Omega_i])
+  \end{equation*}
+  are the unnormalized log-likelihoods.
+  % \begin{equation*}
+  %   \begin{aligned}
+  %     &\theta \mapsto \{ \\
+  %     &\quad \mathtt{table} = \left[\operatorname{eval}(\ell_{1}, \theta[\pi \leadsto \varpi]) +
+  %       \operatorname{eval}(\ell_{2}, \theta[\pi \leadsto \varpi]) \mid \varpi \in \Omega \right] \\
+  %     &\quad \distr{DiscreteNonParametric}(\Omega, \operatorname{softmax}(\mathtt{table})) \\
+  %     &\}.
+  %   \end{aligned}
+  % \end{equation*}
+  Here, \(\operatorname{softmax}(x) = \broadcast{\exp}(x) / \sum_i \exp(x_{i})\) is the
+  normalization operation on log-probabilities, \(\mathrm{eval}\) the evaluation function for
+  likelihood closures, and \(\theta[v \leadsto x]\) denotes setting the value of variable \(v\) in
+  \(\theta\) to~\(x\).\todo{orphan}
 \end{enumerate}
 The result of this process is a collection of closures that represent the conditional likelihoods as
 \enquote{kernels}: functions from conditioned-on variables to distribution objects.  These closures
@@ -392,16 +408,13 @@ sampler, in combination with other samplers for the continuous variables.
 
 \newthought{As for potential improvements}, there is of course a wide range of possibilities for
 extension.  As mentioned before, further classes of random variables beyond those with finite
-support could be handled, using methods and heuristics as in BUGS or JAGS.  This could involve
-symbolic methods like those in AutoConj \parencite{hoffman2018autoconj}. More generally,
-variance-reducing transformation, as those in \textcite{murray2017delayed}, are applicable.
-% For
-% computational efficiency, a parallel Gibbs sampler \parencite{gonzalez2011parallel} could be
-% constructed, improving scalability with increasing data size (i.e., numbers of observations).
-Or, as in \juliapackage{Gen.jl}, a variant of \enquote{argument diffs} could be devised to prevent
-unnecessary re-evaluation of model parts \parencites[see][section
-1.2.3]{cusumano-towner2020gen}{becker2020dynamic} (a technique that could also be used to improve
-efficiency of particle samplers).
+support could be handled, using methods and heuristics as in BUGS or JAGS.  This could also involve
+symbolic methods such as in AutoConj \parencite{hoffman2018autoconj}. More generally,
+variance-reducing transformations, e.g., the Rao-Blackwellization from \textcite{murray2017delayed},
+are applicable.  Furthermore, as done in \juliapackage{Gen.jl}, a variant of \enquote{argument
+  diffs} could be devised to prevent unnecessary re-evaluation of model parts
+\parencites[see][section 1.2.3]{cusumano-towner2020gen}{becker2020dynamic} (a technique that could
+also be used to improve efficiency of particle samplers).
 
 Besides improvements via inference algorithms, it would be possible for models that are written in a
 vectorized or otherwise \enquote{trace constant} fashion, such that the structure of the
@@ -412,11 +425,10 @@ expressions, could be sped up by compiling them to Julia methods, or even better
 SSA-like structure to emit Julia IR directly.
 
 A more radical approach would be to move away from working on a trace-based reconstruction obtained
-at runtime. One such an approach, using a PPL-specific intermediate representation of the complete
-model program, with generalized transformation capabilities, is outlined in
-section~\ref{sec:future-work} below.  This could allow more invariance with respect to inference
-algorithms, and be able to handle more general probabilistic models (foremost, not only static
-ones).
+at runtime.  Such an idea, using a PPL-specific intermediate representation of the complete model
+program, with generalized transformation capabilities, is outlined in section~\ref{sec:future-work}
+below.  This could allow more invariance with respect to inference algorithms, and would enable
+handling more general probabilistic models (foremost, not only static ones).
 
 
 \section{Evaluation}
@@ -442,19 +454,20 @@ planned.
 \newthought{Besides several unit tests} for correctness of the derived dependencies and conditionals
 on a variety of small models chosen to test certain features and corner cases, an experimental
 comparison of \autogibbsjl{} and existing \turingjl{} samplers has been conducted.  Three
-off-the-shelf Bayesian models were chosen: a Gaussian mixture model (GMM) with known variances and
-priors over cluster centers, weights, and assignments \parencite[section 6.2]{marin2007bayesian}:
+off-the-shelf Bayesian models were chosen: a Gaussian mixture model (GMM) with \(N\) observations,
+\(K\) clusters, known variances \(\sigma\), and priors over cluster centers \(\mu\), weights \(w\), and
+assignments \(z\) \parencite[section 6.2]{marin2007bayesian}:
 \begin{equation}
   \label{eq:gmm}
   \begin{aligned}
     w &\from \distr{Dirichlet(K)}, \\
     z_{n} &\from \distr{Categorical}([1, \ldots, K], w), \quad\text{for } 1 \le n \le N, \\
     \mu_{k} &\from \Normal(0, \sigma_{1}), \quad\text{for } 1 \le k \le K, \\
-    x_{n} &\from \Normal(\mu_{z_{n}}, \sigma_{1}), \quad\text{for } 1 \le n \le N;
+    x_{n} &\from \Normal(\mu_{z_{n}}, \sigma_{2}), \quad\text{for } 1 \le n \le N;
   \end{aligned}
 \end{equation}
-a hidden Markov model
-(HMM) with known variances and priors over transition and emission probabilities \parencite[section
+a hidden Markov model (HMM) with \(N\) observations, \(K\) clusters, known variances \(\sigma\), and
+priors over transition (\(T\)) and emission (\(m\)) probabilities \parencite[section
 7.3]{marin2007bayesian}:
 \begin{equation}
   \label{eq:hmm}
@@ -466,9 +479,9 @@ a hidden Markov model
     x_{n} &\from \Normal(m_{s_{n}}, \sigma_{2}), \quad\text{for } 1 \le n \le N;
   \end{aligned}
 \end{equation}
-and a truncated infinite mixture model (IMM) in stick-breaking construction, but otherwise of the
-same form as the GMM, to represent a nonparametric example \parencite[section
-2.2]{hjort2010bayesian}:
+and a \(K\)-truncated infinite mixture model (IMM) with \(N\) observations, in stick-breaking
+construction with fixed parameter \(\alpha\), but otherwise of the same form as the GMM, to
+represent a nonparametric example \parencite[section 2.2]{hjort2010bayesian}:
 \begin{equation}
   \label{eq:imm}
   \begin{aligned}
@@ -478,7 +491,11 @@ same form as the GMM, to represent a nonparametric example \parencite[section
     y_{n} &\from \Normal(\mu_{z_{n}}, \sigma_{2}), \quad\text{for } 1 \le n \le N.
   \end{aligned}
 \end{equation}
-In the context of this work, the three interesting classes of metrics are
+The concrete values of all involved hyperparameters can be found in the test directory of the
+published source
+code\footnote{\protect\href{https://github.com/phipsgabler/AutoGibbs.jl/tree/2b433f8f5c37a55f63fbf175193130b46c8b569f/test}{https://github.com/phipsgabler/AutoGibbs.jl/tree/master/test}}.
+
+The three interesting classes of metrics in the context of this work are:
 \begin{enumerate}
   \firmlist
 \item the \enquote{extraction time} of \autogibbsjl{}, i.e., the time it takes to extract and a
@@ -488,18 +505,17 @@ In the context of this work, the three interesting classes of metrics are
   that while this really benchmarks Gibbs sampling, not the implementation of \autogibbsjl{}, it is
   a relevant comparison for the practitioner.)
 \end{enumerate}
-To estimate these quantities, a series of experiments has been conducted.  Each of the test models
-involves one discrete and two continuous parameter arrays.  As a baseline for \autogibbsjl{}'s
-static conditional (AG), \turingjl{}'s Particle Gibbs sampler (PG;
-\textcite[see]{andrieu2010particlea}) was chosen, which is also suited to discrete parameters.  PG
-was always used with \(100\) particles, since lower values did not lead to convergent chains.
-Continuous variables were sampled using Hamiltonian Monte Carlo (HMC;
-\textcite[see]{betancourt2018conceptual}) with hand-tuned parameters (\(10\) leapfrog steps with
-step size \(0.05\)).  The experiments have been set up to vary between AG and PG, and between
-\(10\), \(25\), and \(50\) observations, since their number determines the size of the trace, and
+These quantities were estimated on each of the test models, which all involve one discrete and two
+continuous parameter arrays.  As a baseline for \autogibbsjl{}'s static conditional (AG),
+\turingjl{}'s Particle Gibbs sampler (PG; \textcite[see]{andrieu2010particlea}) was chosen, which is
+also suited to discrete parameters.  PG was always used with \(100\) particles, since lower values
+did not lead to convergent chains.  Continuous variables were sampled using Hamiltonian Monte Carlo
+(HMC; \textcite[see]{betancourt2018conceptual}) with hand-tuned parameters (\(10\) leapfrog steps
+with step size \(0.05\)).  The experiments have been set up to vary between AG and PG, and between
+\(10\), \(25\), and \(50\) observations, since this number determines the size of the trace, and
 thus influences both AG's compile times and the overall sampling time.  All measurements were
 conducted using the following system configuration, as shown by
-\jlinl{InteractiveUtils.versioninfo()}:
+\jlinl{InteractiveUtils.versioninfo()}:\todo{page break?}
 \begin{lstlisting}
 Julia Version 1.3.1
 Commit 2d5741174c (2019-12-30 21:36 UTC)
@@ -512,9 +528,10 @@ Platform Info:
 \end{lstlisting}
 Everything was executed single-threaded, with exclusive resource access on the server, to preclude
 measurement noise as much as possible.  Each of the three models was benchmarked in a separate Julia
-session.  The last two chains of the HMM with \(50\) observations using Particle Gibbs could not be
-completed, due to the twelve hour time limit set by the job scheduler.  The raw data can be found
-online in \textcite{gabler2020mcmc}\footnote{\protect\url{https://doi.org/10.5281/zenodo.4307916}}.
+session, starting with a fixed random seed.  The last two chains of the HMM with \(50\) observations
+using Particle Gibbs could not be completed, due to the twelve hour time limit set by the job
+scheduler.  The raw data can be found online in
+\textcite{gabler2020mcmc}\footnote{\protect\url{https://doi.org/10.5281/zenodo.4307916}}.
 
 The \dppljl{} implementations of the models can be found in listing~\ref{lst:evaluation-models}.
 Note that for each, there exists a second, equivalent implementation used for PG, since particle
@@ -532,10 +549,10 @@ parameter, and the test models involve larger arrays of parameters, the first el
 continuous and the fifth element of the discrete parameters have always been chosen as
 representatives.  On the top, the first chain of each experimental combination is shown as a
 qualitative representative (thinned for ease of plotting).  Well-converging chains should look like
-stationary~-- more like white noise than random walks.  In the middle plot, the estimated
+stationary processes~-- more like white noise than a random walk.  In the middle plot, the estimated
 autocorrelation functions of the same chains are given, which are a way to evaluate convergence
 speed by eye.  The functions should vanish quickly (indicated by the gray significance bar around
-the abscissa); uncorrelated samples would have zero autocorrelation except for the first lag.
+the abscissa); uncorrelated samples would have vanishing autocorrelation except for lag zero.
 
 Lastly, two diagnostic values are plotted for each combination and chain.  The
 \enquote{scale-reduction} \(\widehat{\mathrm{R}}\), after \textcite{gelman1992inference}, estimates
@@ -544,9 +561,9 @@ continued \parencite[see][p. 285]{gelman2020bayesian}.  It should be close to on
 good convergence; as a rule of thumb, a value of more than \(1.1\) is suspicious.  The effective
 sample size (ESS) arises in the estimation of the asymptotic variance of Markov chains
 \parencite[][section 7.2]{vihola2020lectures}, where it is formally analogous to the sample size in
-the variance estimator for \iid{} variables.  The ESS can also be interpreted as a one-point summary
-of the autocorrelation estimate, normalized by chain length.  It should be close to the actual
-number of samples, or at least of the same order of magnitude.
+the central limit theorem for \iid{} variables.  The ESS can also be interpreted as a one-point
+summary of the autocorrelation estimate, normalized by chain length.  It should be close to the
+actual number of samples, or at least of the same order of magnitude.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 

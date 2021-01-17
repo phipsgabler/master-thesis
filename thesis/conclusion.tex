@@ -1,5 +1,10 @@
-\chapter{Discussion}
-\label{cha:discussion}
+\chapter{Conclusion}
+\label{cha:conclusion}
+
+TODO\todo{short recap}
+
+\section{Discussion}
+\label{sec:discussion}
 
 The history of this project forms a large arc, starting from a general problem in \turingjl{}, over
 a digression into compiler technology and automatic differentiation, back the implementation of a
@@ -26,8 +31,8 @@ shadow actual data dependencies.  The latter occurs in cases where one has, for 
 \jlinl{x}, samples a value \jlinl{x[1]}, writes that to \jlinl{x} with \jlinl{setindex!}, and then
 uses \jlinl{getindex(x, 1)} somewhere downstream.  A more versatile dictionary structure for
 variable name keys could improve the situation for variable names\footnote{Work to tackle these
-  issues have already been begun in \turingjl{}, as of December 2020.}, but wouldn't solve all of
-the underlying issues.
+  issues has already begun in \turingjl{}, as of December 2020.}, but wouldn't solve all of the
+underlying issues.
 
 There is also a fragility problem: Julia IR, while being publicly documented, is a rather internal
 feature of the language, and may change between compiler versions.  The \juliapackage{IRTools.jl}
@@ -53,6 +58,7 @@ probabilistic models.  In the course of development, various techniques have bee
 out, challenges identified, and other alternatives explored.  This knowledge has lead me to a better
 understanding of the domain and some more advanced ideas for the future, some of which are laid out
 in the following section.
+
 
 \section{Future Work}
 \label{sec:future-work}
@@ -90,8 +96,8 @@ just formalizing probabilistic programs (such as probabilistic lambda calculi, o
 formulations; see
 \textcite{ramsey2002stochastic,heunen2017convenient,bhat2012type,scibior2015practical})
 
-\newthought{Universal PPLs} have as their goal to let the user write down every model the language
-allows, and still be able to do inference on it.  Of course, at the boundary of the space of
+Universal PPLs have as their goal to let the user write down every model the language allows, and
+still be able to do inference on it.  Of course, at the boundary of the space of
 \enquote{reasonable} programs, trade-offs need to be made to still be able to do this.  It seems
 advantageous to split up this conjunction: by creating a format in which one can denote every
 possible model of a very large class, without a priori having to deal with the restrictions of
