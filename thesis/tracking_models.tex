@@ -117,7 +117,7 @@ Julia could be added in future extensions.  Furthermore, broadcasting tilde stat
 supported in \dppljl{}, are not supported by \autogibbsjl{} at the moment.
 
 \newthought{To illustrate} the extracted dependency graphs obtained by \autogibbsjl{}, we will
-examine the two simple models shown in listing~\ref{lst:dependency-examples}: a boolean variable
+examine the two simple models shown in listing~\ref{lst:dependency-examples}: a Boolean variable
 sampled from a mixture of two Bernoulli distributions, and a simple single-variable Gaussian model
 with conjugate prior.\todo{fix caption alignment} The pretty-printed \jlinl{Graph} objects resulting
 from each model are shown below them, in listing~\ref{lst:trace-examples}.  We can see that the
@@ -243,7 +243,7 @@ The implementation of the conditional extraction system involves three main step
 \end{enumerate}
 Alternatively, it would be possible to repeatedly trace the dependency graph and recalculate the
 conditional likelihood at each Gibbs-component sampling step.  This could remediate some
-restrictions, but at higher runtime cost.
+restrictions, but at higher run-time cost.
 
 The third of these steps turned out to be the easiest, since the sampling system of \turingjl{} is
 designed to be extensible.  Ideally, a Gibbs-conditional sampler would have first been added to
@@ -425,7 +425,7 @@ expressions, could be sped up by compiling them to Julia methods, or even better
 SSA-like structure to emit Julia IR directly.
 
 A more radical approach would be to move away from working on a trace-based reconstruction obtained
-at runtime.  Such an idea, using a PPL-specific intermediate representation of the complete model
+at run-time.  Such an idea, using a PPL-specific intermediate representation of the complete model
 program, with generalized transformation capabilities, is outlined in section~\ref{sec:future-work}
 below.  This could allow more invariance with respect to inference algorithms, and would enable
 handling more general probabilistic models (foremost, not only static ones).
@@ -491,7 +491,7 @@ represent a nonparametric example \parencite[section 2.2]{hjort2010bayesian}:
     y_{n} &\from \Normal(\mu_{z_{n}}, \sigma_{2}), \quad\text{for } 1 \le n \le N.
   \end{aligned}
 \end{equation}
-The concrete values of all involved hyperparameters can be found in the test directory of the
+The concrete values of all involved hyper-parameters can be found in the test directory of the
 published source
 code\footnote{\protect\href{https://github.com/phipsgabler/AutoGibbs.jl/tree/2b433f8f5c37a55f63fbf175193130b46c8b569f/test}{https://github.com/phipsgabler/AutoGibbs.jl/tree/master/test}}.
 
@@ -552,7 +552,8 @@ qualitative representative (thinned for ease of plotting).  Well-converging chai
 stationary processes~-- more like white noise than a random walk.  In the middle plot, the estimated
 autocorrelation functions of the same chains are given, which are a way to evaluate convergence
 speed by eye.  The functions should vanish quickly (indicated by the gray significance bar around
-the abscissa); uncorrelated samples would have vanishing autocorrelation except for lag zero.
+the abscissa); perfectly uncorrelated chains would have vanishing autocorrelation except for lag
+zero.
 
 Lastly, two diagnostic values are plotted for each combination and chain.  The
 \enquote{scale-reduction} \(\widehat{\mathrm{R}}\), after \textcite{gelman1992inference}, estimates
@@ -639,40 +640,44 @@ end
 \newcommand{\leftplotcaption}[1]{%
   Sampling and extraction times for #1, factored by algorithm and number of observations.  Points
   are jittered horizontally to increase readability.  A quadratic curve is fitted to the extraction
-  times.  } \newcommand{\rightplotcaption}[1]{%
+  times.
+}
+
+\newcommand{\rightplotcaption}[1]{%
   Diagnostics, factored by algorithm, number of observations, and a selection of model parameters.
   \(\widehat{\mathrm{R}}\) and ESS point estimates are jittered horizontally for better readability.
   A horizontal line marks the reference value of \(1.1\) in the \(\widehat{\mathrm{R}}\) plot.  For
-  chain plots and autocorrelation, the third chain of the respective combination has been used.  }
+  chain plots and autocorrelation, the third chain of the respective combination has been used.
+}
 
 \begin{figure}[t!]
   \centering
   \includegraphics[width=0.49\textwidth]{figures/GMM-sampling_times}
   \includegraphics[width=0.49\textwidth]{figures/GMM-compile_times}
   \caption{\leftplotcaption{GMM}}
-  \label{fig:plots-gmm}
+  \label{fig:plots-gmm-left}
 \end{figure}
 
 \subsection*{Gaussian Mixture Model}
 
-For the GMM, the AG sampling times lie consistenly below the minimum of the PG sampling times, even
-with the largest number of observations.  Extraction time seems to grow quadratically, with
-exception of the first call of the conditional extraction, involving compilation and type
-inference.
+For the GMM, the AG sampling times (figure~\ref{fig:plots-gmm-left}, left) lie consistently below the
+minimum of the PG sampling times, even with the largest number of observations.  Extraction time
+(on the right) seems to grow quadratically, with exception of the first call of
+the conditional extraction, involving compilation and type inference.
 
-The mixing behaviour of the chains shows a large variation.  With \(10\) and \(25\) observations,
-neither of the altgorithms reaches consistently satisfactory results; the distribution of
-\(\widehat{R}\) values is quite diffuse and suspiciously large (more so for PG), and especially the
-ESS numbers are way too low.  A look at the exemplary autocorrelation plots seems to confirm bad
-convergence.  The corresponding chains clearly show random-walk-like or \enquote{lumped} behaviour
-for some combinations.
+The mixing behavior of the chains (figure~\ref{fig:plots-gmm-right}, top) shows a large variation.
+With \(10\) and \(25\) observations, neither of the algorithms reaches consistently satisfactory
+results; the distribution of \(\widehat{R}\) values (bottom left) is quite diffuse and suspiciously
+large (more so for PG), and especially the ESS (bottom right) is way too low.  A look at the
+exemplary autocorrelation plots (middle) seems to confirm bad convergence.  The corresponding chains
+clearly show random-walk-like or \enquote{lumped} behavior for some combinations.
 
 For \(50\) observations, the result is different with AG.  The \(w\) and \(\mu\) parameters appear
 to converge well in most cases, with very low-variance chains and visibly large ESS values.  But for
 unknown reasons, the \(z\) parameter seems to have gotten \enquote{stuck} in this particular example
 and not moved at all, which is the reason no autocorrelation function could be estimated.  PG might
 have improved somewhat, looking at the lower \(\widehat{R}\) distributions, but not enough to make a
-meaningful difference, as ESS and autocorrelation plots show no sufficiently good behaviour.
+meaningful difference, as ESS and autocorrelation plots show no sufficiently good behavior.
 
 
 \cleartorecto
@@ -686,7 +691,8 @@ meaningful difference, as ESS and autocorrelation plots show no sufficiently goo
   \par
   \includegraphics[width=0.49\textwidth]{figures/GMM-rhat}
   \includegraphics[width=0.49\textwidth]{figures/GMM-ess}
-  \contcaption{\rightplotcaption{GMM}}
+  \caption{\rightplotcaption{GMM}}
+  \label{fig:plots-gmm-right}
 \end{figure}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -698,20 +704,21 @@ meaningful difference, as ESS and autocorrelation plots show no sufficiently goo
     \includegraphics[width=0.49\textwidth]{figures/HMM-sampling_times}
   \includegraphics[width=0.49\textwidth]{figures/HMM-compile_times}
   \caption{\leftplotcaption{HMM}}
-  \label{fig:plots-hmm}
+  \label{fig:plots-hmm-left}
 \end{figure}
 
 \subsection*{Hidden Markov Model}
 
-Also for HMM, the same trends in sampling and extraction times as with GMM are visible, with AG
-being consistenly faster.  The extraction times seem to be quite the same as GMM, even in absolute
-terms, as are the outliers of the first function calls.
+Also for HMM, the same trends in sampling and extraction times as with GMM are visible
+(figure~\ref{fig:plots-hmm-left}), with AG being consistently faster.  The extraction times seem to
+be quite the same as GMM, even in absolute terms, as are the outliers of the first function calls.
 
-Mixing behaviour for this model is much better overall.  The chains look less like random walks,
-especially for \(\mu\).  Autocorrelation plots are sometimes quite good, especially for \(s\), and
-in all cases better as those above for GMM.  The \(\widehat{R}\) values are all in better ranges
-(note the difference in the scale of the ordinate!), and ESS noticeably higher.  Overall, AG seems
-to improve over PG on average, to some degree.
+Mixing behavior for this model is much better overall.  The chains
+(figure~\ref{fig:plots-hmm-right}, top) look less like random walks, especially for \(\mu\).
+Autocorrelation plots (middle) are sometimes quite good, especially for \(s\), and in all cases
+better as those above for GMM.  The \(\widehat{R}\) values (bottom left) are all in better ranges
+(note the difference in the scale of the ordinate!), and ESS (bottom right) noticeably higher.
+Overall, AG seems to improve over PG on average, to some degree.
 
 \cleartorecto
 \FloatBlock
@@ -724,7 +731,8 @@ to improve over PG on average, to some degree.
   \par
   \includegraphics[width=0.49\textwidth]{figures/HMM-rhat}
   \includegraphics[width=0.49\textwidth]{figures/HMM-ess}
-  \contcaption{\rightplotcaption{HMM}}
+  \caption{\rightplotcaption{HMM}}
+  \label{fig:plots-hmm-right}
 \end{figure}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -736,22 +744,22 @@ to improve over PG on average, to some degree.
   \includegraphics[width=0.49\textwidth]{figures/IMM-sampling_times}
   \includegraphics[width=0.49\textwidth]{figures/IMM-compile_times}
   \caption{\leftplotcaption{IMM}}
-  \label{fig:plots-imm}
+  \label{fig:plots-imm-left}
 \end{figure}
+
 
 \subsection*{Infinite Mixture Model}
 
-Again, similar trends of sampling times and extraction times are noticeable.  Here we can observe
-some larger involved factors, though; both curves grow faster, with PG on \(10\) observations even
-being faster than AG on \(50\) observations; although still on a significantly higher scale in
-general.
+Again, similar trends of sampling times and extraction times (figure~\ref{fig:plots-imm-left}) are
+noticeable.  Here we can observe some larger involved factors, though; both curves grow faster, with
+PG on \(10\) observations even being faster than AG on \(50\) observations; although still on a
+significantly higher scale in general.
 
-In this example, PG appears to work better on average.  In the example chain plots, we can only see
-a noticeable difference for \(\mu\), while the autocorrelation graphs are almost all worse for AG
-(although both algorithms seem to do better than in the GMM test).  ESS is only satisfactory for the
-\(z\) parameters, but PG here shows a much more consistent behaviour of the \(\widehat{R}\)
-distribution.
-
+In this example, PG appears to work better on average.  In the example chain plots
+(figure~\ref{fig:plots-imm-right}, top), we can only see a noticeable difference for \(\mu\), while the
+autocorrelation graphs (middle) are almost all worse for AG (although both algorithms seem to do
+better than in the GMM test).  ESS (bottom right) is only satisfactory for the \(z\) parameters, but
+PG here shows a much more consistent behavior of the \(\widehat{R}\) distribution (bottom left).
 
 \begin{figure}[p]
   \centering
@@ -761,22 +769,23 @@ distribution.
   \par
   \includegraphics[width=0.49\textwidth]{figures/IMM-rhat}
   \includegraphics[width=0.49\textwidth]{figures/IMM-ess}
-  \contcaption{\rightplotcaption{IMM}}
+  \caption{\rightplotcaption{IMM}}
+  \label{fig:plots-imm-right}
 \end{figure}
 
 \FloatBlock
-
+\clearpage
 
 \subsection*{Summary}
 
-Whereas the sampling times of PG always grows rather fast, depending on the number of observations,
-the rate of growth seems to be much lower for AG.  The behaviour of these curves appears to be
+Whereas the sampling times of PG always grow rather fast, depending on the number of observations,
+the rate of growth seems to be much lower for AG.  The behavior of these curves appears to be
 superlinear, perhaps quadratic.  For GMM and HMM, the maximal sampling time of AG is always below
 the minimal sampling time of PG.  Even in the case of IMM, AG's sampling time with \(50\)
 observations is closest to PG's with only \(10\) particles, with the latter still obviously rising
 much faster.
 
-With regard to the extraction times, we can note a pretty clear quadratic run time depending on the
+With regard to the extraction times, we can note a pretty clear quadratic run-time depending on the
 number of observations.  The first run is always significantly above this trend, due to the impact
 of compilation and type inference.  Additionally, the first invocation for the lowest number of
 observations might have involved additional compilation of library functions, explaining the larger
@@ -789,9 +798,9 @@ buttressed by the distribution of the diagnostic values.  IMM seems poses a part
 application for AG, but otherwise, no consistent \enquote{winner} is visible, and variations do not
 seem to follow a consistent pattern.
 
-In conclusion, it can be said that for models where both are applicable, AutoGibbs provides a viable
-alternative to PG, delivering comparable results in less time.  Care has to be taken to diagnose
-mixing behaviour, though, as always in MCMC simulations.
+In conclusion, it can be said that for models where both are applicable, \texttt{Auto\-Gibbs.jl}
+provides a viable alternative to PG, delivering comparable results in less time.  Care has to be
+taken to diagnose mixing behavior, though, as always in MCMC simulations.
 
 
 % \begin{table}[t]
