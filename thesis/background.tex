@@ -212,7 +212,7 @@ For multi-component structures, where the latent variables can be subdivided int
 distribution can be hard to find, though.  One way to break down the problem is to use a family of
 block-wise updates, given by conditional kernels \(q_{i}\) operating only on the single block
 \(\Theta_i\), with the rest, \(\Theta_{-i}\), fixed.  Then we can use the following modified
-proposal \(\hat{Y}\) in algorithm~\ref{alg:mh},
+proposal \(\hat{Y}\) in algorithm~\ref{alg:mh}:
 \begin{equation}
   \label{eq:conditional-kernels}
   \begin{aligned}
@@ -414,7 +414,8 @@ a variety of further reasons why one would rather describe an inference problem 
 program than in more \enquote{low-level} form, e.g., as a graph or likelihood function.  In a good
 probabilistic programming DSL, models should be expressible very concisely and intuitively, without
 much bookkeeping (e.g., as close to textbook model specifications as possible).  At the same time,
-structures should exist to allow complex behavior, such as to\todo{page break}
+structures should exist to allow complex behavior, such as to
+\newpage
 \begin{itemize}
   \firmlist
 \item define recursive relationships,
@@ -562,17 +563,21 @@ types, fast loops, and various optimizations are available, as opposed to langua
 which are fundamentally limited to their dynamic interpretation.  This advantage carries over to
 domains outside of numeric computation, of course.
 
+The key element to Julia's versatility is its multiple dispatch approach.  The terminology of Julia
+uses \emph{function} only for the name of certain callable objects, which can have multiple
+\emph{methods} for different combinations of argument types.  When a function is applied, the types
+of the arguments are determined, and the most specific matching methods selected and called.  For
+example, the \protect\jlinl{+} function has many methods for different types, defined at various
+places, and can be freely extended by users for custom types.  This flexibility eliminates the need
+for many organizational mechanisms such as interfaces or inheritance, without compromising
+expressibility.
+
 On top of that, the language is built on a very open compilation model.  Underlying the surface
 syntax is an abstract syntax tree (AST), used in the initial stages of compilation, but also exposed
 to the programmer through macros, which allow to transform pieces of code at compile time.  Julia
 macros are proper hygienic, Lisp-style code transformations \parencite[cf.][]{hoyte2008let}, not
-simple text-substitutions as C preprocessor macros.  As an example, look at the following
-method\footnote{The terminology of Julia uses \emph{function} for a callable object, which can have
-  multiple \emph{methods} for different combinations of argument types.  This is what allows
-  multiple dispatch: when a function is applied, the types of the arguments are determined, and the
-  most specific matching methods selected and called.  For example, the \protect\jlinl{+} function
-  has many methods for adding integers, floats, arrays, etc.} that sums up the \jlinl{sin} values
-of a list of numbers:
+simple text-substitutions as C preprocessor macros.  As an example, look at the following method
+that sums up the \jlinl{sin} values of a list of numbers:
 \begin{lstlisting}
 function foo(x)
     y = zero(eltype(x))
@@ -600,7 +605,7 @@ macro show(ex)
     return blk
 end
 \end{lstlisting}
-The result is then spliced back into the AST, which is compiled further as if it were written as\todo{pagebreak}
+The result is then spliced back into the AST, which is compiled further as if it were written as
 \begin{lstlisting}
 function foo(x)
     y = zero(eltype(x))
@@ -1078,9 +1083,10 @@ branches.  For example, the Wengert list in figure~\ref{fig:wengert-list} could 
     \Omega &= g(z, y).
   \end{aligned}
 \end{equation}
-As in building up reverse computation graphs, the adjoint code will invert the control flow of the
-basic blocks in the primal function, taking into account that data flow may involve dynamic
-dependencies.  In our little example (without control flow), this leads to
+(Again, see appendix~\ref{sec:ad-details} for mathematical details).  As in building up reverse
+computation graphs, the adjoint code will invert the control flow of the basic blocks in the primal
+function, taking into account that data flow may involve dynamic dependencies.  In our little
+example (without control flow), this leads to
 \begin{equation}
   \label{eq:ad-backward-0}
   \begin{aligned}

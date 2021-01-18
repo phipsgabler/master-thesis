@@ -30,7 +30,8 @@ inspection and transformation of the IR of given functions.  This technique can 
 recursively traverse the implementation of a given function, annotating each operation with
 necessary tracking statements, and changing the inputs and outputs accordingly to extract this
 information from outside.  To ensure sufficient generality, we requite the following properties of
-the tracking system:\todo{page break}
+the tracking system:
+\enlargethispage{\baselineskip}
 \begin{enumerate}
   \firmlist
 \item Storage of all intermediate values during execution.
@@ -102,7 +103,6 @@ reverse-mode AD, and only these nodes would be recorded in a conventional Wenger
 work, however, the system also records the nodes on the control path, consisting of \jlinl{@6} and
 the nodes it depends on.
 
-
 \section{Automatic Graph Tracking}
 \label{sec:autom-graph-track}
 
@@ -143,7 +143,6 @@ constructing the child nodes of the possibly nested call, and storing them on th
     original and transformed IR are highlighted in matching colors.  (The original IR consists of
     two blocks, shown separately on the right.)\label{fig:geom-tracked}}
 \end{figure}
-\todo{make sure figure is on same spread as explanation}
 
 To get a more detailed understanding, consider the SSA statement \jlinl{\%6 = \%2 + 1} in the second
 block of \jlinl{geom}, which describes the application of the function \jlinl{+} to an SSA variable

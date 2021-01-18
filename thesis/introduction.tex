@@ -89,6 +89,7 @@ patterns \parencite{gowda2019sparsity}.
 
 \section{Scope}
 \label{sec:scope}
+\setlength{\parskip}{0pt}
 
 Computation graphs are thus a required resource for many algorithms.  In this thesis, I present a
 novel variant of automatic extraction of computation graphs suitable for static and dynamic models,
@@ -96,7 +97,7 @@ using IR-based source transformation instead of operator overloading.  Inspired 
 differentiable programming \parencite{innes2018don}, the approach transforms the intermediate
 representation used by the compiler of the Julia programming language.  This system can be used to
 dynamically track computation graphs of any Julia program, including machine learning models and
-probabilistic programming systems, without having to explicitly declare graph structures.\todo{parskip}
+probabilistic programming systems, without having to explicitly declare graph structures.
 
 The transformation is implemented as a custom part of the compilation process.  Its result is passed
 back to the compiler, where it can be optimized further. At run time, both data and control path are
@@ -149,8 +150,8 @@ through additional instructions that, next to the concrete evaluation, track the
 symbolic form (hence the name).  The symbolic information can then be used in formal methods to, for
 example, find sets of program input that ensure complete test coverage of all branches.  There
 already exists a proof-of-concept implementation of a concolic fuzzer in Julia
-\parencite{churavy2019vchuravy}, which applies the same kind IR-based transformations as
-\juliapackage{Zygote.jl}.
+\parencite{churavy2019vchuravy}, which applies the same kind of IR-based transformations as
+\juliapackage{Zygote.jl} (cf. discussion in section~\ref{sec:irtracker-eval}).
 
 These information propagation methods, most of which find solutions to (potentially recursive)
 equations defined over program structure, can in turn be seen as a form of message passing, under
